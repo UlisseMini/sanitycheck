@@ -109,7 +109,10 @@ app.post('/analyze', async (req: Request, res: Response) => {
       return;
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      model: string;
+      content: Array<{ type: string; text: string }>;
+    };
     console.log(`[analyze] Success in ${duration}ms, model: ${data.model}`);
 
     // Extract text from response
