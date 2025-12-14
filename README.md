@@ -1,107 +1,74 @@
-# Logic Checker Chrome Extension
+# Logic Checker Backend
 
-A Chrome extension that analyzes web articles for logical fallacies and non-sequiturs using AI, then highlights problematic passages directly in the article.
+Backend API for crowdsourcing logical fallacy annotations.
 
-## Features
+## Setup
 
-- 🔍 **Smart Article Detection**: Automatically detects if a page is an article
-- 🧠 **AI-Powered Analysis**: Uses Claude 4.5 Sonnet to identify logical fallacies
-- ⚠️ **Visual Highlighting**: Highlights problematic passages with importance-based colors
-- 💡 **Hover Tooltips**: Hover over highlights to see brief explanations
-- 🎯 **Central Gap Detection**: Identifies the main logical gap in the argument
-- 🔴🟠🟡 **Importance Levels**: Critical, significant, and minor issues color-coded
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Installation
+2. Set up your database URL in `.env`:
+   ```
+   DATABASE_URL="postgresql://..."
+   ```
 
-### Step 1: Load the Extension
+3. Run migrations:
+   ```bash
+   npx prisma migrate dev
+   ```
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **"Load unpacked"**
-4. Navigate to and select this directory
-5. The extension should now appear in your extensions list
+4. Start development server:
+   ```bash
+   npm run dev
+   ```
 
-### Step 2: Pin the Extension (Optional)
+## Deploy to Railway
 
-1. Click the **Extensions** icon (puzzle piece) in Chrome's toolbar
-2. Find **"Logic Checker"** and click the **pin icon**
+1. Create a new project on Railway
+2. Add a PostgreSQL database
+3. Connect this repo/folder
+4. Railway will automatically:
+   - Set `DATABASE_URL`
+   - Run `npm install` (which runs `prisma generate`)
+   - Run `npm run build`
+   - Run `npm start`
 
-### Step 3: Get Your API Key
+5. Run migrations manually once:
+   ```bash
+   railway run npx prisma migrate deploy
+   ```
 
-1. Get your Replicate API key from [replicate.com/account/api-tokens](https://replicate.com/account/api-tokens)
-2. Click the extension icon
-3. Enter your API key in the input field
-4. Click **Save**
+## API Endpoints
 
-## Usage
+### POST /annotations
+Submit a new annotation.
 
-1. Navigate to any article
-2. Click the **Logic Checker** extension icon
-3. Click **"Analyze for Fallacies"**
-4. Wait for analysis (30-90 seconds for Claude 4.5 Sonnet)
-5. View results in the popup AND see highlights in the article
-6. **Hover over highlighted text** to see explanations
-
-## How It Works
-
-1. **Article Extraction**: Extracts main article text from the page
-2. **AI Analysis**: Sends text to Claude 4.5 Sonnet via Replicate API
-3. **Logic Check**: AI identifies logical gaps, non-sequiturs, and fallacies
-4. **Central Gap**: Identifies the main logical weakness in the argument
-5. **Highlighting**: Color-codes issues by importance (red/yellow/gray)
-6. **Tooltips**: Shows brief explanations on hover
-
-## What It Detects
-
-- **Non-sequiturs**: Conclusions that don't follow from premises
-- **Conflation**: Treating "X is hard" as "X is impossible"
-- **Circular reasoning**: Conclusion assumed in premises
-- **Inconsistent rules**: Principle used for X but ignored for Y
-- **Unsupported claims**: "X is impossible/optimal" without proof
-- **Hasty generalizations**: Broad claims from limited evidence
-- **False dichotomies**: Only two options when more exist
-- **Genetic fallacies**: Dismissing ideas based on origin
-
-## Project Structure
-
-```
-sanitycheck/
-├── manifest.json       # Extension configuration
-├── popup.html          # Extension popup UI
-├── popup.js            # Main extension logic
-├── content.js          # Article extraction & highlighting
-├── styles.css          # Extension styling
-├── debug.js            # Debug logging utility
-├── icon*.png           # Extension icons
-├── README.md           # This file
-└── debug-server/       # Debug server (optional)
-    ├── debug-server.js
-    ├── package.json
-    └── package-lock.json
+```json
+{
+  "url": "https://example.com/article",
+  "title": "Article Title",
+  "quote": "The selected text",
+  "annotation": "This is a non-sequitur because...",
+  "fallacyType": "non-sequitur"
+}
 ```
 
-## Debug Server (Optional)
+### GET /annotations
+Get all annotations (paginated).
 
-For development/debugging, you can run a local server to capture logs.
+Query params: `limit`, `offset`, `fallacyType`
 
-```bash
-cd debug-server
-npm install
-npm start
-```
+### GET /annotations/by-url?url=...
+Get annotations for a specific URL.
 
-Server runs on `http://localhost:3000`:
-- `POST /debug/log` - Receive logs
-- `GET /debug/logs` - View logs
-- `DELETE /debug/logs` - Clear logs
-- `GET /debug/health` - Health check
+### GET /stats
+Get annotation statistics.
 
-Logs are written to `debug-server/debug.log`.
+### GET /export
+Export all annotations as JSONL (for prompt engineering).
 
-## Notes
+### GET /health
+Health check.
 
-- Analyzes **logical structure only**, not factual accuracy
-- Works best with traditional article formats
-- Analysis takes 30-90 seconds (Claude 4.5 Sonnet)
-- Requires active internet connection
-- Debug server is optional (logs queue if unavailable)

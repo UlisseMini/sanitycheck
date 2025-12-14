@@ -22,15 +22,15 @@ const EXTENSION_FILES = [
   'icon128.png'
 ];
 
-// Determine paths
+// Determine paths - now running from project root
 const scriptDir = __dirname;
-const backendDir = path.dirname(scriptDir);
-const rootDir = path.dirname(backendDir);
-const outputDir = path.join(backendDir, 'public');
+const rootDir = path.dirname(scriptDir);
+const extensionDir = path.join(rootDir, 'extension');
+const outputDir = path.join(rootDir, 'public');
 const outputZip = path.join(outputDir, 'logic-checker-extension.zip');
 
 console.log('Bundling extension...');
-console.log('  Root dir:', rootDir);
+console.log('  Extension dir:', extensionDir);
 console.log('  Output:', outputZip);
 
 // Create output directory
@@ -40,29 +40,19 @@ if (!fs.existsSync(outputDir)) {
 
 // Check if extension files exist
 const existingFiles = EXTENSION_FILES.filter(f => 
-  fs.existsSync(path.join(rootDir, f))
+  fs.existsSync(path.join(extensionDir, f))
 );
 
 if (existingFiles.length === 0) {
-  console.error('  ERROR: No extension files found in root directory');
-  console.error('  Root dir:', rootDir);
+  console.error('  ERROR: No extension files found');
+  console.error('  Extension dir:', extensionDir);
   console.error('  Looking for files:', EXTENSION_FILES);
   console.error('  Current working dir:', process.cwd());
-  console.error('  Files in root:', fs.readdirSync(rootDir).slice(0, 10));
+  console.error('  Files in extension dir:', fs.existsSync(extensionDir) ? fs.readdirSync(extensionDir) : 'DIR NOT FOUND');
   
-  // In production, fail loudly
-  if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT) {
-    console.error('  FATAL: Cannot bundle extension in production without source files');
-    process.exit(1);
-  }
-  
-  // In dev, create placeholder
-  console.log('  Creating placeholder zip...');
-  fs.writeFileSync(
-    path.join(outputDir, 'README.txt'),
-    'Extension files not found during build. Please download from source.'
-  );
-  process.exit(0);
+  // Fail loudly
+  console.error('  FATAL: Cannot bundle extension without source files');
+  process.exit(1);
 }
 
 console.log(`  Found ${existingFiles.length}/${EXTENSION_FILES.length} extension files`);
@@ -73,7 +63,7 @@ const tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'extension-'));
 try {
   // Copy files
   for (const file of existingFiles) {
-    const src = path.join(rootDir, file);
+    const src = path.join(extensionDir, file);
     const dest = path.join(tempDir, file);
     fs.copyFileSync(src, dest);
     console.log(`  Copied: ${file}`);
