@@ -14,6 +14,7 @@ tests/
 # Build artifacts
 dist/
 *.zip
+backend/public/
 
 # OS files
 .DS_Store

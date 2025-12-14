@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
@@ -10,6 +11,9 @@ const ADMIN_KEY = process.env.ADMIN_KEY || 'changeme';
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+
+// Serve static files (extension zip)
+app.use('/static', express.static(path.join(__dirname, '../public')));
 
 // Admin auth middleware
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -26,6 +30,462 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// =====================================================
+// Homepage
+// =====================================================
+
+const HOMEPAGE_HTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logic Checker — Spot Logical Fallacies in Articles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0a0b;
+      --bg-card: #141418;
+      --bg-elevated: #1c1c22;
+      --text: #f4f4f5;
+      --text-muted: #71717a;
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.4);
+      --critical: #ef4444;
+      --significant: #eab308;
+      --minor: #6b7280;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    
+    body {
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(249, 115, 22, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(239, 68, 68, 0.08), transparent),
+        var(--bg);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    
+    .logo {
+      font-size: 4rem;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 0 40px var(--accent-glow));
+    }
+    
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .tagline {
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+    
+    .cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 36px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      transition: all 0.2s;
+    }
+    
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.15) inset;
+    }
+    
+    .download-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .chrome-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .chrome-badge svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .features {
+      padding: 80px 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .features h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 48px;
+      color: var(--text);
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    
+    .feature-card:hover {
+      border-color: rgba(249, 115, 22, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    
+    .install-section {
+      padding: 80px 20px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .install-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .install-section h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 48px;
+    }
+    
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    
+    .step-number {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    .step-content h3 {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+    
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    
+    .step-content code {
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+    
+    .demo-section {
+      padding: 80px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .demo-section h2 {
+      font-size: 2rem;
+      margin-bottom: 24px;
+    }
+    
+    .demo-section p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: left;
+    }
+    
+    .demo-quote {
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: linear-gradient(90deg, rgba(234, 179, 8, 0.15) 0%, transparent 100%);
+      border-left: 3px solid var(--significant);
+      border-radius: 4px;
+    }
+    
+    .demo-quote mark {
+      background: rgba(234, 179, 8, 0.25);
+      color: inherit;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+    
+    .demo-analysis {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+    }
+    
+    .demo-emoji {
+      font-size: 1.5rem;
+    }
+    
+    .demo-analysis-content h4 {
+      color: var(--significant);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    
+    .demo-analysis-content p {
+      color: var(--text);
+      margin: 0;
+      font-size: 1rem;
+    }
+    
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="logo">⚖️</div>
+    <h1>Logic Checker</h1>
+    <p class="tagline">An AI-powered browser extension that spots logical fallacies and reasoning gaps in any article you read.</p>
+    
+    <div class="cta-group">
+      <a href="/static/logic-checker-extension.zip" class="download-btn" download>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download Extension
+      </a>
+      <div class="chrome-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29L1.931 5.47zm13.069 7.64a5.45 5.45 0 0 1-1.09 3.254l-3.953 6.847c.566.063 1.142.096 1.727.096 6.627 0 12-5.373 12-12 0-1.24-.188-2.437-.537-3.561H13.091a5.454 5.454 0 0 1 1.909 5.364z"/></svg>
+        Works on Chrome, Edge, Brave & Arc
+      </div>
+    </div>
+  </section>
+  
+  <section class="features">
+    <h2>What It Does</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>AI-Powered Analysis</h3>
+        <p>Uses Claude 4.5 Sonnet to deeply analyze article logic, finding non-sequiturs, conflations, and unsupported claims.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Inline Highlighting</h3>
+        <p>Problematic passages are highlighted directly in the article. Hover to see what's wrong with the reasoning.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Severity Ranking</h3>
+        <p>Issues are ranked by importance — critical gaps in red, significant issues in yellow, minor concerns in gray.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💡</div>
+        <h3>Concise Explanations</h3>
+        <p>Each issue gets a one-line explanation that makes the logical leap immediately obvious.</p>
+      </div>
+    </div>
+  </section>
+  
+  <section class="demo-section">
+    <h2>See It In Action</h2>
+    <p>The extension highlights passages with questionable logic and explains the issue on hover.</p>
+    
+    <div class="demo-card">
+      <div class="demo-quote">
+        "There have been studies about progress in all kinds of fields that come to the same conclusion: <mark>linear progress needs exponential resources</mark>. What does that mean? If you want to improve a system further and further, you need more and more resources."
+      </div>
+      <div class="demo-analysis">
+        <span class="demo-emoji">🟠</span>
+        <div class="demo-analysis-content">
+          <h4>Unsupported Generalization</h4>
+          <p>"All fields" is a strong claim — which studies? Does this apply universally?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="install-section">
+    <div class="install-content">
+      <h2>Installation Instructions</h2>
+      <div class="install-steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Download the Extension</h3>
+            <p>Click the download button above to get the <code>.zip</code> file.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Unzip the File</h3>
+            <p>Extract the zip to a folder on your computer. Remember where you put it.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Open Chrome Extensions</h3>
+            <p>Go to <code>chrome://extensions</code> in your browser. Enable "Developer mode" in the top right.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Load the Extension</h3>
+            <p>Click "Load unpacked" and select the folder you extracted. The extension icon should appear in your toolbar.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3>Start Analyzing</h3>
+            <p>Navigate to any article and click the extension icon. Hit "Analyze for Fallacies" and watch the magic happen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <footer>
+    <p>Built with ❤️ by humans (with AI assistance) · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
+  </footer>
+</body>
+</html>
+`;
+
+// Serve homepage
+app.get('/', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(HOMEPAGE_HTML);
 });
 
 // =====================================================

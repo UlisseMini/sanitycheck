@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc",
+    "build": "node scripts/bundle-extension.js && tsc",
     "start": "node dist/index.js",
+    "bundle-extension": "node scripts/bundle-extension.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
