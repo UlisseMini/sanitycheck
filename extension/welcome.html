@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to SanityCheck</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,171 +11,193 @@
       box-sizing: border-box;
     }
     
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-tertiary: #242936;
+      --bg-hover: #2d3344;
+      --text-primary: #f0f2f5;
+      --text-secondary: #9ca3b0;
+      --text-muted: #6b7280;
+      --accent: #f97316;
+      --accent-hover: #fb923c;
+      --accent-subtle: rgba(249, 115, 22, 0.12);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.12);
+    }
+    
     body {
-      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0a0a0b 0%, #1a1a2e 50%, #0a0a0b 100%);
-      color: #f4f4f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 60px 20px;
+      padding: 60px 24px;
+      line-height: 1.5;
     }
     
     .container {
-      max-width: 700px;
+      max-width: 640px;
       width: 100%;
     }
     
     .hero {
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 48px;
     }
     
     .logo {
-      font-size: 48px;
-      margin-bottom: 16px;
+      width: 56px;
+      height: 56px;
+      fill: var(--accent);
+      margin-bottom: 20px;
     }
     
     h1 {
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
+      letter-spacing: -0.5px;
       margin-bottom: 12px;
-      background: linear-gradient(135deg, #f97316, #fb923c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--text-primary);
     }
     
     .tagline {
-      font-size: 18px;
-      color: #a1a1aa;
-      font-weight: 400;
+      font-size: 16px;
+      color: var(--text-muted);
     }
     
     .steps {
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      margin-bottom: 48px;
+      gap: 16px;
+      margin-bottom: 40px;
     }
     
     .step {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
       display: flex;
-      gap: 20px;
+      gap: 16px;
       align-items: flex-start;
-      transition: all 0.2s ease;
+      transition: border-color 0.15s ease;
     }
     
     .step:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(249, 115, 22, 0.3);
+      border-color: var(--border-strong);
     }
     
     .step-number {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #f97316, #ea580c);
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 18px;
+      font-weight: 600;
+      font-size: 14px;
       flex-shrink: 0;
+      color: white;
     }
     
     .step-content h3 {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 600;
-      margin-bottom: 8px;
-      color: #f4f4f5;
+      margin-bottom: 4px;
+      color: var(--text-primary);
     }
     
     .step-content p {
-      color: #a1a1aa;
-      line-height: 1.6;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
     }
     
     .pin-instruction {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.05));
-      border: 1px solid rgba(249, 115, 22, 0.3);
-      border-radius: 16px;
-      padding: 32px;
+      background: var(--accent-subtle);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      border-radius: 12px;
+      padding: 24px;
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 40px;
     }
     
     .pin-instruction h2 {
-      font-size: 22px;
+      font-size: 16px;
       font-weight: 600;
-      margin-bottom: 16px;
-      color: #f97316;
+      margin-bottom: 8px;
+      color: var(--accent);
     }
     
     .pin-instruction p {
-      color: #a1a1aa;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 16px;
     }
     
     .pin-steps {
       display: flex;
       justify-content: center;
-      gap: 32px;
+      gap: 24px;
       flex-wrap: wrap;
+      align-items: center;
     }
     
     .pin-step {
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #e4e4e7;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
     }
     
-    .pin-step .icon {
-      font-size: 24px;
+    .pin-step svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-muted);
     }
     
     .pin-step .arrow {
-      color: #71717a;
-      font-size: 20px;
+      color: var(--text-muted);
+      font-size: 14px;
     }
     
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 48px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
     }
     
     .feature {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
       text-align: center;
     }
     
     .feature-icon {
-      font-size: 32px;
-      margin-bottom: 12px;
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent);
+      margin-bottom: 8px;
     }
     
     .feature h4 {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      color: #e4e4e7;
-      margin-bottom: 6px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
     }
     
     .feature p {
-      font-size: 13px;
-      color: #71717a;
+      font-size: 12px;
+      color: var(--text-muted);
     }
     
     .cta {
@@ -186,68 +205,75 @@
     }
     
     .cta-btn {
-      display: inline-block;
-      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
       color: white;
-      padding: 14px 32px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       border: none;
       cursor: pointer;
     }
     
     .cta-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+      background: var(--accent-hover);
+    }
+    
+    .cta-btn svg {
+      width: 18px;
+      height: 18px;
     }
     
     .footer {
-      margin-top: 60px;
+      margin-top: 48px;
       text-align: center;
-      color: #52525b;
+      color: var(--text-muted);
       font-size: 13px;
     }
     
     .footer a {
-      color: #71717a;
+      color: var(--text-secondary);
       text-decoration: none;
+      transition: color 0.15s ease;
     }
     
     .footer a:hover {
-      color: #f97316;
-    }
-
-    kbd {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 12px;
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="hero">
-      <div class="logo">🧠</div>
+      <svg class="logo" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+      </svg>
       <h1>Welcome to SanityCheck</h1>
       <p class="tagline">Keep your reasoning sharp. Spot logical gaps in articles.</p>
     </div>
     
     <div class="pin-instruction">
-      <h2>📌 Pin for Easy Access</h2>
+      <h2>Pin for Easy Access</h2>
       <p>Pin SanityCheck to your toolbar for one-click access on any article.</p>
       <div class="pin-steps">
         <div class="pin-step">
-          <span class="icon">🧩</span>
-          <span>Click the puzzle icon</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <span>Click extensions icon</span>
         </div>
         <span class="pin-step arrow">→</span>
         <div class="pin-step">
-          <span class="icon">📌</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="17" x2="12" y2="3"></line>
+            <path d="M5 10l7-7 7 7"></path>
+            <line x1="12" y1="21" x2="12" y2="21"></line>
+          </svg>
           <span>Pin SanityCheck</span>
         </div>
       </div>
@@ -273,7 +299,7 @@
       <div class="step">
         <div class="step-number">3</div>
         <div class="step-content">
-          <h3>Hit "Analyze Article"</h3>
+          <h3>Analyze the logic</h3>
           <p>Our AI will scan the text for logical gaps, unsupported claims, and reasoning issues. Results appear in seconds.</p>
         </div>
       </div>
@@ -282,36 +308,53 @@
         <div class="step-number">4</div>
         <div class="step-content">
           <h3>Review highlighted issues</h3>
-          <p>Problematic sections are highlighted on the page. Hover to see explanations. Only high-confidence issues are shown.</p>
+          <p>Problematic sections are highlighted on the page. Hover to see explanations.</p>
         </div>
       </div>
     </div>
     
     <div class="features">
       <div class="feature">
-        <div class="feature-icon">🎯</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
         <h4>High Precision</h4>
         <p>Only flags genuine issues</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">⚡</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
         <h4>Fast Analysis</h4>
         <p>Results in seconds</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">💬</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
         <h4>Leave Feedback</h4>
         <p>Right-click to comment</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">🔧</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
         <h4>Customizable</h4>
         <p>Edit the analysis prompt</p>
       </div>
     </div>
     
     <div class="cta">
-      <button class="cta-btn" onclick="window.close()">Got it, let's go! →</button>
+      <button class="cta-btn" onclick="window.close()">
+        Get Started
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
     </div>
     
     <div class="footer">
@@ -331,4 +374,3 @@
   </script>
 </body>
 </html>
-

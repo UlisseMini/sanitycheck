@@ -153,85 +153,67 @@ const HOMEPAGE_HTML = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SanityCheck — Keep Your Reasoning Sharp</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --bg: #0a0a0b;
-      --bg-card: #141418;
-      --bg-elevated: #1c1c22;
-      --text: #f4f4f5;
-      --text-muted: #71717a;
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-tertiary: #242936;
+      --bg-hover: #2d3344;
+      --text-primary: #f0f2f5;
+      --text-secondary: #9ca3b0;
+      --text-muted: #6b7280;
       --accent: #f97316;
-      --accent-glow: rgba(249, 115, 22, 0.4);
-      --critical: #ef4444;
-      --significant: #eab308;
-      --minor: #6b7280;
+      --accent-hover: #fb923c;
+      --accent-subtle: rgba(249, 115, 22, 0.12);
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --warning-subtle: rgba(245, 158, 11, 0.12);
       --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.12);
     }
     
     body {
-      font-family: 'Space Grotesk', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       line-height: 1.6;
       min-height: 100vh;
     }
     
+    /* Hero Section */
     .hero {
-      min-height: 100vh;
+      min-height: 90vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
-      background: 
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(249, 115, 22, 0.15), transparent),
-        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(239, 68, 68, 0.08), transparent),
-        var(--bg);
+      padding: 60px 24px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
     }
     
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-    
-    .logo {
-      font-size: 4rem;
+    .logo-icon {
+      width: 64px;
+      height: 64px;
+      fill: var(--accent);
       margin-bottom: 24px;
-      filter: drop-shadow(0 0 40px var(--accent-glow));
     }
     
     h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
       font-weight: 700;
-      letter-spacing: -2px;
+      letter-spacing: -1px;
       margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--text-primary);
     }
     
     .tagline {
-      font-family: 'Crimson Pro', Georgia, serif;
-      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
       color: var(--text-muted);
-      font-style: italic;
-      margin-bottom: 48px;
-      max-width: 600px;
+      margin-bottom: 40px;
+      max-width: 560px;
+      line-height: 1.6;
     }
     
     .cta-group {
@@ -244,29 +226,28 @@ const HOMEPAGE_HTML = `
     .download-btn {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
-      padding: 18px 36px;
-      background: linear-gradient(135deg, var(--accent), #ea580c);
+      gap: 10px;
+      padding: 16px 32px;
+      background: var(--accent);
       color: white;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       text-decoration: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1) inset;
-      transition: all 0.2s;
+      border-radius: 10px;
+      transition: all 0.15s ease;
     }
     
     .download-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.15) inset;
+      background: var(--accent-hover);
+      transform: translateY(-1px);
     }
     
     .download-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
     
-    .chrome-badge {
+    .browser-badge {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -274,163 +255,105 @@ const HOMEPAGE_HTML = `
       font-size: 0.9rem;
     }
     
-    .chrome-badge svg {
-      width: 20px;
-      height: 20px;
+    .browser-badge svg {
+      width: 18px;
+      height: 18px;
+      opacity: 0.7;
     }
     
+    /* Features Section */
     .features {
-      padding: 80px 20px;
+      padding: 80px 24px;
       max-width: 1000px;
       margin: 0 auto;
     }
     
     .features h2 {
       text-align: center;
-      font-size: 2rem;
+      font-size: 1.75rem;
+      font-weight: 600;
       margin-bottom: 48px;
-      color: var(--text);
+      color: var(--text-primary);
     }
     
     .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
     }
     
     .feature-card {
-      background: var(--bg-card);
+      background: var(--bg-secondary);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      transition: border-color 0.2s, transform 0.2s;
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.15s ease;
     }
     
     .feature-card:hover {
-      border-color: rgba(249, 115, 22, 0.3);
-      transform: translateY(-2px);
+      border-color: var(--border-strong);
     }
     
     .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 16px;
+      width: 32px;
+      height: 32px;
+      stroke: var(--accent);
+      margin-bottom: 14px;
     }
     
     .feature-card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-primary);
     }
     
     .feature-card p {
       color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.7;
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
     
-    .install-section {
-      padding: 80px 20px;
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .install-content {
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    
-    .install-section h2 {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 48px;
-    }
-    
-    .install-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    
-    .step {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-    }
-    
-    .step-number {
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-    
-    .step-content h3 {
-      font-size: 1.1rem;
-      margin-bottom: 6px;
-    }
-    
-    .step-content p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-    
-    .step-content code {
-      background: var(--bg);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--accent);
-    }
-    
+    /* Demo Section */
     .demo-section {
-      padding: 80px 20px;
-      max-width: 900px;
+      padding: 80px 24px;
+      max-width: 800px;
       margin: 0 auto;
-      text-align: center;
     }
     
     .demo-section h2 {
-      font-size: 2rem;
-      margin-bottom: 24px;
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 16px;
     }
     
-    .demo-section p {
+    .demo-section > p {
+      text-align: center;
       color: var(--text-muted);
       margin-bottom: 32px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
     }
     
     .demo-card {
-      background: var(--bg-card);
+      background: var(--bg-secondary);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px;
-      text-align: left;
+      border-radius: 12px;
+      padding: 28px;
     }
     
     .demo-quote {
-      font-family: 'Crimson Pro', Georgia, serif;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       line-height: 1.8;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: linear-gradient(90deg, rgba(234, 179, 8, 0.15) 0%, transparent 100%);
-      border-left: 3px solid var(--significant);
-      border-radius: 4px;
+      margin-bottom: 20px;
+      padding: 16px 20px;
+      background: var(--warning-subtle);
+      border-left: 3px solid var(--warning);
+      border-radius: 6px;
+      color: var(--text-secondary);
     }
     
     .demo-quote mark {
-      background: rgba(234, 179, 8, 0.25);
+      background: rgba(245, 158, 11, 0.25);
       color: inherit;
       padding: 2px 4px;
       border-radius: 2px;
@@ -439,50 +362,133 @@ const HOMEPAGE_HTML = `
     .demo-analysis {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
-      padding: 16px;
-      background: var(--bg-elevated);
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--bg-tertiary);
       border-radius: 8px;
     }
     
-    .demo-emoji {
-      font-size: 1.5rem;
+    .severity-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--warning);
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
     }
     
     .demo-analysis-content h4 {
-      color: var(--significant);
-      font-size: 0.9rem;
+      color: var(--warning);
+      font-size: 0.8rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
     
     .demo-analysis-content p {
-      color: var(--text);
-      margin: 0;
-      font-size: 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
     
-    footer {
-      padding: 40px 20px;
+    /* Install Section */
+    .install-section {
+      padding: 80px 24px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .install-content {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    
+    .install-section h2 {
       text-align: center;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 40px;
+    }
+    
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .step-number {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: white;
+    }
+    
+    .step-content h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+    
+    .step-content p {
       color: var(--text-muted);
       font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    
+    .step-content code {
+      background: var(--bg-primary);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+    
+    /* Footer */
+    footer {
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
     }
     
     footer a {
-      color: var(--accent);
+      color: var(--text-secondary);
       text-decoration: none;
+      transition: color 0.15s ease;
     }
     
     footer a:hover {
-      text-decoration: underline;
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px; min-height: 80vh; }
+      .features, .demo-section, .install-section { padding: 60px 20px; }
     }
   </style>
 </head>
 <body>
   <section class="hero">
-    <div class="logo">🧠</div>
+    <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+    </svg>
     <h1>SanityCheck</h1>
     <p class="tagline">An AI-powered browser extension that spots logical gaps and reasoning issues in any article you read.</p>
     
@@ -491,7 +497,7 @@ const HOMEPAGE_HTML = `
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Download Extension
       </a>
-      <div class="chrome-badge">
+      <div class="browser-badge">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29L1.931 5.47zm13.069 7.64a5.45 5.45 0 0 1-1.09 3.254l-3.953 6.847c.566.063 1.142.096 1.727.096 6.627 0 12-5.373 12-12 0-1.24-.188-2.437-.537-3.561H13.091a5.454 5.454 0 0 1 1.909 5.364z"/></svg>
         Works on Chrome, Edge, Brave & Arc
       </div>
@@ -502,22 +508,35 @@ const HOMEPAGE_HTML = `
     <h2>What It Does</h2>
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-icon">🧠</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
         <h3>AI-Powered Analysis</h3>
-        <p>Uses Claude 4.5 Sonnet to deeply analyze article logic, finding non-sequiturs, conflations, and unsupported claims.</p>
+        <p>Uses Claude to deeply analyze article logic, finding non-sequiturs, conflations, and unsupported claims.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">🎯</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
         <h3>Inline Highlighting</h3>
         <p>Problematic passages are highlighted directly in the article. Hover to see what's wrong with the reasoning.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">📊</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
         <h3>Severity Ranking</h3>
         <p>Issues are ranked by importance — critical gaps in red, significant issues in yellow, minor concerns in gray.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">💡</div>
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
         <h3>Concise Explanations</h3>
         <p>Each issue gets a one-line explanation that makes the logical leap immediately obvious.</p>
       </div>
@@ -533,7 +552,7 @@ const HOMEPAGE_HTML = `
         "There have been studies about progress in all kinds of fields that come to the same conclusion: <mark>linear progress needs exponential resources</mark>. What does that mean? If you want to improve a system further and further, you need more and more resources."
       </div>
       <div class="demo-analysis">
-        <span class="demo-emoji">🟠</span>
+        <span class="severity-dot"></span>
         <div class="demo-analysis-content">
           <h4>Unsupported Generalization</h4>
           <p>"All fields" is a strong claim — which studies? Does this apply universally?</p>
@@ -544,7 +563,7 @@ const HOMEPAGE_HTML = `
   
   <section class="install-section">
     <div class="install-content">
-      <h2>Installation Instructions</h2>
+      <h2>Installation</h2>
       <div class="install-steps">
         <div class="step">
           <div class="step-number">1</div>
@@ -557,28 +576,28 @@ const HOMEPAGE_HTML = `
           <div class="step-number">2</div>
           <div class="step-content">
             <h3>Unzip the File</h3>
-            <p>Extract the zip to a folder on your computer. Remember where you put it.</p>
+            <p>Extract the zip to a folder on your computer.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">3</div>
           <div class="step-content">
             <h3>Open Chrome Extensions</h3>
-            <p>Go to <code>chrome://extensions</code> in your browser. Enable "Developer mode" in the top right.</p>
+            <p>Navigate to <code>chrome://extensions</code> and enable "Developer mode".</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">4</div>
           <div class="step-content">
             <h3>Load the Extension</h3>
-            <p>Click "Load unpacked" and select the folder you extracted. The extension icon should appear in your toolbar.</p>
+            <p>Click "Load unpacked" and select the extracted folder.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">5</div>
           <div class="step-content">
             <h3>Start Analyzing</h3>
-            <p>Navigate to any article and click the extension icon. Hit "Analyze for Fallacies" and watch the magic happen.</p>
+            <p>Navigate to any article and click the extension icon to analyze.</p>
           </div>
         </div>
       </div>
@@ -586,7 +605,7 @@ const HOMEPAGE_HTML = `
   </section>
   
   <footer>
-    <p>Built with ❤️ by humans (with AI assistance) · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
+    <p>Built by humans, with AI assistance · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
   </footer>
 </body>
 </html>
@@ -1220,7 +1239,7 @@ const ADMIN_HTML = `
 <body>
   <div class="login-container" id="loginContainer">
     <div class="login-box">
-      <h1 class="login-title">🧠 SanityCheck</h1>
+      <h1 class="login-title">SanityCheck</h1>
       <p class="login-subtitle">Admin Dashboard</p>
       
       <form id="loginForm">
@@ -1237,16 +1256,16 @@ const ADMIN_HTML = `
   <div class="dashboard" id="dashboard">
     <header class="header">
       <div class="header-inner">
-        <h1 class="header-title">🧠 SanityCheck Admin</h1>
+        <h1 class="header-title">SanityCheck Admin</h1>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
     </header>
     
     <div class="container">
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('articles')">📄 Articles</button>
-        <button class="tab-btn" onclick="switchTab('comments')">💬 Comments</button>
-        <button class="tab-btn" onclick="switchTab('logs')">🔧 Debug Logs</button>
+        <button class="tab-btn active" onclick="switchTab('articles')">Articles</button>
+        <button class="tab-btn" onclick="switchTab('comments')">Comments</button>
+        <button class="tab-btn" onclick="switchTab('logs')">Debug Logs</button>
       </div>
       
       <!-- Articles Tab -->
@@ -1327,8 +1346,8 @@ const ADMIN_HTML = `
             </select>
           </div>
           
-          <button class="refresh-btn" onclick="loadDebugLogs()">🔄 Refresh</button>
-          <button class="clear-logs-btn" onclick="clearOldLogs()">🗑️ Clear Old</button>
+          <button class="refresh-btn" onclick="loadDebugLogs()">Refresh</button>
+          <button class="clear-logs-btn" onclick="clearOldLogs()">Clear Old</button>
         </div>
         
         <div class="section-title">
@@ -1439,7 +1458,7 @@ const ADMIN_HTML = `
         const data = await res.json();
         
         if (!data.articles || data.articles.length === 0) {
-          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No articles yet</p></div>';
+          list.innerHTML = '<div class="empty-state"><p>No articles yet</p></div>';
           return;
         }
         
@@ -1469,7 +1488,7 @@ const ADMIN_HTML = `
         
         renderArticlesPagination(data.total);
       } catch (err) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load articles</p></div>';
+        list.innerHTML = '<div class="empty-state"><p>Failed to load articles</p></div>';
       }
     }
     
@@ -1588,7 +1607,7 @@ const ADMIN_HTML = `
         const data = await res.json();
         
         if (!data.comments || data.comments.length === 0) {
-          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><p>No comments yet</p></div>';
+          list.innerHTML = '<div class="empty-state"><p>No comments yet</p></div>';
           return;
         }
         
@@ -1611,7 +1630,7 @@ const ADMIN_HTML = `
         
         renderCommentsPagination(data.total);
       } catch (err) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load comments</p></div>';
+        list.innerHTML = '<div class="empty-state"><p>Failed to load comments</p></div>';
       }
     }
     
@@ -1729,7 +1748,7 @@ const ADMIN_HTML = `
         document.getElementById('logCount').textContent = data.total + ' logs';
         
         if (!data.logs || data.logs.length === 0) {
-          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>No logs found</p></div>';
+          list.innerHTML = '<div class="empty-state"><p>No logs found</p></div>';
           return;
         }
         
@@ -1753,7 +1772,7 @@ const ADMIN_HTML = `
         
         renderLogsPagination(data.total);
       } catch (err) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load logs</p></div>';
+        list.innerHTML = '<div class="empty-state"><p>Failed to load logs</p></div>';
       }
     }
     

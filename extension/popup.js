@@ -220,7 +220,8 @@ function showArticleDetected(article) {
   const statusText = pageStatus.querySelector('.status-text');
   const viewHint = pageStatus.querySelector('.view-text-hint');
   
-  statusIcon.textContent = '📄';
+  statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+  statusIcon.classList.add('ready');
   statusText.innerHTML = `
     <strong>Article detected</strong><br>
     <span style="color: var(--text-muted); font-size: 12px;">${article.wordCount.toLocaleString()} words</span>
@@ -245,7 +246,7 @@ function showNotArticle(info) {
   const statusText = pageStatus.querySelector('.status-text');
   const viewHint = pageStatus.querySelector('.view-text-hint');
   
-  statusIcon.textContent = '🔗';
+  statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
   statusText.innerHTML = `
     <strong>Not an article page</strong><br>
     <span style="color: var(--text-muted); font-size: 12px;">This appears to be a different type of page</span>
@@ -255,7 +256,7 @@ function showNotArticle(info) {
   if (info && info.wordCount > 100) {
     currentArticle = info;
     actionSection.classList.remove('hidden');
-    analyzeBtn.innerHTML = '<span class="btn-icon">🧠</span> Analyze Anyway';
+    analyzeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Analyze Anyway`;
     
     // Make clickable to view text
     if (viewHint) {
@@ -353,7 +354,7 @@ function displayResults(parsed) {
   if (parsed.rawText) {
     resultsContent.innerHTML = `
       <div style="color: var(--warning); margin-bottom: 12px;">
-        ⚠️ Could not parse structured response
+        Could not parse structured response
       </div>
       <div style="white-space: pre-wrap; font-size: 12px;">${escapeHtml(parsed.rawText)}</div>
     `;
@@ -364,7 +365,7 @@ function displayResults(parsed) {
   if (!parsed.issues || parsed.issues.length === 0) {
     resultsContent.innerHTML = `
       <div class="no-fallacies">
-        <div class="icon">✅</div>
+        <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
         <strong>No significant issues found</strong>
         <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(parsed.summary || parsed.overall_assessment || 'The article appears to be logically sound.')}</p>
       </div>
@@ -383,7 +384,7 @@ function displayResults(parsed) {
         <span class="severity-badge ${parsed.severity || 'none'}">${parsed.severity || 'unknown'}</span>
       </div>
       ${parsed.summary || parsed.overall_assessment ? `<p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">${escapeHtml(parsed.summary || parsed.overall_assessment)}</p>` : ''}
-      <p style="color: var(--accent); margin-top: 10px; font-size: 11px; font-style: italic;">💡 Issues are highlighted in the article. Hover to see details.</p>
+      <p style="color: var(--text-muted); margin-top: 10px; font-size: 11px;">Issues are highlighted in the article. Hover to see details.</p>
     </div>
   `;
   
@@ -392,7 +393,6 @@ function displayResults(parsed) {
     html += `
       <div class="central-gap-box">
         <div class="central-gap-header">
-          <span style="font-size: 16px;">🎯</span>
           Central Logical Gap
         </div>
         <div class="central-gap-content">
@@ -409,8 +409,6 @@ function displayResults(parsed) {
   });
   
   sortedIssues.forEach((issue, index) => {
-    const importanceEmoji = issue.importance === 'critical' ? '🔴' : 
-                            issue.importance === 'significant' ? '🟠' : '🟡';
     const importanceClass = issue.importance || 'minor';
     
     // Handle all formats: new (gap), medium (why_it_doesnt_follow), old (explanation)
@@ -419,7 +417,6 @@ function displayResults(parsed) {
     html += `
       <div class="fallacy-item ${importanceClass}" data-issue-index="${index}">
         <div class="fallacy-header">
-          <span class="importance-icon">${importanceEmoji}</span>
           <span class="importance-badge ${importanceClass}">${issue.importance || 'issue'}</span>
         </div>
         ${issue.quote ? `<div class="fallacy-quote">"${escapeHtml(issue.quote.substring(0, 150))}${issue.quote.length > 150 ? '...' : ''}"</div>` : ''}
