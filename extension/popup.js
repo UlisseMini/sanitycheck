@@ -4,53 +4,6 @@ const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Debug logging will be available via window.debug
 
-const DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
-
-## Your Goal
-
-Surface issues where you're confident it's a real structural flaw AND it matters to the core argument. The cost of a bad objection (annoying the reader, undermining trust) exceeds the cost of missing something. So:
-
-- Only flag things that made you genuinely think "wait, that doesn't follow"
-- Try to steelman first—if there's a reasonable interpretation, don't flag
-- Ask: would someone who agrees with the article still nod and say "yeah, that's fair"?
-
-Good flags: evidence-conclusion mismatches, load-bearing unstated assumptions, logical leaps that don't follow even charitably.
-
-Bad flags: factual disputes (you might be wrong), nitpicks on tangential points, things that only look wrong if you disagree with the content.
-
-## Output Format
-
-Return JSON:
-
-{
-  "central_argument_analysis": {
-    "main_conclusion": "1 sentence: what the author claims",
-    "central_logical_gap": "1-2 sentences: the main structural weakness, if any. Be clear and direct."
-  },
-  "issues": [
-    {
-      "importance": "critical|significant|minor",
-      "quote": "Exact quote from text, 20-60 words",
-      "gap": "Brief explanation (<15 words ideal). Reader should immediately think 'oh yeah, that's a leap.'"
-    }
-  ],
-  "severity": "none|minor|moderate|significant"
-}
-
-## Rules
-
-- Keep "gap" explanations brief and immediately recognizable. E.g., "Constraints ≠ impossibility" or "One example doesn't prove a universal"
-- Quote exactly from the text
-- 1-4 issues typical. Zero is fine if nothing clears the bar.
-- Quality over quantity—only flag what you're confident about
-
-ARTICLE:
-`;
-
-// Current prompt (may be customized)
-let currentPrompt = DEFAULT_ANALYSIS_PROMPT;
-let isCustomPrompt = false;
-
 // DOM Elements
 const settingsBtn = document.getElementById('settings-btn');
 const pageStatus = document.getElementById('page-status');
@@ -67,6 +20,7 @@ const closeArticleTextBtn = document.getElementById('close-article-text');
 
 let currentArticle = null;
 let currentTabId = null;
+let statusPollInterval = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', init);
@@ -84,19 +38,6 @@ async function init() {
     
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
-    // Load custom prompt if set
-    const stored = await chrome.storage.local.get(['customPrompt']);
-    debug.log('Storage loaded', { hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
-    
-    if (stored.customPrompt) {
-      currentPrompt = stored.customPrompt;
-      isCustomPrompt = true;
-      debug.log('Using custom prompt', { promptLength: currentPrompt.length }, 'popup-init');
-    } else {
-      currentPrompt = DEFAULT_ANALYSIS_PROMPT;
-      isCustomPrompt = false;
-    }
-    
     // Check current page
     await checkCurrentPage();
     
@@ -111,6 +52,13 @@ async function init() {
     debug.error('Initialization failed', error, 'popup-init');
   }
 }
+
+// Clean up when popup closes
+window.addEventListener('unload', () => {
+  if (statusPollInterval) {
+    clearInterval(statusPollInterval);
+  }
+});
 
 function openSettings() {
   // Open settings page in a new tab
@@ -161,21 +109,21 @@ async function checkCurrentPage() {
       }, 'popup-check-page');
       showArticleDetected(response);
       
-      // Check for cached results
-      const cached = await chrome.storage.local.get([`analysis_${tab.url}`]);
-      if (cached[`analysis_${tab.url}`]) {
-        const parsed = cached[`analysis_${tab.url}`];
-        displayResults(parsed);
-        if (parsed.issues?.length > 0) {
-          await sendHighlightsToPage(parsed.issues);
-        }
-      }
+      // Check for ongoing analysis or cached results
+      await checkAnalysisStatus(tab.url);
+      
     } else if (response) {
       debug.log('Not an article page', {
         wordCount: response.wordCount,
         confidence: response.confidence
       }, 'popup-check-page');
       showNotArticle(response);
+      
+      // Still check for ongoing analysis
+      if (response.wordCount > 100) {
+        currentArticle = response;
+        await checkAnalysisStatus(tab.url);
+      }
     } else {
       debug.warn('No response from content script', {}, 'popup-check-page');
       showError('Could not analyze this page');
@@ -187,6 +135,84 @@ async function checkCurrentPage() {
     });
     showError('Cannot analyze this page. Try refreshing and reopening the extension.');
   }
+}
+
+async function checkAnalysisStatus(url) {
+  // First check if there's an ongoing analysis in background
+  const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url });
+  
+  debug.log('Analysis status check', { status }, 'popup-status');
+  
+  if (status.status === 'analyzing') {
+    // Analysis is in progress - show loading and poll for updates
+    showLoading();
+    startStatusPolling(url);
+    return;
+  }
+  
+  if (status.status === 'complete' && status.parsed) {
+    // Just completed - show results
+    displayResults(status.parsed);
+    if (status.parsed.issues?.length > 0) {
+      await sendHighlightsToPage(status.parsed.issues);
+    }
+    return;
+  }
+  
+  if (status.status === 'error') {
+    showError(status.error || 'Analysis failed');
+    actionSection.classList.remove('hidden');
+    return;
+  }
+  
+  // Check for cached results
+  const cached = await chrome.storage.local.get([`analysis_${url}`]);
+  if (cached[`analysis_${url}`]) {
+    const parsed = cached[`analysis_${url}`];
+    displayResults(parsed);
+    if (parsed.issues?.length > 0) {
+      await sendHighlightsToPage(parsed.issues);
+    }
+  }
+}
+
+function startStatusPolling(url) {
+  // Poll every 500ms for status updates
+  statusPollInterval = setInterval(async () => {
+    try {
+      const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url });
+      
+      if (status.status === 'complete') {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+        loadingSection.classList.add('hidden');
+        
+        if (status.parsed) {
+          displayResults(status.parsed);
+          // Highlights already sent by background script, but send again to be sure
+          if (status.parsed.issues?.length > 0) {
+            await sendHighlightsToPage(status.parsed.issues);
+          }
+        }
+      } else if (status.status === 'error') {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+        loadingSection.classList.add('hidden');
+        showError(status.error || 'Analysis failed');
+        actionSection.classList.remove('hidden');
+      }
+      // If still 'analyzing', keep polling
+    } catch (e) {
+      // Ignore polling errors
+    }
+  }, 500);
+}
+
+function showLoading() {
+  hideError();
+  actionSection.classList.add('hidden');
+  loadingSection.classList.remove('hidden');
+  resultsSection.classList.add('hidden');
 }
 
 function showArticleDetected(article) {
@@ -265,301 +291,32 @@ async function analyzeArticle() {
     url: currentArticle.url
   }, 'popup-analyze');
   
-  hideError();
-  actionSection.classList.add('hidden');
-  loadingSection.classList.remove('hidden');
-  resultsSection.classList.add('hidden');
-  
-  // Clear cached results when re-running
-  if (currentArticle?.url) {
-    await chrome.storage.local.remove([`analysis_${currentArticle.url}`]);
-  }
-  
-  const analysisStartTime = Date.now();
+  showLoading();
   
   try {
-    // Truncate article if too long (limit to ~8000 words for context window)
-    let articleText = currentArticle.text;
-    const words = articleText.split(/\s+/);
-    const originalWordCount = words.length;
-    
-    if (words.length > 8000) {
-      articleText = words.slice(0, 8000).join(' ') + '\n\n[Article truncated for analysis...]';
-      debug.log('Article truncated', {
-        originalWords: originalWordCount,
-        truncatedWords: 8000
-      }, 'popup-analyze');
-    }
-    
-    debug.log('Prepared prompt', {
-      promptLength: currentPrompt.length,
-      articleLength: articleText.length,
-      totalLength: currentPrompt.length + articleText.length,
-      isCustomPrompt
-    }, 'popup-analyze');
-    
-    const fullPrompt = currentPrompt + articleText;
-    
-    // Call backend analyze endpoint
-    debug.log('Calling backend /analyze', {
-      promptLength: fullPrompt.length
-    }, 'popup-analyze');
-    
-    const result = await callAnalyzeEndpoint(fullPrompt);
-    
-    debug.log('Backend analyze call completed', {
-      resultLength: result?.length || 0,
-      duration: Date.now() - analysisStartTime
-    }, 'popup-analyze');
-    
-    // Parse and display results
-    debug.log('Parsing results', { resultPreview: result?.substring(0, 200) }, 'popup-analyze');
-    const parsed = parseResults(result);
-    
-    debug.log('Results parsed', {
-      hasIssues: !!(parsed?.issues),
-      issueCount: parsed?.issues?.length || 0,
-      severity: parsed?.severity,
-      hasRawText: !!parsed?.rawText
-    }, 'popup-analyze');
-    
-    displayResults(parsed);
-    
-    // Cache results
-    if (currentArticle?.url) {
-      await chrome.storage.local.set({ [`analysis_${currentArticle.url}`]: parsed });
-    }
-    
-    // Send highlights to content script
-    if (parsed && parsed.issues && parsed.issues.length > 0) {
-      debug.log('Sending highlights to content script', {
-        issueCount: parsed.issues.length
-      }, 'popup-analyze');
-      await sendHighlightsToPage(parsed.issues);
-    }
-    
-    // Store article and analysis to backend (fire and forget)
-    storeAnalysisToBackend(currentArticle, result, parsed).catch(err => {
-      debug.warn('Failed to store analysis to backend', { error: err.message }, 'popup-analyze');
+    // Send message to background script to start analysis
+    // This will continue even if popup is closed!
+    const response = await chrome.runtime.sendMessage({
+      action: 'startAnalysis',
+      tabId: currentTabId,
+      article: currentArticle
     });
     
-    debug.log('Analysis complete', {
-      totalDuration: Date.now() - analysisStartTime,
-      issueCount: parsed?.issues?.length || 0
-    }, 'popup-analyze');
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to start analysis');
+    }
+    
+    debug.log('Analysis started in background', {}, 'popup-analyze');
+    
+    // Start polling for status
+    startStatusPolling(currentArticle.url);
     
   } catch (error) {
-    debug.error('Analysis error', error, 'popup-analyze', {
-      duration: Date.now() - analysisStartTime,
-      articleWordCount: currentArticle.wordCount
-    });
-    showError(error.message || 'Failed to analyze article');
+    debug.error('Failed to start analysis', error, 'popup-analyze');
+    showError(error.message || 'Failed to start analysis');
     actionSection.classList.remove('hidden');
-  } finally {
     loadingSection.classList.add('hidden');
   }
-}
-
-// Store article and analysis to backend for data collection
-async function storeAnalysisToBackend(article, rawResult, parsed) {
-  try {
-    // Step 1: Create article
-    const articleRes = await fetch(`${BACKEND_URL}/articles`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: article.url,
-        title: article.title,
-        textContent: article.text
-      })
-    });
-    
-    if (!articleRes.ok) {
-      throw new Error(`Failed to create article: ${articleRes.status}`);
-    }
-    
-    const { articleId } = await articleRes.json();
-    debug.log('Article stored', { articleId }, 'popup-backend');
-    
-    // Step 2: Add analysis
-    const analysisRes = await fetch(`${BACKEND_URL}/articles/${articleId}/analysis`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        modelVersion: 'claude-sonnet-4-20250514',
-        rawResponse: rawResult,
-        severity: parsed?.severity,
-        promptUsed: currentPrompt,
-        isCustomPrompt: isCustomPrompt,
-        highlights: parsed?.issues?.map(issue => ({
-          quote: issue.quote,
-          importance: issue.importance,
-          gap: issue.gap || issue.why_it_doesnt_follow || issue.explanation || ''
-        })) || []
-      })
-    });
-    
-    if (!analysisRes.ok) {
-      throw new Error(`Failed to store analysis: ${analysisRes.status}`);
-    }
-    
-    const { analysisId, highlightCount } = await analysisRes.json();
-    debug.log('Analysis stored', { analysisId, highlightCount }, 'popup-backend');
-    
-  } catch (error) {
-    debug.error('Backend storage failed', error, 'popup-backend');
-    // Don't throw - this is fire-and-forget
-  }
-}
-
-async function callAnalyzeEndpoint(prompt) {
-  const callStartTime = Date.now();
-  
-  try {
-    debug.log('Calling backend /analyze', {
-      promptLength: prompt.length
-    }, 'popup-analyze-api');
-    
-    const response = await fetch(`${BACKEND_URL}/analyze`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        prompt,
-        maxTokens: 8192,
-        temperature: 0.3
-      })
-    });
-    
-    debug.log('Backend response received', {
-      status: response.status,
-      ok: response.ok,
-      statusText: response.statusText
-    }, 'popup-analyze-api');
-    
-    if (!response.ok) {
-      let error;
-      try {
-        error = await response.json();
-      } catch (e) {
-        const errorText = await response.text();
-        debug.error('Failed to parse error response', e, 'popup-analyze-api', {
-          status: response.status,
-          errorText
-        });
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-      
-      debug.error('Backend API error', new Error(error.error || 'Failed to analyze'), 'popup-analyze-api', {
-        status: response.status,
-        errorBody: error
-      });
-      throw new Error(error.error || 'Failed to analyze');
-    }
-    
-    const data = await response.json();
-    
-    debug.log('Backend call completed', {
-      model: data.model,
-      duration: data.duration,
-      clientDuration: Date.now() - callStartTime
-    }, 'popup-analyze-api');
-    
-    if (data.text) {
-      debug.log('Output extracted', {
-        outputLength: data.text.length
-      }, 'popup-analyze-api');
-      return data.text;
-    } else {
-      throw new Error('No text in API response');
-    }
-  } catch (error) {
-    debug.error('Backend API call failed', error, 'popup-analyze-api', {
-      duration: Date.now() - callStartTime
-    });
-    throw error;
-  }
-}
-
-function parseResults(rawResult) {
-  debug.log('Parsing results', {
-    resultLength: rawResult?.length || 0,
-    resultPreview: rawResult?.substring(0, 100)
-  }, 'popup-parse');
-  
-  if (!rawResult || typeof rawResult !== 'string') {
-    debug.warn('Invalid raw result', { rawResult }, 'popup-parse');
-    return {
-      summary: 'Invalid response format',
-      issues: [],
-      severity: 'unknown',
-      rawText: String(rawResult)
-    };
-  }
-  
-  // Try multiple strategies to extract JSON
-  
-  // Strategy 1: Direct parse
-  try {
-    const parsed = JSON.parse(rawResult.trim());
-    debug.log('Parse successful (strategy 1: direct)', {}, 'popup-parse');
-    return parsed;
-  } catch (e) {
-    debug.debug('Strategy 1 failed', { error: e.message }, 'popup-parse');
-  }
-  
-  // Strategy 2: Find JSON object in response
-  try {
-    const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      debug.log('Parse successful (strategy 2: regex match)', {}, 'popup-parse');
-      return parsed;
-    }
-  } catch (e) {
-    debug.debug('Strategy 2 failed', { error: e.message }, 'popup-parse');
-  }
-  
-  // Strategy 3: Find JSON between code blocks
-  try {
-    const codeBlockMatch = rawResult.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      const parsed = JSON.parse(codeBlockMatch[1].trim());
-      debug.log('Parse successful (strategy 3: code block)', {}, 'popup-parse');
-      return parsed;
-    }
-  } catch (e) {
-    debug.debug('Strategy 3 failed', { error: e.message }, 'popup-parse');
-  }
-  
-  // Strategy 4: Try to fix common JSON issues
-  try {
-    let fixed = rawResult
-      .replace(/^[^{]*/, '') // Remove leading non-JSON
-      .replace(/[^}]*$/, '') // Remove trailing non-JSON
-      .replace(/,\s*}/g, '}') // Remove trailing commas
-      .replace(/,\s*]/g, ']')
-      .replace(/'/g, '"') // Replace single quotes
-      .replace(/(\w+):/g, '"$1":'); // Quote unquoted keys
-    const parsed = JSON.parse(fixed);
-    debug.log('Parse successful (strategy 4: fixed)', {}, 'popup-parse');
-    return parsed;
-  } catch (e) {
-    debug.debug('Strategy 4 failed', { error: e.message }, 'popup-parse');
-  }
-  
-  // Fallback: return raw text wrapped in structure
-  debug.warn('All parse strategies failed, using fallback', {
-    resultLength: rawResult.length
-  }, 'popup-parse');
-  
-  return {
-    summary: 'Could not parse structured response',
-    issues: [],
-    severity: 'unknown',
-    rawText: rawResult
-  };
 }
 
 async function sendHighlightsToPage(issues) {
@@ -589,6 +346,8 @@ async function sendHighlightsToPage(issues) {
 
 function displayResults(parsed) {
   resultsSection.classList.remove('hidden');
+  loadingSection.classList.add('hidden');
+  actionSection.classList.add('hidden');
   
   // Handle raw text fallback
   if (parsed.rawText) {
