@@ -930,11 +930,12 @@
     const emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
+    const typeLabel = data.issue.type || data.issue.importance || 'Issue';
     tooltip.innerHTML = `
       <div class="logic-checker-tooltip-badge">Logic Issue</div>
       <div class="logic-checker-tooltip-header">
         <span class="logic-checker-tooltip-icon">${emoji}</span>
-        <span class="logic-checker-tooltip-type">${escapeHtml(data.issue.type)}</span>
+        <span class="logic-checker-tooltip-type">${escapeHtml(typeLabel)}</span>
       </div>
       <div class="logic-checker-tooltip-explanation">${escapeHtml(data.explanation || 'No explanation available')}</div>
     `;
@@ -960,7 +961,7 @@
     try {
       debug.debug('Highlighting range with span', {
         issueIndex: index,
-        issueType: issue.type,
+        importance: issue.importance,
         quotePreview: issue.quote?.substring(0, 50)
       }, 'content-highlight');
       
@@ -973,7 +974,7 @@
       const importance = issue.importance || 'minor';
       highlight.className = `logic-checker-highlight ${importance}`;
       highlight.dataset.issueIndex = index;
-      highlight.dataset.issueType = issue.type;
+      highlight.dataset.issueType = issue.type || issue.importance || 'issue';
       highlight.dataset.importance = importance;
       highlight.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
 
@@ -1022,7 +1023,7 @@
       const importance = issue.importance || 'minor';
       wrapper.className = `logic-checker-highlight ${importance}`;
       wrapper.dataset.issueIndex = index;
-      wrapper.dataset.issueType = issue.type;
+      wrapper.dataset.issueType = issue.type || issue.importance || 'issue';
       wrapper.dataset.importance = importance;
       wrapper.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
       wrapper.textContent = highlighted;
@@ -1170,7 +1171,7 @@
     
     issues.forEach((issue, index) => {
       if (!issue.quote) {
-        debug.warn('Issue missing quote', { issueIndex: index, issueType: issue.type }, 'content-highlight');
+        debug.warn('Issue missing quote', { issueIndex: index, importance: issue.importance }, 'content-highlight');
         return;
       }
       
@@ -1181,7 +1182,7 @@
       } else {
         debug.warn('Could not find match for quote', {
           issueIndex: index,
-          issueType: issue.type,
+          importance: issue.importance,
           quotePreview: issue.quote.substring(0, 50)
         }, 'content-highlight');
       }

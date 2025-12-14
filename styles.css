@@ -339,8 +339,7 @@ h2 {
   border-bottom: none;
 }
 
-.fallacy-name,
-.fallacy-header {
+.fallacy-name {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
   color: var(--warning);

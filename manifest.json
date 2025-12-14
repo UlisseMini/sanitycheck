@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Logic Checker",
   "version": "1.1.0",
-  "description": "Surfaces genuine logical gaps and reasoning issues in articles",
+  "description": "Analyzes articles for logical fallacies and crowdsources annotations",
   "permissions": [
     "activeTab",
     "scripting",

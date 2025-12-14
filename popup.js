@@ -6,19 +6,16 @@ const DEFAULT_API_KEY = 'r8_8W58bzhjnfMwMaD4WRbAkliOiBTsJu71htD8F'; // From .env
 
 // Debug logging will be available via window.debug
 
-const ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
+const ANALYSIS_PROMPT = `You are a logic auditor. Find logical gaps in arguments.
 
-## Your Goal
+## Task
 
-Surface issues where you're confident it's a real structural flaw AND it matters to the core argument. The cost of a bad objection (annoying the reader, undermining trust) exceeds the cost of missing something. So:
-
-- Only flag things that made you genuinely think "wait, that doesn't follow"
-- Try to steelman first—if there's a reasonable interpretation, don't flag
-- Ask: would someone who agrees with the article still nod and say "yeah, that's fair"?
-
-Good flags: evidence-conclusion mismatches, load-bearing unstated assumptions, logical leaps that don't follow even charitably.
-
-Bad flags: factual disputes (you might be wrong), nitpicks on tangential points, things that only look wrong if you disagree with the content.
+Find where conclusions DON'T follow from premises. Focus on:
+- Non-sequiturs: "A, therefore B" — but B doesn't follow from A
+- Conflation: Treating "X is hard" as "X is impossible"
+- Circular reasoning: Conclusion assumed in premises
+- Inconsistent rules: Principle used for X but ignored for Y
+- Unsupported claims: "X is impossible/optimal" without proof
 
 ## Output Format
 
@@ -26,25 +23,37 @@ Return JSON:
 
 {
   "central_argument_analysis": {
-    "main_conclusion": "1 sentence: what the author claims",
-    "central_logical_gap": "1-2 sentences: the main structural weakness, if any. Be clear and direct."
+    "main_conclusion": "1 sentence: what author claims",
+    "central_logical_gap": "1-2 sentences: the main logical leap. Be blunt and clear."
   },
   "issues": [
     {
+      "type": "Fallacy name",
       "importance": "critical|significant|minor",
       "quote": "Exact quote from text, 20-60 words",
-      "gap": "Brief explanation (<15 words ideal). Reader should immediately think 'oh yeah, that's a leap.'"
+      "gap": "1 sentence max. What's the leap? Be direct. E.g., 'Constraints ≠ impossibility' or 'One expert's opinion ≠ proof'"
     }
   ],
   "severity": "none|minor|moderate|significant"
 }
 
-## Rules
+## CRITICAL RULES
 
-- Keep "gap" explanations brief and immediately recognizable. E.g., "Constraints ≠ impossibility" or "One example doesn't prove a universal"
-- Quote exactly from the text
-- 1-4 issues typical. Zero is fine if nothing clears the bar.
-- Quality over quantity—only flag what you're confident about
+**BE BRIEF.** Each "gap" explanation must be:
+- 1 sentence max (ideally under 15 words)
+- Immediately obvious — reader should think "oh yeah, that's a leap"
+- Direct and blunt — no hedging, no academic language
+
+Examples of GOOD gap explanations:
+- "Constraints ≠ impossibility"
+- "One physicist's opinion doesn't prove physics is exhausted"
+- "Current limits don't rule out future breakthroughs"
+- "Defining AGI to require robotics, then using robotics to dismiss it"
+
+Examples of BAD (too long) explanations:
+- "The author assumes that because current systems face constraints, future systems will necessarily face the same constraints, which is an unwarranted leap because..."
+
+**Quote exactly from the text. Focus on issues that matter to the main argument.**
 
 ARTICLE:
 `;
@@ -655,7 +664,7 @@ function displayResults(parsed) {
     resultsContent.innerHTML = `
       <div class="no-fallacies">
         <div class="icon">✅</div>
-        <strong>No significant issues found</strong>
+        <strong>No logical fallacies detected</strong>
         <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(parsed.summary || parsed.overall_assessment || 'The article appears to be logically sound.')}</p>
       </div>
     `;
@@ -708,9 +717,10 @@ function displayResults(parsed) {
     
     html += `
       <div class="fallacy-item ${importanceClass}" data-issue-index="${index}">
-        <div class="fallacy-header">
+        <div class="fallacy-name">
           <span class="importance-icon">${importanceEmoji}</span>
-          <span class="importance-badge ${importanceClass}">${issue.importance || 'issue'}</span>
+          ${escapeHtml(issue.type)}
+          ${issue.importance ? `<span class="importance-badge ${importanceClass}">${issue.importance}</span>` : ''}
         </div>
         ${issue.quote ? `<div class="fallacy-quote">"${escapeHtml(issue.quote.substring(0, 150))}${issue.quote.length > 150 ? '...' : ''}"</div>` : ''}
         ${gap ? `<div class="fallacy-gap-simple">${escapeHtml(gap)}</div>` : ''}
