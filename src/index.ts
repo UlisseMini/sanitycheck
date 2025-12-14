@@ -1643,53 +1643,6 @@ const ADMIN_HTML = `
       }
     }
     
-    // Legacy - keep for backwards compatibility
-    function renderPagination(total) {
-      const totalPages = Math.ceil(total / limit);
-      const pagination = document.getElementById('pagination');
-      
-      if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-      }
-      
-      pagination.innerHTML = \`
-        <button class="page-btn" onclick="changePage(-1)" \${currentPage === 0 ? 'disabled' : ''}>← Prev</button>
-        <span style="padding: 8px 16px; color: #71717a;">Page \${currentPage + 1} of \${totalPages}</span>
-        <button class="page-btn" onclick="changePage(1)" \${currentPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
-      \`;
-    }
-    
-    function changePage(delta) {
-      currentPage += delta;
-      loadAnnotations();
-    }
-    
-    async function deleteAnnotation(id) {
-      if (!confirm('Delete this annotation?')) return;
-      
-      try {
-        const res = await fetch('/admin/annotations/' + id, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + adminKey }
-        });
-        
-        if (res.ok) {
-          loadStats();
-          loadAnnotations();
-        } else {
-          alert('Failed to delete');
-        }
-      } catch (err) {
-        alert('Failed to delete: ' + err.message);
-      }
-    }
-    
-    document.getElementById('exportBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      window.open('/export?key=' + adminKey, '_blank');
-    });
-    
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text || '';
