@@ -1,7 +1,10 @@
 // Debug logging utility for Logic Checker extension
 
-const DEBUG_SERVER_URL = 'http://localhost:3000/debug/log';
-const DEBUG_ENABLED = false; // Set to true to enable debug logging to localhost server
+const DEBUG_ENABLED = true; // Set to true to enable debug logging
+const EXTENSION_VERSION = '1.1.0'; // Should match manifest.json
+
+// Debug server URL - use production endpoint
+const DEBUG_SERVER_URL = 'https://sanitycheck-production.up.railway.app/debug/log';
 
 // Queue for logs when server is unavailable
 let logQueue = [];
@@ -16,6 +19,7 @@ async function sendLog(level, message, data = {}, source = 'unknown') {
     message,
     data: sanitizeData(data),
     source,
+    version: EXTENSION_VERSION,
     timestamp: new Date().toISOString(),
     url: window.location?.href || 'popup',
     userAgent: navigator.userAgent

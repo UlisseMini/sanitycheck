@@ -34,3 +34,23 @@ model Annotation {
   @@index([fallacyType])
   @@index([createdAt])
 }
+
+model DebugLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Log info
+  level     String   // log, warn, error, debug
+  message   String
+  data      Json?    // Additional structured data
+  source    String?  // e.g., popup, content, background
+  
+  // Client info
+  ip        String?
+  version   String?  // Extension version
+  userAgent String?
+  
+  @@index([createdAt])
+  @@index([ip])
+  @@index([level])
+}

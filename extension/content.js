@@ -6,8 +6,9 @@
   window.__logicCheckerInjected = true;
 
   // Simple inline debug logger for content script
-  const DEBUG_SERVER_URL = 'http://localhost:3000/debug/log';
-  const DEBUG_ENABLED = false; // Set to true to enable debug logging to localhost server
+  const DEBUG_ENABLED = true; // Set to true to enable debug logging
+  const EXTENSION_VERSION = '1.1.0';
+  const DEBUG_SERVER_URL = 'https://sanitycheck-production.up.railway.app/debug/log';
   
   const debug = {
     log: (message, data = {}, source = 'content') => {
@@ -16,10 +17,11 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          level: 'info',
+          level: 'log',
           message,
           data: { ...data, url: window.location.href },
           source,
+          version: EXTENSION_VERSION,
           timestamp: new Date().toISOString()
         })
       }).catch(() => {});
@@ -34,6 +36,7 @@
           message,
           data: { ...data, url: window.location.href },
           source,
+          version: EXTENSION_VERSION,
           timestamp: new Date().toISOString()
         })
       }).catch(() => {});
@@ -56,6 +59,7 @@
             } : undefined
           },
           source,
+          version: EXTENSION_VERSION,
           timestamp: new Date().toISOString()
         })
       }).catch(() => {});
@@ -70,6 +74,7 @@
           message,
           data: { ...data, url: window.location.href },
           source,
+          version: EXTENSION_VERSION,
           timestamp: new Date().toISOString()
         })
       }).catch(() => {});

@@ -858,6 +858,216 @@ const ADMIN_HTML = `
       padding: 40px;
       color: #71717a;
     }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: rgba(30, 30, 40, 0.6);
+      padding: 4px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+    
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #71717a;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn:hover {
+      color: #e4e4e7;
+    }
+    
+    .tab-btn.active {
+      background: rgba(249, 115, 22, 0.2);
+      color: #fb923c;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Debug Logs */
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .filter-label {
+      font-size: 12px;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .filter-select, .filter-input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e4e4e7;
+      font-size: 13px;
+      min-width: 120px;
+    }
+    
+    .filter-select:focus, .filter-input:focus {
+      outline: none;
+      border-color: #f97316;
+    }
+    
+    .time-shortcuts {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .time-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #a1a1aa;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .time-btn:hover, .time-btn.active {
+      background: rgba(249, 115, 22, 0.2);
+      border-color: rgba(249, 115, 22, 0.3);
+      color: #fb923c;
+    }
+    
+    .log-entry {
+      background: rgba(30, 30, 40, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    
+    .log-entry.level-error {
+      border-left: 3px solid #ef4444;
+    }
+    
+    .log-entry.level-warn {
+      border-left: 3px solid #eab308;
+    }
+    
+    .log-entry.level-log {
+      border-left: 3px solid #22c55e;
+    }
+    
+    .log-entry.level-debug {
+      border-left: 3px solid #6b7280;
+    }
+    
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .log-meta {
+      display: flex;
+      gap: 12px;
+      color: #71717a;
+      font-size: 11px;
+    }
+    
+    .log-level {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .log-level.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .log-level.warn { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+    .log-level.log { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .log-level.debug { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+    
+    .log-message {
+      color: #e4e4e7;
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+    
+    .log-data {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      color: #a1a1aa;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .log-source {
+      color: #60a5fa;
+    }
+    
+    .log-ip {
+      color: #c084fc;
+    }
+    
+    .log-version {
+      color: #22c55e;
+    }
+    
+    .clear-logs-btn {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    
+    .clear-logs-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+    
+    .refresh-btn {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    
+    .refresh-btn:hover {
+      background: rgba(59, 130, 246, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -886,31 +1096,88 @@ const ADMIN_HTML = `
     </header>
     
     <div class="container">
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalCount">-</div>
-          <div class="stat-label">Total Annotations</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="todayCount">-</div>
-          <div class="stat-label">Last 24 Hours</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="typesCount">-</div>
-          <div class="stat-label">Fallacy Types</div>
-        </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('annotations')">📝 Annotations</button>
+        <button class="tab-btn" onclick="switchTab('logs')">🔧 Debug Logs</button>
       </div>
       
-      <div class="section-title">
-        <span>Recent Annotations</span>
-        <a href="#" class="export-btn" id="exportBtn">📥 Export JSONL</a>
+      <!-- Annotations Tab -->
+      <div class="tab-content active" id="tab-annotations">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalCount">-</div>
+            <div class="stat-label">Total Annotations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="todayCount">-</div>
+            <div class="stat-label">Last 24 Hours</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="typesCount">-</div>
+            <div class="stat-label">Fallacy Types</div>
+          </div>
+        </div>
+        
+        <div class="section-title">
+          <span>Recent Annotations</span>
+          <a href="#" class="export-btn" id="exportBtn">📥 Export JSONL</a>
+        </div>
+        
+        <div class="annotations-list" id="annotationsList">
+          <div class="loading">Loading annotations...</div>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
       </div>
       
-      <div class="annotations-list" id="annotationsList">
-        <div class="loading">Loading annotations...</div>
+      <!-- Debug Logs Tab -->
+      <div class="tab-content" id="tab-logs">
+        <div class="filters">
+          <div class="filter-group">
+            <span class="filter-label">Time:</span>
+            <div class="time-shortcuts">
+              <button class="time-btn active" data-since="5m">5m</button>
+              <button class="time-btn" data-since="15m">15m</button>
+              <button class="time-btn" data-since="1h">1h</button>
+              <button class="time-btn" data-since="6h">6h</button>
+              <button class="time-btn" data-since="24h">24h</button>
+              <button class="time-btn" data-since="">All</button>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <span class="filter-label">IP:</span>
+            <select class="filter-select" id="ipFilter">
+              <option value="">All IPs</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <span class="filter-label">Level:</span>
+            <select class="filter-select" id="levelFilter">
+              <option value="">All Levels</option>
+              <option value="error">Error</option>
+              <option value="warn">Warn</option>
+              <option value="log">Log</option>
+              <option value="debug">Debug</option>
+            </select>
+          </div>
+          
+          <button class="refresh-btn" onclick="loadDebugLogs()">🔄 Refresh</button>
+          <button class="clear-logs-btn" onclick="clearOldLogs()">🗑️ Clear Old</button>
+        </div>
+        
+        <div class="section-title">
+          <span>Debug Logs</span>
+          <span id="logCount" style="color: #71717a; font-size: 13px;">-</span>
+        </div>
+        
+        <div id="debugLogsList">
+          <div class="loading">Loading logs...</div>
+        </div>
+        
+        <div class="pagination" id="logsPagination"></div>
       </div>
-      
-      <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
@@ -1077,6 +1344,138 @@ const ADMIN_HTML = `
       const div = document.createElement('div');
       div.textContent = text || '';
       return div.innerHTML;
+    }
+    
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      document.querySelector(\`[onclick="switchTab('\${tab}')"]\`).classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+      
+      if (tab === 'logs') {
+        loadDebugLogs();
+      }
+    }
+    
+    // Debug Logs
+    let logsPage = 0;
+    const logsLimit = 50;
+    let currentSince = '5m';
+    
+    // Time shortcuts
+    document.querySelectorAll('.time-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSince = btn.dataset.since;
+        logsPage = 0;
+        loadDebugLogs();
+      });
+    });
+    
+    // Filters
+    document.getElementById('ipFilter').addEventListener('change', () => { logsPage = 0; loadDebugLogs(); });
+    document.getElementById('levelFilter').addEventListener('change', () => { logsPage = 0; loadDebugLogs(); });
+    
+    async function loadDebugLogs() {
+      const list = document.getElementById('debugLogsList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+      
+      const ip = document.getElementById('ipFilter').value;
+      const level = document.getElementById('levelFilter').value;
+      
+      let url = '/debug/logs?limit=' + logsLimit + '&offset=' + (logsPage * logsLimit);
+      if (currentSince) url += '&since=' + currentSince;
+      if (ip) url += '&ip=' + encodeURIComponent(ip);
+      if (level) url += '&level=' + level;
+      
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load logs');
+        
+        const data = await res.json();
+        
+        // Update IP filter options
+        const ipSelect = document.getElementById('ipFilter');
+        const currentIp = ipSelect.value;
+        ipSelect.innerHTML = '<option value="">All IPs</option>' + 
+          data.availableIps.map(i => \`<option value="\${i.ip}" \${i.ip === currentIp ? 'selected' : ''}>\${i.ip} (\${i.count})</option>\`).join('');
+        
+        document.getElementById('logCount').textContent = data.total + ' logs';
+        
+        if (!data.logs || data.logs.length === 0) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>No logs found</p></div>';
+          return;
+        }
+        
+        list.innerHTML = data.logs.map(log => \`
+          <div class="log-entry level-\${log.level}">
+            <div class="log-header">
+              <div>
+                <span class="log-level \${log.level}">\${log.level}</span>
+                <span class="log-source">\${log.source || '-'}</span>
+                \${log.version ? \`<span class="log-version">v\${log.version}</span>\` : ''}
+              </div>
+              <div class="log-meta">
+                <span class="log-ip">\${log.ip || '-'}</span>
+                <span>\${new Date(log.createdAt).toLocaleString()}</span>
+              </div>
+            </div>
+            <div class="log-message">\${escapeHtml(log.message)}</div>
+            \${log.data ? \`<div class="log-data">\${escapeHtml(JSON.stringify(log.data, null, 2))}</div>\` : ''}
+          </div>
+        \`).join('');
+        
+        renderLogsPagination(data.total);
+      } catch (err) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load logs</p></div>';
+      }
+    }
+    
+    function renderLogsPagination(total) {
+      const totalPages = Math.ceil(total / logsLimit);
+      const pagination = document.getElementById('logsPagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      pagination.innerHTML = \`
+        <button class="page-btn" onclick="changeLogsPage(-1)" \${logsPage === 0 ? 'disabled' : ''}>← Prev</button>
+        <span style="padding: 8px 16px; color: #71717a;">Page \${logsPage + 1} of \${totalPages}</span>
+        <button class="page-btn" onclick="changeLogsPage(1)" \${logsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+      \`;
+    }
+    
+    function changeLogsPage(delta) {
+      logsPage += delta;
+      loadDebugLogs();
+    }
+    
+    async function clearOldLogs() {
+      const days = prompt('Clear logs older than how many days?', '7');
+      if (!days || isNaN(parseInt(days))) return;
+      
+      if (!confirm(\`Delete all logs older than \${days} days?\`)) return;
+      
+      try {
+        const res = await fetch('/debug/logs?olderThan=' + days + 'd', {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        
+        const data = await res.json();
+        alert(\`Deleted \${data.deleted} logs\`);
+        loadDebugLogs();
+      } catch (err) {
+        alert('Failed to clear logs');
+      }
     }
   </script>
 </body>
@@ -1253,6 +1652,147 @@ app.get('/export', requireAdmin, async (req: Request, res: Response, next: NextF
       res.write(JSON.stringify(ann) + '\n');
     }
     res.end();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// =====================================================
+// Debug Logs API
+// =====================================================
+
+// Receive debug logs from extension (public endpoint)
+app.post('/debug/log', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { level, message, data, source, version } = req.body;
+    
+    if (!message) {
+      res.status(400).json({ error: 'Missing message' });
+      return;
+    }
+    
+    // Get client IP
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() 
+      || req.socket.remoteAddress 
+      || 'unknown';
+    
+    const userAgent = req.headers['user-agent'] || null;
+    
+    await prisma.debugLog.create({
+      data: {
+        level: level || 'log',
+        message,
+        data: data || null,
+        source: source || null,
+        ip,
+        version: version || null,
+        userAgent,
+      }
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    // Don't fail loudly for debug logs
+    console.error('Debug log error:', error);
+    res.json({ success: false });
+  }
+});
+
+// Get debug logs (admin only)
+app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 1000);
+    const offset = parseInt(req.query.offset as string) || 0;
+    const ip = req.query.ip as string | undefined;
+    const level = req.query.level as string | undefined;
+    const since = req.query.since as string | undefined; // ISO date or relative like "5m", "1h", "24h"
+    
+    // Build where clause
+    const where: any = {};
+    
+    if (ip) {
+      where.ip = ip;
+    }
+    
+    if (level) {
+      where.level = level;
+    }
+    
+    if (since) {
+      let sinceDate: Date;
+      
+      // Parse relative time
+      const match = since.match(/^(\d+)(m|h|d)$/);
+      if (match) {
+        const amount = parseInt(match[1]);
+        const unit = match[2];
+        const ms = unit === 'm' ? amount * 60 * 1000 
+                 : unit === 'h' ? amount * 60 * 60 * 1000 
+                 : amount * 24 * 60 * 60 * 1000;
+        sinceDate = new Date(Date.now() - ms);
+      } else {
+        sinceDate = new Date(since);
+      }
+      
+      if (!isNaN(sinceDate.getTime())) {
+        where.createdAt = { gte: sinceDate };
+      }
+    }
+    
+    const [logs, total] = await Promise.all([
+      prisma.debugLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.debugLog.count({ where })
+    ]);
+    
+    // Get unique IPs for filter dropdown
+    const uniqueIps = await prisma.debugLog.groupBy({
+      by: ['ip'],
+      _count: true,
+      orderBy: { _count: { ip: 'desc' } },
+      take: 50
+    });
+    
+    res.json({
+      logs,
+      total,
+      limit,
+      offset,
+      availableIps: uniqueIps.map(i => ({ ip: i.ip, count: i._count }))
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Clear old debug logs (admin only)
+app.delete('/debug/logs', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const olderThan = req.query.olderThan as string || '7d';
+    
+    const match = olderThan.match(/^(\d+)(m|h|d)$/);
+    if (!match) {
+      res.status(400).json({ error: 'Invalid olderThan format. Use format like 5m, 1h, 7d' });
+      return;
+    }
+    
+    const amount = parseInt(match[1]);
+    const unit = match[2];
+    const ms = unit === 'm' ? amount * 60 * 1000 
+             : unit === 'h' ? amount * 60 * 60 * 1000 
+             : amount * 24 * 60 * 60 * 1000;
+    
+    const cutoffDate = new Date(Date.now() - ms);
+    
+    const result = await prisma.debugLog.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    res.json({ success: true, deleted: result.count });
   } catch (error) {
     next(error);
   }
