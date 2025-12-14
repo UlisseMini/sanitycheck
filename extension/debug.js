@@ -1,7 +1,7 @@
 // Debug logging utility for Logic Checker extension
 
 const DEBUG_SERVER_URL = 'http://localhost:3000/debug/log';
-const DEBUG_ENABLED = true; // Set to true to enable debug logging to localhost server
+const DEBUG_ENABLED = false; // Set to true to enable debug logging to localhost server
 
 // Queue for logs when server is unavailable
 let logQueue = [];
