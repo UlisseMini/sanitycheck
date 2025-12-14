@@ -1,7 +1,5 @@
 // SanityCheck - Settings Page
 
-const DEFAULT_API_KEY = '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';
-
 const DEFAULT_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
 
 ## Your Goal
@@ -51,8 +49,6 @@ const savePromptBtn = document.getElementById('save-prompt');
 const resetPromptBtn = document.getElementById('reset-prompt');
 const statusMessage = document.getElementById('status-message');
 const promptBadge = document.getElementById('prompt-badge');
-const apiKeyInput = document.getElementById('api-key');
-const saveKeyBtn = document.getElementById('save-key');
 const backBtn = document.getElementById('back-btn');
 
 // Initialize
@@ -60,7 +56,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   // Load saved prompt
-  const stored = await chrome.storage.local.get(['customPrompt', 'anthropicApiKey']);
+  const stored = await chrome.storage.local.get(['customPrompt']);
   
   if (stored.customPrompt) {
     promptEditor.value = stored.customPrompt;
@@ -70,17 +66,9 @@ async function init() {
     updateBadge(false);
   }
   
-  // Load API key
-  if (stored.anthropicApiKey) {
-    apiKeyInput.value = stored.anthropicApiKey;
-  } else {
-    apiKeyInput.value = DEFAULT_API_KEY;
-  }
-  
   // Event listeners
   savePromptBtn.addEventListener('click', savePrompt);
   resetPromptBtn.addEventListener('click', resetPrompt);
-  saveKeyBtn.addEventListener('click', saveApiKey);
   
   // Back button - close popup or navigate
   backBtn.addEventListener('click', (e) => {
@@ -134,18 +122,6 @@ async function resetPrompt() {
   showStatus('Prompt reset to default', 'success');
 }
 
-async function saveApiKey() {
-  const key = apiKeyInput.value.trim();
-  
-  if (key) {
-    await chrome.storage.local.set({ anthropicApiKey: key });
-    saveKeyBtn.textContent = 'Saved!';
-    setTimeout(() => {
-      saveKeyBtn.textContent = 'Save';
-    }, 1500);
-  }
-}
-
 function showStatus(message, type) {
   statusMessage.textContent = message;
   statusMessage.className = `status-message ${type}`;
@@ -154,4 +130,3 @@ function showStatus(message, type) {
     statusMessage.className = 'status-message';
   }, 3000);
 }
-

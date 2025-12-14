@@ -1,8 +1,5 @@
 // SanityCheck - Popup Script
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'; // Claude Sonnet 4.5
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const DEFAULT_API_KEY = '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';
 const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Debug logging will be available via window.debug
@@ -55,8 +52,6 @@ let currentPrompt = DEFAULT_ANALYSIS_PROMPT;
 let isCustomPrompt = false;
 
 // DOM Elements
-const apiKeyInput = document.getElementById('api-key');
-const saveKeyBtn = document.getElementById('save-key');
 const settingsBtn = document.getElementById('settings-btn');
 const pageStatus = document.getElementById('page-status');
 const actionSection = document.getElementById('action-section');
@@ -89,23 +84,10 @@ async function init() {
     
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
-    // Load saved API key and custom prompt
-    // Clear old Replicate key if present and migrate to Anthropic
-    const stored = await chrome.storage.local.get(['anthropicApiKey', 'replicateApiKey', 'customPrompt']);
-    debug.log('Storage loaded', { hasKey: !!stored.anthropicApiKey, hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
-    
-    if (stored.anthropicApiKey) {
-      apiKeyInput.value = stored.anthropicApiKey;
-      debug.log('Using stored API key', { keyLength: stored.anthropicApiKey.length }, 'popup-init');
-    } else {
-      // Use hardcoded key - also clear old Replicate key
-      apiKeyInput.value = DEFAULT_API_KEY;
-      await chrome.storage.local.set({ anthropicApiKey: DEFAULT_API_KEY });
-      await chrome.storage.local.remove('replicateApiKey');
-      debug.log('Using default API key', { keyLength: DEFAULT_API_KEY.length }, 'popup-init');
-    }
-    
     // Load custom prompt if set
+    const stored = await chrome.storage.local.get(['customPrompt']);
+    debug.log('Storage loaded', { hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
+    
     if (stored.customPrompt) {
       currentPrompt = stored.customPrompt;
       isCustomPrompt = true;
@@ -120,7 +102,6 @@ async function init() {
     
     // Set up event listeners
     settingsBtn.addEventListener('click', openSettings);
-    saveKeyBtn.addEventListener('click', saveApiKey);
     analyzeBtn.addEventListener('click', analyzeArticle);
     pageStatus.addEventListener('click', toggleArticleText);
     closeArticleTextBtn.addEventListener('click', hideArticleText);
@@ -128,27 +109,6 @@ async function init() {
     debug.log('Initialization complete', {}, 'popup-init');
   } catch (error) {
     debug.error('Initialization failed', error, 'popup-init');
-  }
-}
-
-async function saveApiKey() {
-  try {
-    const key = apiKeyInput.value.trim();
-    debug.log('Saving API key', { keyLength: key.length }, 'popup-save-key');
-    
-    if (key) {
-      await chrome.storage.local.set({ anthropicApiKey: key });
-      saveKeyBtn.textContent = 'Saved!';
-      debug.log('API key saved successfully', {}, 'popup-save-key');
-      
-      setTimeout(() => {
-        saveKeyBtn.textContent = 'Save';
-      }, 1500);
-    } else {
-      debug.warn('Attempted to save empty API key', {}, 'popup-save-key');
-    }
-  } catch (error) {
-    debug.error('Failed to save API key', error, 'popup-save-key');
   }
 }
 
@@ -305,14 +265,6 @@ async function analyzeArticle() {
     url: currentArticle.url
   }, 'popup-analyze');
   
-  // Use input value or fall back to default
-  let apiKey = apiKeyInput.value.trim();
-  if (!apiKey) {
-    apiKey = DEFAULT_API_KEY;
-    apiKeyInput.value = DEFAULT_API_KEY;
-    debug.log('Using default API key', {}, 'popup-analyze');
-  }
-  
   hideError();
   actionSection.classList.add('hidden');
   loadingSection.classList.remove('hidden');
@@ -348,15 +300,14 @@ async function analyzeArticle() {
     
     const fullPrompt = currentPrompt + articleText;
     
-    // Call Anthropic API
-    debug.log('Calling Anthropic API', {
-      model: ANTHROPIC_MODEL,
+    // Call backend analyze endpoint
+    debug.log('Calling backend /analyze', {
       promptLength: fullPrompt.length
     }, 'popup-analyze');
     
-    const result = await callAnthropic(apiKey, fullPrompt);
+    const result = await callAnalyzeEndpoint(fullPrompt);
     
-    debug.log('Replicate API call completed', {
+    debug.log('Backend analyze call completed', {
       resultLength: result?.length || 0,
       duration: Date.now() - analysisStartTime
     }, 'popup-analyze');
@@ -435,7 +386,7 @@ async function storeAnalysisToBackend(article, rawResult, parsed) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        modelVersion: ANTHROPIC_MODEL,
+        modelVersion: 'claude-sonnet-4-20250514',
         rawResponse: rawResult,
         severity: parsed?.severity,
         promptUsed: currentPrompt,
@@ -461,40 +412,31 @@ async function storeAnalysisToBackend(article, rawResult, parsed) {
   }
 }
 
-async function callAnthropic(apiKey, prompt) {
+async function callAnalyzeEndpoint(prompt) {
   const callStartTime = Date.now();
   
   try {
-    debug.log('Calling Anthropic API', {
-      model: ANTHROPIC_MODEL,
+    debug.log('Calling backend /analyze', {
       promptLength: prompt.length
-    }, 'popup-anthropic');
+    }, 'popup-analyze-api');
     
-    const response = await fetch(ANTHROPIC_API_URL, {
+    const response = await fetch(`${BACKEND_URL}/analyze`, {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 8192,
-        temperature: 0.3,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
+        prompt,
+        maxTokens: 8192,
+        temperature: 0.3
       })
     });
     
-    debug.log('Anthropic API response received', {
+    debug.log('Backend response received', {
       status: response.status,
       ok: response.ok,
       statusText: response.statusText
-    }, 'popup-anthropic');
+    }, 'popup-analyze-api');
     
     if (!response.ok) {
       let error;
@@ -502,39 +444,38 @@ async function callAnthropic(apiKey, prompt) {
         error = await response.json();
       } catch (e) {
         const errorText = await response.text();
-        debug.error('Failed to parse error response', e, 'popup-anthropic', {
+        debug.error('Failed to parse error response', e, 'popup-analyze-api', {
           status: response.status,
           errorText
         });
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
       
-      debug.error('Anthropic API error', new Error(error.error?.message || 'Failed to analyze'), 'popup-anthropic', {
+      debug.error('Backend API error', new Error(error.error || 'Failed to analyze'), 'popup-analyze-api', {
         status: response.status,
         errorBody: error
       });
-      throw new Error(error.error?.message || 'Failed to analyze');
+      throw new Error(error.error || 'Failed to analyze');
     }
     
     const data = await response.json();
     
-    debug.log('Anthropic API call completed', {
+    debug.log('Backend call completed', {
       model: data.model,
-      duration: Date.now() - callStartTime
-    }, 'popup-anthropic');
+      duration: data.duration,
+      clientDuration: Date.now() - callStartTime
+    }, 'popup-analyze-api');
     
-    // Extract text from response
-    if (data.content && data.content.length > 0) {
-      const text = data.content[0].text;
+    if (data.text) {
       debug.log('Output extracted', {
-        outputLength: text?.length || 0
-      }, 'popup-anthropic');
-      return text;
+        outputLength: data.text.length
+      }, 'popup-analyze-api');
+      return data.text;
     } else {
-      throw new Error('No content in API response');
+      throw new Error('No text in API response');
     }
   } catch (error) {
-    debug.error('Anthropic API call failed', error, 'popup-anthropic', {
+    debug.error('Backend API call failed', error, 'popup-analyze-api', {
       duration: Date.now() - callStartTime
     });
     throw error;
