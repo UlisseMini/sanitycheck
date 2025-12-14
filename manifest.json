@@ -1,16 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Logic Checker",
-  "version": "1.0.0",
-  "description": "Analyzes articles for logical fallacies and non-sequiturs using AI",
+  "version": "1.1.0",
+  "description": "Analyzes articles for logical fallacies and crowdsources annotations",
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "host_permissions": [
     "https://api.replicate.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "http://localhost:3001/*",
+    "https://*.railway.app/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -20,6 +23,9 @@
       "128": "icon128.png"
     }
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -28,7 +34,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "css": ["content-styles.css"]
     }
   ],
   "web_accessible_resources": [
@@ -38,4 +45,3 @@
     }
   ]
 }
-

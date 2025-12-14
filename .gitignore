@@ -7,10 +7,13 @@ node_modules/
 # Logs
 *.log
 *.log.old
-debug-server/debug.log
 
 # Test files and results
 tests/
+
+# Build artifacts
+dist/
+*.zip
 
 # OS files
 .DS_Store
@@ -21,6 +24,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# Build artifacts
-*.zip

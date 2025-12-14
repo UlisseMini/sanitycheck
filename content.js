@@ -7,7 +7,7 @@
 
   // Simple inline debug logger for content script
   const DEBUG_SERVER_URL = 'http://localhost:3000/debug/log';
-  const DEBUG_ENABLED = true;
+  const DEBUG_ENABLED = false; // Set to true to enable debug logging to localhost server
   
   const debug = {
     log: (message, data = {}, source = 'content') => {
@@ -1006,6 +1006,10 @@
         debug.log('Highlighting issues', { issueCount: request.issues?.length || 0 }, 'content-message');
         highlightIssues(request.issues);
         sendResponse({ success: true });
+      } else if (request.action === 'showAnnotationDialog') {
+        debug.log('Showing annotation dialog', { quoteLength: request.quote?.length }, 'content-message');
+        showAnnotationDialog(request.quote, request.url, request.title);
+        sendResponse({ success: true });
       } else {
         debug.warn('Unknown action', { action: request.action }, 'content-message');
         sendResponse({ error: 'Unknown action' });
@@ -1019,4 +1023,154 @@
     
     return true;
   });
+
+  // =====================================================
+  // Annotation Dialog
+  // =====================================================
+
+  const FALLACY_TYPES = [
+    { value: '', label: 'Select type (optional)' },
+    { value: 'non-sequitur', label: 'Non-sequitur (doesn\'t follow)' },
+    { value: 'conflation', label: 'Conflation (mixing up concepts)' },
+    { value: 'circular-reasoning', label: 'Circular reasoning' },
+    { value: 'hasty-generalization', label: 'Hasty generalization' },
+    { value: 'unsupported-claim', label: 'Unsupported strong claim' },
+    { value: 'false-dichotomy', label: 'False dichotomy' },
+    { value: 'genetic-fallacy', label: 'Genetic fallacy (origin-based dismissal)' },
+    { value: 'appeal-to-anecdote', label: 'Appeal to anecdote' },
+    { value: 'strawman', label: 'Straw man argument' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  function showAnnotationDialog(quote, url, title) {
+    // Remove existing dialog if any
+    const existing = document.querySelector('.logic-checker-annotation-overlay');
+    if (existing) existing.remove();
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'logic-checker-annotation-overlay';
+
+    // Create dialog
+    const dialog = document.createElement('div');
+    dialog.className = 'logic-checker-annotation-dialog';
+
+    dialog.innerHTML = `
+      <div class="logic-checker-annotation-header">
+        <h2 class="logic-checker-annotation-title">📝 Add Annotation</h2>
+        <button class="logic-checker-annotation-close" aria-label="Close">&times;</button>
+      </div>
+      
+      <div class="logic-checker-annotation-quote">${escapeHtml(quote)}</div>
+      
+      <label class="logic-checker-annotation-label">Type of Issue</label>
+      <select class="logic-checker-annotation-select" id="lc-fallacy-type">
+        ${FALLACY_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
+      </select>
+      
+      <label class="logic-checker-annotation-label">Your Annotation</label>
+      <textarea 
+        class="logic-checker-annotation-textarea" 
+        id="lc-annotation-text"
+        placeholder="Explain the logical issue (e.g., 'This assumes X without evidence' or 'Constraints ≠ impossibility')"
+      ></textarea>
+      
+      <div class="logic-checker-annotation-actions">
+        <button class="logic-checker-annotation-btn logic-checker-annotation-btn-secondary" id="lc-cancel">
+          Cancel
+        </button>
+        <button class="logic-checker-annotation-btn logic-checker-annotation-btn-primary" id="lc-submit">
+          Submit
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    // Focus textarea
+    const textarea = dialog.querySelector('#lc-annotation-text');
+    setTimeout(() => textarea.focus(), 100);
+
+    // Close handlers
+    const close = () => overlay.remove();
+    
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+    
+    dialog.querySelector('.logic-checker-annotation-close').addEventListener('click', close);
+    dialog.querySelector('#lc-cancel').addEventListener('click', close);
+
+    // Submit handler
+    dialog.querySelector('#lc-submit').addEventListener('click', async () => {
+      const annotationText = textarea.value.trim();
+      const fallacyType = dialog.querySelector('#lc-fallacy-type').value;
+
+      if (!annotationText) {
+        textarea.style.borderColor = '#ef4444';
+        textarea.focus();
+        return;
+      }
+
+      const submitBtn = dialog.querySelector('#lc-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const response = await chrome.runtime.sendMessage({
+          action: 'submitAnnotation',
+          data: {
+            url,
+            title,
+            quote,
+            annotation: annotationText,
+            fallacyType: fallacyType || null
+          }
+        });
+
+        if (response.success) {
+          dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
+            <div class="logic-checker-annotation-success">
+              ✅ Annotation submitted! Thank you.
+            </div>
+          `;
+          setTimeout(close, 1500);
+        } else {
+          throw new Error(response.error || 'Failed to submit');
+        }
+      } catch (error) {
+        debug.error('Failed to submit annotation', error, 'content-annotation');
+        dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
+          <div class="logic-checker-annotation-error">
+            ❌ ${escapeHtml(error.message)}
+          </div>
+          <button class="logic-checker-annotation-btn logic-checker-annotation-btn-secondary" id="lc-retry">
+            Try Again
+          </button>
+        `;
+        dialog.querySelector('#lc-retry').addEventListener('click', () => {
+          dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
+            <button class="logic-checker-annotation-btn logic-checker-annotation-btn-secondary" id="lc-cancel">
+              Cancel
+            </button>
+            <button class="logic-checker-annotation-btn logic-checker-annotation-btn-primary" id="lc-submit">
+              Submit
+            </button>
+          `;
+          dialog.querySelector('#lc-cancel').addEventListener('click', close);
+          dialog.querySelector('#lc-submit').addEventListener('click', arguments.callee);
+        });
+      }
+    });
+
+    // Escape key to close
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        close();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+  }
 })();
