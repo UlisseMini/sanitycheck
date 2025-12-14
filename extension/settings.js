@@ -1,6 +1,6 @@
 // SanityCheck - Settings Page
 
-const DEFAULT_API_KEY = 'r8_8W58bzhjnfMwMaD4WRbAkliOiBTsJu71htD8F';
+const DEFAULT_API_KEY = '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';
 
 const DEFAULT_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
 

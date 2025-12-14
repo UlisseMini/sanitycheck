@@ -10,7 +10,7 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "https://api.replicate.com/*",
+    "https://api.anthropic.com/*",
     "http://localhost:3000/*",
     "http://localhost:3001/*",
     "https://*.railway.app/*"

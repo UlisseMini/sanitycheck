@@ -1,8 +1,8 @@
 // SanityCheck - Popup Script
 
-const REPLICATE_MODEL = 'anthropic/claude-4.5-sonnet';
-const REPLICATE_VERSION = '459655107e29a683cb6deb73a9640cf9aeae39ea7c87803a2ae81c311f6ef44f'; // Claude 4.5 Sonnet version
-const DEFAULT_API_KEY = 'r8_8W58bzhjnfMwMaD4WRbAkliOiBTsJu71htD8F'; // From .env
+const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'; // Claude Sonnet 4.5
+const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
+const DEFAULT_API_KEY = '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';
 const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Debug logging will be available via window.debug
@@ -346,14 +346,13 @@ async function analyzeArticle() {
     
     const fullPrompt = currentPrompt + articleText;
     
-    // Call Replicate API
-    debug.log('Calling Replicate API', {
-      model: REPLICATE_MODEL,
-      version: REPLICATE_VERSION,
+    // Call Anthropic API
+    debug.log('Calling Anthropic API', {
+      model: ANTHROPIC_MODEL,
       promptLength: fullPrompt.length
     }, 'popup-analyze');
     
-    const result = await callReplicate(apiKey, fullPrompt);
+    const result = await callAnthropic(apiKey, fullPrompt);
     
     debug.log('Replicate API call completed', {
       resultLength: result?.length || 0,
@@ -434,7 +433,7 @@ async function storeAnalysisToBackend(article, rawResult, parsed) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        modelVersion: REPLICATE_MODEL,
+        modelVersion: ANTHROPIC_MODEL,
         rawResponse: rawResult,
         severity: parsed?.severity,
         promptUsed: currentPrompt,
@@ -460,151 +459,80 @@ async function storeAnalysisToBackend(article, rawResult, parsed) {
   }
 }
 
-async function callReplicate(apiKey, prompt) {
+async function callAnthropic(apiKey, prompt) {
   const callStartTime = Date.now();
   
   try {
-    debug.log('Creating Replicate prediction', {
-      model: REPLICATE_MODEL,
-      version: REPLICATE_VERSION,
+    debug.log('Calling Anthropic API', {
+      model: ANTHROPIC_MODEL,
       promptLength: prompt.length
-    }, 'popup-replicate');
+    }, 'popup-anthropic');
     
-    // Create prediction - API requires 'version' not 'model'
-    const requestBody = {
-      version: REPLICATE_VERSION,
-      input: {
-        prompt: prompt,
-        max_tokens: 8192,
-        temperature: 0.3,
-      }
-    };
-    
-    debug.debug('Request body prepared', {
-      hasVersion: !!requestBody.version,
-      versionLength: requestBody.version?.length,
-      inputKeys: Object.keys(requestBody.input)
-    }, 'popup-replicate');
-    
-    const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+    const response = await fetch(ANTHROPIC_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 8192,
+        temperature: 0.3,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
     });
     
-    debug.log('Replicate create response received', {
-      status: createResponse.status,
-      ok: createResponse.ok,
-      statusText: createResponse.statusText
-    }, 'popup-replicate');
+    debug.log('Anthropic API response received', {
+      status: response.status,
+      ok: response.ok,
+      statusText: response.statusText
+    }, 'popup-anthropic');
     
-    if (!createResponse.ok) {
+    if (!response.ok) {
       let error;
       try {
-        error = await createResponse.json();
+        error = await response.json();
       } catch (e) {
-        const errorText = await createResponse.text();
-        debug.error('Failed to parse error response', e, 'popup-replicate', {
-          status: createResponse.status,
+        const errorText = await response.text();
+        debug.error('Failed to parse error response', e, 'popup-anthropic', {
+          status: response.status,
           errorText
         });
-        throw new Error(`API error: ${createResponse.status} ${createResponse.statusText}`);
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
       
-      debug.error('Replicate API error', new Error(error.detail || 'Failed to start analysis'), 'popup-replicate', {
-        status: createResponse.status,
-        errorBody: error,
-        requestBody: {
-          version: requestBody.version,
-          inputKeys: Object.keys(requestBody.input)
-        }
+      debug.error('Anthropic API error', new Error(error.error?.message || 'Failed to analyze'), 'popup-anthropic', {
+        status: response.status,
+        errorBody: error
       });
-      throw new Error(error.detail || 'Failed to start analysis');
+      throw new Error(error.error?.message || 'Failed to analyze');
     }
     
-    const prediction = await createResponse.json();
+    const data = await response.json();
     
-    debug.log('Prediction created', {
-      predictionId: prediction.id,
-      status: prediction.status,
-      urls: !!prediction.urls
-    }, 'popup-replicate');
-    
-    // Poll for completion
-    let result = prediction;
-    let pollCount = 0;
-    const maxPolls = 120; // 2 minutes max
-    
-    while (result.status !== 'succeeded' && result.status !== 'failed' && pollCount < maxPolls) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      pollCount++;
-      
-      debug.debug(`Polling prediction (attempt ${pollCount})`, {
-        status: result.status,
-        predictionId: result.id
-      }, 'popup-replicate');
-      
-      try {
-        const pollResponse = await fetch(result.urls.get, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-          }
-        });
-        
-        if (!pollResponse.ok) {
-          debug.warn('Poll response not OK', {}, 'popup-replicate', {
-            status: pollResponse.status,
-            pollCount
-          });
-        }
-        
-        result = await pollResponse.json();
-      } catch (pollError) {
-        debug.error('Poll request failed', pollError, 'popup-replicate', {
-          pollCount,
-          predictionId: result.id
-        });
-        throw pollError;
-      }
-    }
-    
-    if (pollCount >= maxPolls) {
-      debug.error('Polling timeout', new Error('Max polls reached'), 'popup-replicate', {
-        pollCount,
-        finalStatus: result.status
-      });
-      throw new Error('Analysis timed out');
-    }
-    
-    debug.log('Prediction completed', {
-      status: result.status,
-      pollCount,
+    debug.log('Anthropic API call completed', {
+      model: data.model,
       duration: Date.now() - callStartTime
-    }, 'popup-replicate');
+    }, 'popup-anthropic');
     
-    if (result.status === 'failed') {
-      debug.error('Prediction failed', new Error(result.error || 'Analysis failed'), 'popup-replicate', {
-        error: result.error,
-        predictionId: result.id
-      });
-      throw new Error(result.error || 'Analysis failed');
+    // Extract text from response
+    if (data.content && data.content.length > 0) {
+      const text = data.content[0].text;
+      debug.log('Output extracted', {
+        outputLength: text?.length || 0
+      }, 'popup-anthropic');
+      return text;
+    } else {
+      throw new Error('No content in API response');
     }
-    
-    // Combine output (it comes as an array of strings for streaming models)
-    const output = Array.isArray(result.output) ? result.output.join('') : result.output;
-    
-    debug.log('Output extracted', {
-      outputLength: output?.length || 0,
-      isArray: Array.isArray(result.output),
-      arrayLength: Array.isArray(result.output) ? result.output.length : 0
-    }, 'popup-replicate');
-    
-    return output;
   } catch (error) {
-    debug.error('Replicate API call failed', error, 'popup-replicate', {
+    debug.error('Anthropic API call failed', error, 'popup-anthropic', {
       duration: Date.now() - callStartTime
     });
     throw error;
