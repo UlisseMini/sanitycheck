@@ -3,8 +3,9 @@
 // Backend URL - defaults to Railway, can be overridden in extension storage
 const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
-// Create context menu on install
-chrome.runtime.onInstalled.addListener(() => {
+// Handle extension install/update
+chrome.runtime.onInstalled.addListener((details) => {
+  // Create context menu
   chrome.contextMenus.create({
     id: 'leave-feedback',
     title: 'Leave feedback on this text',
@@ -12,6 +13,11 @@ chrome.runtime.onInstalled.addListener(() => {
   });
   
   console.log('SanityCheck: Context menu created');
+  
+  // Open welcome page on first install
+  if (details.reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  }
 });
 
 // Handle context menu click

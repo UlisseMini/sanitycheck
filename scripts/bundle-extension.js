@@ -14,6 +14,7 @@ const EXTENSION_FILES = [
   'popup.js',
   'settings.html',
   'settings.js',
+  'welcome.html',
   'styles.css',
   'content.js',
   'content-styles.css',

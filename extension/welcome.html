@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to SanityCheck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a0a0b 0%, #1a1a2e 50%, #0a0a0b 100%);
+      color: #f4f4f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+    }
+    
+    .container {
+      max-width: 700px;
+      width: 100%;
+    }
+    
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .tagline {
+      font-size: 18px;
+      color: #a1a1aa;
+      font-weight: 400;
+    }
+    
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    
+    .step {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all 0.2s ease;
+    }
+    
+    .step:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(249, 115, 22, 0.3);
+    }
+    
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .step-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #f4f4f5;
+    }
+    
+    .step-content p {
+      color: #a1a1aa;
+      line-height: 1.6;
+    }
+    
+    .pin-instruction {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.05));
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .pin-instruction h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #f97316;
+    }
+    
+    .pin-instruction p {
+      color: #a1a1aa;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .pin-steps {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    
+    .pin-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #e4e4e7;
+    }
+    
+    .pin-step .icon {
+      font-size: 24px;
+    }
+    
+    .pin-step .arrow {
+      color: #71717a;
+      font-size: 20px;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    
+    .feature {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    
+    .feature h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e4e4e7;
+      margin-bottom: 6px;
+    }
+    
+    .feature p {
+      font-size: 13px;
+      color: #71717a;
+    }
+    
+    .cta {
+      text-align: center;
+    }
+    
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    }
+    
+    .footer {
+      margin-top: 60px;
+      text-align: center;
+      color: #52525b;
+      font-size: 13px;
+    }
+    
+    .footer a {
+      color: #71717a;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      color: #f97316;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <div class="logo">🧠</div>
+      <h1>Welcome to SanityCheck</h1>
+      <p class="tagline">Keep your reasoning sharp. Spot logical gaps in articles.</p>
+    </div>
+    
+    <div class="pin-instruction">
+      <h2>📌 Pin for Easy Access</h2>
+      <p>Pin SanityCheck to your toolbar for one-click access on any article.</p>
+      <div class="pin-steps">
+        <div class="pin-step">
+          <span class="icon">🧩</span>
+          <span>Click the puzzle icon</span>
+        </div>
+        <span class="pin-step arrow">→</span>
+        <div class="pin-step">
+          <span class="icon">📌</span>
+          <span>Pin SanityCheck</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Navigate to any article</h3>
+          <p>Go to a blog post, news article, essay, or any text-heavy page you want to analyze.</p>
+        </div>
+      </div>
+      
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Click the SanityCheck icon</h3>
+          <p>Click the extension icon in your toolbar. It will detect if you're on an article page.</p>
+        </div>
+      </div>
+      
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Hit "Analyze Article"</h3>
+          <p>Our AI will scan the text for logical gaps, unsupported claims, and reasoning issues. Results appear in seconds.</p>
+        </div>
+      </div>
+      
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Review highlighted issues</h3>
+          <p>Problematic sections are highlighted on the page. Hover to see explanations. Only high-confidence issues are shown.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <h4>High Precision</h4>
+        <p>Only flags genuine issues</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h4>Fast Analysis</h4>
+        <p>Results in seconds</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💬</div>
+        <h4>Leave Feedback</h4>
+        <p>Right-click to comment</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔧</div>
+        <h4>Customizable</h4>
+        <p>Edit the analysis prompt</p>
+      </div>
+    </div>
+    
+    <div class="cta">
+      <button class="cta-btn" onclick="window.close()">Got it, let's go! →</button>
+    </div>
+    
+    <div class="footer">
+      <p>
+        <a href="https://sanitycheck-production.up.railway.app" target="_blank">Homepage</a>
+        &nbsp;·&nbsp;
+        <a href="#" id="settings-link">Settings</a>
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('settings-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+    });
+  </script>
+</body>
+</html>
+
