@@ -3,6 +3,7 @@
 const REPLICATE_MODEL = 'anthropic/claude-4.5-sonnet';
 const REPLICATE_VERSION = '459655107e29a683cb6deb73a9640cf9aeae39ea7c87803a2ae81c311f6ef44f'; // Claude 4.5 Sonnet version
 const DEFAULT_API_KEY = 'r8_8W58bzhjnfMwMaD4WRbAkliOiBTsJu71htD8F'; // From .env
+const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Debug logging will be available via window.debug
 
@@ -363,6 +364,11 @@ async function analyzeArticle() {
       await sendHighlightsToPage(parsed.issues);
     }
     
+    // Store article and analysis to backend (fire and forget)
+    storeAnalysisToBackend(currentArticle, result, parsed).catch(err => {
+      debug.warn('Failed to store analysis to backend', { error: err.message }, 'popup-analyze');
+    });
+    
     debug.log('Analysis complete', {
       totalDuration: Date.now() - analysisStartTime,
       issueCount: parsed?.issues?.length || 0
@@ -377,6 +383,56 @@ async function analyzeArticle() {
     actionSection.classList.remove('hidden');
   } finally {
     loadingSection.classList.add('hidden');
+  }
+}
+
+// Store article and analysis to backend for data collection
+async function storeAnalysisToBackend(article, rawResult, parsed) {
+  try {
+    // Step 1: Create article
+    const articleRes = await fetch(`${BACKEND_URL}/articles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: article.url,
+        title: article.title,
+        textContent: article.text
+      })
+    });
+    
+    if (!articleRes.ok) {
+      throw new Error(`Failed to create article: ${articleRes.status}`);
+    }
+    
+    const { articleId } = await articleRes.json();
+    debug.log('Article stored', { articleId }, 'popup-backend');
+    
+    // Step 2: Add analysis
+    const analysisRes = await fetch(`${BACKEND_URL}/articles/${articleId}/analysis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelVersion: REPLICATE_MODEL,
+        rawResponse: rawResult,
+        severity: parsed?.severity,
+        highlights: parsed?.issues?.map(issue => ({
+          quote: issue.quote,
+          importance: issue.importance,
+          gap: issue.gap || issue.why_it_doesnt_follow || issue.explanation || ''
+        })) || []
+      })
+    });
+    
+    if (!analysisRes.ok) {
+      throw new Error(`Failed to store analysis: ${analysisRes.status}`);
+    }
+    
+    const { analysisId, highlightCount } = await analysisRes.json();
+    debug.log('Analysis stored', { analysisId, highlightCount }, 'popup-backend');
+    
+  } catch (error) {
+    debug.error('Backend storage failed', error, 'popup-backend');
+    // Don't throw - this is fire-and-forget
   }
 }
 

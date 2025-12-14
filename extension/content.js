@@ -1224,9 +1224,9 @@
         debug.log('Highlighting issues', { issueCount: request.issues?.length || 0 }, 'content-message');
         highlightIssues(request.issues);
         sendResponse({ success: true });
-      } else if (request.action === 'showAnnotationDialog') {
-        debug.log('Showing annotation dialog', { quoteLength: request.quote?.length }, 'content-message');
-        showAnnotationDialog(request.quote, request.url, request.title);
+      } else if (request.action === 'showAnnotationDialog' || request.action === 'showFeedbackDialog') {
+        debug.log('Showing feedback dialog', { textLength: request.selectedText?.length || request.quote?.length }, 'content-message');
+        showFeedbackDialog(request.selectedText || request.quote, request.url, request.title);
         sendResponse({ success: true });
       } else {
         debug.warn('Unknown action', { action: request.action }, 'content-message');
@@ -1243,13 +1243,16 @@
   });
 
   // =====================================================
-  // Annotation Dialog
+  // Feedback Dialog
   // =====================================================
 
-  function showAnnotationDialog(quote, url, title) {
+  function showFeedbackDialog(selectedText, url, title) {
     // Remove existing dialog if any
     const existing = document.querySelector('.logic-checker-annotation-overlay');
     if (existing) existing.remove();
+
+    // Get article text for context
+    const articleText = extractArticleText().text || document.body.innerText.substring(0, 50000);
 
     // Create overlay
     const overlay = document.createElement('div');
@@ -1261,25 +1264,17 @@
 
     dialog.innerHTML = `
       <div class="logic-checker-annotation-header">
-        <h2 class="logic-checker-annotation-title">📝 Add Annotation</h2>
+        <h2 class="logic-checker-annotation-title">💬 Leave Feedback</h2>
         <button class="logic-checker-annotation-close" aria-label="Close">&times;</button>
       </div>
       
-      <div class="logic-checker-annotation-quote">${escapeHtml(quote)}</div>
+      <div class="logic-checker-annotation-quote">"${escapeHtml(selectedText)}"</div>
       
-      <label class="logic-checker-annotation-label">Type of Issue (optional)</label>
-      <input 
-        type="text" 
-        class="logic-checker-annotation-input" 
-        id="lc-fallacy-type"
-        placeholder="e.g., non-sequitur, conflation, circular reasoning..."
-      />
-      
-      <label class="logic-checker-annotation-label">Your Annotation</label>
+      <label class="logic-checker-annotation-label">Your Feedback</label>
       <textarea 
         class="logic-checker-annotation-textarea" 
-        id="lc-annotation-text"
-        placeholder="Explain the logical issue (e.g., 'This assumes X without evidence' or 'Constraints ≠ impossibility')"
+        id="lc-feedback-text"
+        placeholder="Share your thoughts on this passage..."
       ></textarea>
       
       <div class="logic-checker-annotation-actions">
@@ -1296,7 +1291,7 @@
     document.body.appendChild(overlay);
 
     // Focus textarea
-    const textarea = dialog.querySelector('#lc-annotation-text');
+    const textarea = dialog.querySelector('#lc-feedback-text');
     setTimeout(() => textarea.focus(), 100);
 
     // Close handlers
@@ -1311,10 +1306,9 @@
 
     // Submit handler
     dialog.querySelector('#lc-submit').addEventListener('click', async () => {
-      const annotationText = textarea.value.trim();
-      const fallacyType = dialog.querySelector('#lc-fallacy-type').value.trim();
+      const feedbackText = textarea.value.trim();
 
-      if (!annotationText) {
+      if (!feedbackText) {
         textarea.style.borderColor = '#ef4444';
         textarea.focus();
         return;
@@ -1326,20 +1320,20 @@
 
       try {
         const response = await chrome.runtime.sendMessage({
-          action: 'submitAnnotation',
+          action: 'submitFeedback',
           data: {
             url,
             title,
-            quote,
-            annotation: annotationText,
-            fallacyType: fallacyType || null
+            articleText,
+            selectedText,
+            commentText: feedbackText
           }
         });
 
         if (response.success) {
           dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
             <div class="logic-checker-annotation-success">
-              ✅ Annotation submitted! Thank you.
+              ✅ Feedback submitted! Thank you.
             </div>
           `;
           setTimeout(close, 1500);
@@ -1347,7 +1341,7 @@
           throw new Error(response.error || 'Failed to submit');
         }
       } catch (error) {
-        debug.error('Failed to submit annotation', error, 'content-annotation');
+        debug.error('Failed to submit feedback', error, 'content-feedback');
         dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
           <div class="logic-checker-annotation-error">
             ❌ ${escapeHtml(error.message)}

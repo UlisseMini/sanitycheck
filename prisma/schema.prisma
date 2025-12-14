@@ -7,27 +7,93 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// =====================================================
+// Core Data Models
+// =====================================================
+
+model Article {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  
+  url         String
+  title       String?
+  textContent String    // Full article text we analyzed
+  textHash    String    // Hash of textContent for deduplication
+  
+  ip          String?
+  userAgent   String?
+  
+  analyses    Analysis[]
+  comments    Comment[]
+  
+  @@unique([url, textHash])
+  @@index([url])
+  @@index([createdAt])
+  @@index([ip])
+}
+
+model Analysis {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  
+  articleId    String
+  article      Article     @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  modelVersion String?     // e.g., "claude-4.5-sonnet"
+  rawResponse  Json        // Full model output for debugging/replay
+  severity     String?     // none/minor/moderate/significant
+  
+  highlights   Highlight[]
+  
+  @@index([articleId])
+  @@index([createdAt])
+}
+
+model Highlight {
+  id         String   @id @default(cuid())
+  
+  analysisId String
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  
+  quote      String
+  importance String   // critical/significant/minor
+  gap        String
+  
+  @@index([analysisId])
+  @@index([importance])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  
+  articleId    String
+  article      Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  selectedText String   // What they highlighted
+  commentText  String   // Their feedback
+  
+  ip           String?
+  userAgent    String?
+  
+  @@index([articleId])
+  @@index([createdAt])
+}
+
+// =====================================================
+// Legacy & Utility Models
+// =====================================================
+
+// DEPRECATED: Use Comment instead. Kept for data migration.
 model Annotation {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
-  
-  // Source info
   url         String
   title       String?
-  
-  // The selected text
   quote       String
-  
-  // User's annotation (e.g., "This is a non-sequitur because...")
   annotation  String
-  
-  // Optional: type of fallacy
   fallacyType String?
-  
-  // Optional: user identifier (anonymous by default)
   userId      String?
-  
-  // Metadata
   userAgent   String?
   
   @@index([url])
@@ -38,16 +104,12 @@ model Annotation {
 model DebugLog {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  
-  // Log info
-  level     String   // log, warn, error, debug
+  level     String
   message   String
-  data      Json?    // Additional structured data
-  source    String?  // e.g., popup, content, background
-  
-  // Client info
+  data      Json?
+  source    String?
   ip        String?
-  version   String?  // Extension version
+  version   String?
   userAgent String?
   
   @@index([createdAt])

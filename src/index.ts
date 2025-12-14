@@ -1,9 +1,15 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
+import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
+
+// Hash function for text deduplication
+function hashText(text: string): string {
+  return crypto.createHash('sha256').update(text).digest('hex').substring(0, 16);
+}
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 const ADMIN_KEY = process.env.ADMIN_KEY || 'changeme';
@@ -1068,6 +1074,59 @@ const ADMIN_HTML = `
     .refresh-btn:hover {
       background: rgba(59, 130, 246, 0.3);
     }
+    
+    /* Article Modal */
+    .article-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    
+    .article-modal-content {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .article-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .article-modal-header h2 {
+      font-size: 18px;
+      color: #f97316;
+      margin: 0;
+    }
+    
+    .article-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .articles-list, .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
   </style>
 </head>
 <body>
@@ -1097,37 +1156,54 @@ const ADMIN_HTML = `
     
     <div class="container">
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('annotations')">📝 Annotations</button>
+        <button class="tab-btn active" onclick="switchTab('articles')">📄 Articles</button>
+        <button class="tab-btn" onclick="switchTab('comments')">💬 Comments</button>
         <button class="tab-btn" onclick="switchTab('logs')">🔧 Debug Logs</button>
       </div>
       
-      <!-- Annotations Tab -->
-      <div class="tab-content active" id="tab-annotations">
+      <!-- Articles Tab -->
+      <div class="tab-content active" id="tab-articles">
         <div class="stats-grid" id="statsGrid">
           <div class="stat-card">
-            <div class="stat-value" id="totalCount">-</div>
-            <div class="stat-label">Total Annotations</div>
+            <div class="stat-value" id="articleCount">-</div>
+            <div class="stat-label">Total Articles</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="todayCount">-</div>
-            <div class="stat-label">Last 24 Hours</div>
+            <div class="stat-value" id="analysisCount">-</div>
+            <div class="stat-label">Analyses</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="typesCount">-</div>
-            <div class="stat-label">Fallacy Types</div>
+            <div class="stat-value" id="commentCount">-</div>
+            <div class="stat-label">Comments</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="highlightCount">-</div>
+            <div class="stat-label">Highlights</div>
           </div>
         </div>
         
         <div class="section-title">
-          <span>Recent Annotations</span>
-          <a href="#" class="export-btn" id="exportBtn">📥 Export JSONL</a>
+          <span>Recent Articles</span>
         </div>
         
-        <div class="annotations-list" id="annotationsList">
-          <div class="loading">Loading annotations...</div>
+        <div class="articles-list" id="articlesList">
+          <div class="loading">Loading articles...</div>
         </div>
         
-        <div class="pagination" id="pagination"></div>
+        <div class="pagination" id="articlesPagination"></div>
+      </div>
+      
+      <!-- Comments Tab -->
+      <div class="tab-content" id="tab-comments">
+        <div class="section-title">
+          <span>User Feedback</span>
+        </div>
+        
+        <div class="comments-list" id="commentsList">
+          <div class="loading">Loading comments...</div>
+        </div>
+        
+        <div class="pagination" id="commentsPagination"></div>
       </div>
       
       <!-- Debug Logs Tab -->
@@ -1241,59 +1317,258 @@ const ADMIN_HTML = `
     }
     
     async function loadDashboard() {
-      await loadStats();
-      await loadAnnotations();
+      await loadFeedbackStats();
+      await loadArticles();
     }
     
-    async function loadStats() {
+    async function loadFeedbackStats() {
       try {
-        const res = await fetch('/stats');
+        const res = await fetch('/admin/feedback-stats', {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
         const data = await res.json();
         
-        document.getElementById('totalCount').textContent = data.total || 0;
-        document.getElementById('todayCount').textContent = data.last24h || 0;
-        document.getElementById('typesCount').textContent = data.byFallacyType?.length || 0;
+        document.getElementById('articleCount').textContent = data.articles || 0;
+        document.getElementById('analysisCount').textContent = data.analyses || 0;
+        document.getElementById('commentCount').textContent = data.comments || 0;
+        document.getElementById('highlightCount').textContent = data.highlights || 0;
       } catch (err) {
         console.error('Failed to load stats:', err);
       }
     }
     
-    async function loadAnnotations() {
-      const list = document.getElementById('annotationsList');
+    // Articles
+    let articlesPage = 0;
+    
+    async function loadArticles() {
+      const list = document.getElementById('articlesList');
       list.innerHTML = '<div class="loading">Loading...</div>';
       
       try {
-        const res = await fetch('/annotations?limit=' + limit + '&offset=' + (currentPage * limit));
+        const res = await fetch('/admin/articles?limit=' + limit + '&offset=' + (articlesPage * limit), {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
         const data = await res.json();
         
-        if (!data.annotations || data.annotations.length === 0) {
-          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No annotations yet</p></div>';
+        if (!data.articles || data.articles.length === 0) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No articles yet</p></div>';
           return;
         }
         
-        list.innerHTML = data.annotations.map(ann => \`
-          <div class="annotation-card" data-id="\${ann.id}">
+        list.innerHTML = data.articles.map(article => \`
+          <div class="annotation-card" data-id="\${article.id}">
             <div class="annotation-header">
-              <span class="annotation-type">\${ann.fallacyType || 'unspecified'}</span>
-              <span class="annotation-date">\${new Date(ann.createdAt).toLocaleString()}</span>
+              <span class="annotation-type">\${article.analysisCount} analyses · \${article.commentCount} comments</span>
+              <span class="annotation-date">\${new Date(article.createdAt).toLocaleString()}</span>
             </div>
-            <div class="annotation-quote">\${escapeHtml(ann.quote)}</div>
-            <div class="annotation-text">\${escapeHtml(ann.annotation)}</div>
+            <div style="font-weight: 600; margin-bottom: 8px;">\${escapeHtml(article.title || 'Untitled')}</div>
+            <div class="annotation-quote">\${escapeHtml(article.textPreview)}</div>
+            \${article.latestAnalysis ? \`
+              <div style="margin-top: 8px; font-size: 12px; color: #71717a;">
+                Latest: <span style="color: \${article.latestAnalysis.severity === 'significant' ? '#ef4444' : article.latestAnalysis.severity === 'moderate' ? '#eab308' : '#22c55e'}">\${article.latestAnalysis.severity || 'none'}</span>
+                · \${article.latestAnalysis.highlightCount} highlights
+              </div>
+            \` : ''}
             <div class="annotation-url">
-              <a href="\${ann.url}" target="_blank">\${ann.url}</a>
+              <a href="\${article.url}" target="_blank">\${article.url}</a>
             </div>
             <div style="margin-top: 12px; text-align: right;">
-              <button class="delete-btn" onclick="deleteAnnotation('\${ann.id}')">Delete</button>
+              <button class="page-btn" onclick="viewArticle('\${article.id}')" style="margin-right: 8px;">View Details</button>
+              <button class="delete-btn" onclick="deleteArticle('\${article.id}')">Delete</button>
             </div>
           </div>
         \`).join('');
         
-        renderPagination(data.total);
+        renderArticlesPagination(data.total);
       } catch (err) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load annotations</p></div>';
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load articles</p></div>';
       }
     }
     
+    function renderArticlesPagination(total) {
+      const totalPages = Math.ceil(total / limit);
+      const pagination = document.getElementById('articlesPagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      pagination.innerHTML = \`
+        <button class="page-btn" onclick="changeArticlesPage(-1)" \${articlesPage === 0 ? 'disabled' : ''}>← Prev</button>
+        <span style="padding: 8px 16px; color: #71717a;">Page \${articlesPage + 1} of \${totalPages}</span>
+        <button class="page-btn" onclick="changeArticlesPage(1)" \${articlesPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+      \`;
+    }
+    
+    function changeArticlesPage(delta) {
+      articlesPage += delta;
+      loadArticles();
+    }
+    
+    async function deleteArticle(id) {
+      if (!confirm('Delete this article and all its analyses/comments?')) return;
+      
+      try {
+        const res = await fetch('/admin/articles/' + id, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        
+        if (res.ok) {
+          loadFeedbackStats();
+          loadArticles();
+        } else {
+          alert('Failed to delete');
+        }
+      } catch (err) {
+        alert('Failed to delete: ' + err.message);
+      }
+    }
+    
+    async function viewArticle(id) {
+      try {
+        const res = await fetch('/admin/articles/' + id, {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        const data = await res.json();
+        const article = data.article;
+        
+        // Show in modal or new view
+        const modal = document.createElement('div');
+        modal.className = 'article-modal';
+        modal.innerHTML = \`
+          <div class="article-modal-content">
+            <div class="article-modal-header">
+              <h2>\${escapeHtml(article.title || 'Article Details')}</h2>
+              <button onclick="this.closest('.article-modal').remove()" style="background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            <div class="article-modal-body">
+              <div style="margin-bottom: 16px;">
+                <a href="\${article.url}" target="_blank" style="color: #60a5fa;">\${article.url}</a>
+                <span style="color: #71717a; margin-left: 12px;">\${new Date(article.createdAt).toLocaleString()}</span>
+              </div>
+              
+              <h3 style="margin: 20px 0 12px; color: #f97316;">Article Text</h3>
+              <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.6;">\${escapeHtml(article.textContent)}</div>
+              
+              <h3 style="margin: 20px 0 12px; color: #f97316;">Analyses (\${article.analyses.length})</h3>
+              \${article.analyses.map(a => \`
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #a1a1aa;">\${a.modelVersion || 'unknown model'}</span>
+                    <span style="color: \${a.severity === 'significant' ? '#ef4444' : a.severity === 'moderate' ? '#eab308' : '#22c55e'}">\${a.severity || 'none'}</span>
+                  </div>
+                  <div style="font-size: 12px; color: #71717a; margin-bottom: 8px;">\${a.highlights.length} highlights</div>
+                  \${a.highlights.map(h => \`
+                    <div style="background: rgba(249,115,22,0.1); border-left: 3px solid \${h.importance === 'critical' ? '#ef4444' : h.importance === 'significant' ? '#eab308' : '#6b7280'}; padding: 8px 12px; margin: 8px 0; border-radius: 4px;">
+                      <div style="font-style: italic; color: #a1a1aa; margin-bottom: 4px;">"\${escapeHtml(h.quote.substring(0, 100))}\${h.quote.length > 100 ? '...' : ''}"</div>
+                      <div style="color: #e4e4e7;">\${escapeHtml(h.gap)}</div>
+                    </div>
+                  \`).join('')}
+                </div>
+              \`).join('') || '<div style="color: #71717a;">No analyses yet</div>'}
+              
+              <h3 style="margin: 20px 0 12px; color: #f97316;">Comments (\${article.comments.length})</h3>
+              \${article.comments.map(c => \`
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                  <div style="font-style: italic; color: #a1a1aa; margin-bottom: 8px;">"\${escapeHtml(c.selectedText.substring(0, 100))}\${c.selectedText.length > 100 ? '...' : ''}"</div>
+                  <div style="color: #e4e4e7;">\${escapeHtml(c.commentText)}</div>
+                  <div style="font-size: 11px; color: #71717a; margin-top: 8px;">\${new Date(c.createdAt).toLocaleString()} · \${c.ip || 'unknown IP'}</div>
+                </div>
+              \`).join('') || '<div style="color: #71717a;">No comments yet</div>'}
+            </div>
+          </div>
+        \`;
+        document.body.appendChild(modal);
+      } catch (err) {
+        alert('Failed to load article: ' + err.message);
+      }
+    }
+    
+    // Comments
+    let commentsPage = 0;
+    
+    async function loadComments() {
+      const list = document.getElementById('commentsList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const res = await fetch('/admin/comments?limit=' + limit + '&offset=' + (commentsPage * limit), {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        const data = await res.json();
+        
+        if (!data.comments || data.comments.length === 0) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><p>No comments yet</p></div>';
+          return;
+        }
+        
+        list.innerHTML = data.comments.map(comment => \`
+          <div class="annotation-card" data-id="\${comment.id}">
+            <div class="annotation-header">
+              <span class="annotation-type">Feedback</span>
+              <span class="annotation-date">\${new Date(comment.createdAt).toLocaleString()}</span>
+            </div>
+            <div class="annotation-quote">"\${escapeHtml(comment.selectedText)}"</div>
+            <div class="annotation-text">\${escapeHtml(comment.commentText)}</div>
+            <div class="annotation-url">
+              <a href="\${comment.article.url}" target="_blank">\${comment.article.title || comment.article.url}</a>
+            </div>
+            <div style="margin-top: 12px; text-align: right;">
+              <button class="delete-btn" onclick="deleteComment('\${comment.id}')">Delete</button>
+            </div>
+          </div>
+        \`).join('');
+        
+        renderCommentsPagination(data.total);
+      } catch (err) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load comments</p></div>';
+      }
+    }
+    
+    function renderCommentsPagination(total) {
+      const totalPages = Math.ceil(total / limit);
+      const pagination = document.getElementById('commentsPagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      pagination.innerHTML = \`
+        <button class="page-btn" onclick="changeCommentsPage(-1)" \${commentsPage === 0 ? 'disabled' : ''}>← Prev</button>
+        <span style="padding: 8px 16px; color: #71717a;">Page \${commentsPage + 1} of \${totalPages}</span>
+        <button class="page-btn" onclick="changeCommentsPage(1)" \${commentsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+      \`;
+    }
+    
+    function changeCommentsPage(delta) {
+      commentsPage += delta;
+      loadComments();
+    }
+    
+    async function deleteComment(id) {
+      if (!confirm('Delete this comment?')) return;
+      
+      try {
+        const res = await fetch('/admin/comments/' + id, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        
+        if (res.ok) {
+          loadFeedbackStats();
+          loadComments();
+        } else {
+          alert('Failed to delete');
+        }
+      } catch (err) {
+        alert('Failed to delete: ' + err.message);
+      }
+    }
+    
+    // Legacy - keep for backwards compatibility
     function renderPagination(total) {
       const totalPages = Math.ceil(total / limit);
       const pagination = document.getElementById('pagination');
@@ -1354,7 +1629,11 @@ const ADMIN_HTML = `
       document.querySelector(\`[onclick="switchTab('\${tab}')"]\`).classList.add('active');
       document.getElementById('tab-' + tab).classList.add('active');
       
-      if (tab === 'logs') {
+      if (tab === 'articles') {
+        loadArticles();
+      } else if (tab === 'comments') {
+        loadComments();
+      } else if (tab === 'logs') {
         loadDebugLogs();
       }
     }
@@ -1793,6 +2072,290 @@ app.delete('/debug/logs', requireAdmin, async (req: Request, res: Response, next
     });
     
     res.json({ success: true, deleted: result.count });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// =====================================================
+// Articles & Feedback API
+// =====================================================
+
+// Create article (called when starting analysis)
+app.post('/articles', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { url, title, textContent } = req.body;
+    
+    if (!url || !textContent) {
+      res.status(400).json({ error: 'Missing required fields: url, textContent' });
+      return;
+    }
+    
+    const textHash = hashText(textContent);
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() 
+      || req.socket.remoteAddress || null;
+    const userAgent = req.headers['user-agent'] || null;
+    
+    // Try to find existing article with same URL and text
+    let article = await prisma.article.findUnique({
+      where: { url_textHash: { url, textHash } }
+    });
+    
+    if (!article) {
+      article = await prisma.article.create({
+        data: { url, title, textContent, textHash, ip, userAgent }
+      });
+    }
+    
+    res.status(201).json({ articleId: article.id, isNew: !article });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add analysis results to article
+app.post('/articles/:articleId/analysis', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { articleId } = req.params;
+    const { modelVersion, rawResponse, severity, highlights } = req.body;
+    
+    if (!rawResponse) {
+      res.status(400).json({ error: 'Missing required field: rawResponse' });
+      return;
+    }
+    
+    // Verify article exists
+    const article = await prisma.article.findUnique({ where: { id: articleId } });
+    if (!article) {
+      res.status(404).json({ error: 'Article not found' });
+      return;
+    }
+    
+    // Create analysis with highlights
+    const analysis = await prisma.analysis.create({
+      data: {
+        articleId,
+        modelVersion,
+        rawResponse,
+        severity,
+        highlights: highlights ? {
+          create: highlights.map((h: any) => ({
+            quote: h.quote,
+            importance: h.importance || 'minor',
+            gap: h.gap || ''
+          }))
+        } : undefined
+      },
+      include: { highlights: true }
+    });
+    
+    res.status(201).json({ 
+      analysisId: analysis.id,
+      highlightCount: analysis.highlights.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add comment/feedback (creates article if needed)
+app.post('/comments', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { url, title, textContent, selectedText, commentText } = req.body;
+    
+    if (!url || !textContent || !selectedText || !commentText) {
+      res.status(400).json({ 
+        error: 'Missing required fields: url, textContent, selectedText, commentText' 
+      });
+      return;
+    }
+    
+    const textHash = hashText(textContent);
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() 
+      || req.socket.remoteAddress || null;
+    const userAgent = req.headers['user-agent'] || null;
+    
+    // Find or create article
+    let article = await prisma.article.findUnique({
+      where: { url_textHash: { url, textHash } }
+    });
+    
+    const isNewArticle = !article;
+    
+    if (!article) {
+      article = await prisma.article.create({
+        data: { url, title, textContent, textHash, ip, userAgent }
+      });
+    }
+    
+    // Create comment
+    const comment = await prisma.comment.create({
+      data: {
+        articleId: article.id,
+        selectedText,
+        commentText,
+        ip,
+        userAgent
+      }
+    });
+    
+    res.status(201).json({ 
+      commentId: comment.id, 
+      articleId: article.id,
+      isNewArticle
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get all articles (admin)
+app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const offset = parseInt(req.query.offset as string) || 0;
+    
+    const [articles, total] = await Promise.all([
+      prisma.article.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+        include: {
+          _count: { select: { analyses: true, comments: true } },
+          analyses: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: { severity: true, highlights: { select: { id: true } } }
+          }
+        }
+      }),
+      prisma.article.count()
+    ]);
+    
+    res.json({
+      articles: articles.map(a => ({
+        id: a.id,
+        createdAt: a.createdAt,
+        url: a.url,
+        title: a.title,
+        textPreview: a.textContent.substring(0, 200) + (a.textContent.length > 200 ? '...' : ''),
+        analysisCount: a._count.analyses,
+        commentCount: a._count.comments,
+        latestAnalysis: a.analyses[0] ? {
+          severity: a.analyses[0].severity,
+          highlightCount: a.analyses[0].highlights.length
+        } : null,
+        ip: a.ip
+      })),
+      total,
+      limit,
+      offset
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get single article with all data (admin)
+app.get('/admin/articles/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const article = await prisma.article.findUnique({
+      where: { id: req.params.id },
+      include: {
+        analyses: {
+          orderBy: { createdAt: 'desc' },
+          include: { highlights: true }
+        },
+        comments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+    
+    if (!article) {
+      res.status(404).json({ error: 'Article not found' });
+      return;
+    }
+    
+    res.json({ article });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete article (admin)
+app.delete('/admin/articles/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await prisma.article.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get all comments (admin)
+app.get('/admin/comments', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const offset = parseInt(req.query.offset as string) || 0;
+    
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+        include: {
+          article: { select: { url: true, title: true } }
+        }
+      }),
+      prisma.comment.count()
+    ]);
+    
+    res.json({ comments, total, limit, offset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete comment (admin)
+app.delete('/admin/comments/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await prisma.comment.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get feedback stats
+app.get('/admin/feedback-stats', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const [articleCount, analysisCount, commentCount, highlightCount, recentArticles] = await Promise.all([
+      prisma.article.count(),
+      prisma.analysis.count(),
+      prisma.comment.count(),
+      prisma.highlight.count(),
+      prisma.article.count({
+        where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+      })
+    ]);
+    
+    const highlightsByImportance = await prisma.highlight.groupBy({
+      by: ['importance'],
+      _count: true
+    });
+    
+    res.json({
+      articles: articleCount,
+      analyses: analysisCount,
+      comments: commentCount,
+      highlights: highlightCount,
+      articlesLast24h: recentArticles,
+      highlightsByImportance: highlightsByImportance.map(h => ({
+        importance: h.importance,
+        count: h._count
+      }))
+    });
   } catch (error) {
     next(error);
   }

@@ -1,14 +1,13 @@
 // Background service worker for SanityCheck
 
 // Backend URL - defaults to Railway, can be overridden in extension storage
-// To set: chrome.storage.local.set({ backendUrl: 'https://your-app.railway.app' })
 const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Create context menu on install
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
-    id: 'annotate-fallacy',
-    title: 'Annotate as logical issue',
+    id: 'leave-feedback',
+    title: 'Leave feedback on this text',
     contexts: ['selection']
   });
   
@@ -17,11 +16,11 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Handle context menu click
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'annotate-fallacy' && info.selectionText) {
-    // Send message to content script to show annotation dialog
+  if (info.menuItemId === 'leave-feedback' && info.selectionText) {
+    // Send message to content script to show feedback dialog
     chrome.tabs.sendMessage(tab.id, {
-      action: 'showAnnotationDialog',
-      quote: info.selectionText,
+      action: 'showFeedbackDialog',
+      selectedText: info.selectionText,
       url: tab.url,
       title: tab.title
     });
@@ -30,15 +29,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'submitAnnotation') {
-    submitAnnotation(request.data)
+  if (request.action === 'submitFeedback') {
+    submitFeedback(request.data)
       .then(result => sendResponse({ success: true, ...result }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true; // Keep channel open for async response
   }
   
   if (request.action === 'getBackendUrl') {
-    // Allow getting backend URL from storage or use default
     chrome.storage.local.get(['backendUrl'], (result) => {
       sendResponse({ url: result.backendUrl || BACKEND_URL });
     });
@@ -46,17 +44,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-async function submitAnnotation(data) {
-  // Get backend URL from storage or use default
+async function submitFeedback(data) {
   const stored = await chrome.storage.local.get(['backendUrl']);
   const backendUrl = stored.backendUrl || BACKEND_URL;
   
-  const response = await fetch(`${backendUrl}/annotations`, {
+  const response = await fetch(`${backendUrl}/comments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      url: data.url,
+      title: data.title,
+      textContent: data.articleText,
+      selectedText: data.selectedText,
+      commentText: data.commentText
+    })
   });
   
   if (!response.ok) {
@@ -66,4 +69,3 @@ async function submitAnnotation(data) {
   
   return response.json();
 }
-
