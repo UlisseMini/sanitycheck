@@ -62,7 +62,7 @@
   margin-bottom: 20px;
   border-radius: 4px;
   font-style: italic;
-  color: #a3a3a3;
+  color: #d4d4d4;
   font-size: 14px;
   line-height: 1.6;
   max-height: 120px;
@@ -73,13 +73,13 @@
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #a3a3a3;
+  color: #d4d4d4;
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.logic-checker-annotation-select {
+.logic-checker-annotation-input {
   width: 100%;
   padding: 10px 14px;
   background: #262626;
@@ -88,12 +88,16 @@
   color: #f5f5f5;
   font-size: 14px;
   margin-bottom: 16px;
-  cursor: pointer;
+  font-family: inherit;
 }
 
-.logic-checker-annotation-select:focus {
+.logic-checker-annotation-input:focus {
   outline: none;
   border-color: #f97316;
+}
+
+.logic-checker-annotation-input::placeholder {
+  color: #737373;
 }
 
 .logic-checker-annotation-textarea {

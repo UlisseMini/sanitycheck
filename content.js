@@ -1028,20 +1028,6 @@
   // Annotation Dialog
   // =====================================================
 
-  const FALLACY_TYPES = [
-    { value: '', label: 'Select type (optional)' },
-    { value: 'non-sequitur', label: 'Non-sequitur (doesn\'t follow)' },
-    { value: 'conflation', label: 'Conflation (mixing up concepts)' },
-    { value: 'circular-reasoning', label: 'Circular reasoning' },
-    { value: 'hasty-generalization', label: 'Hasty generalization' },
-    { value: 'unsupported-claim', label: 'Unsupported strong claim' },
-    { value: 'false-dichotomy', label: 'False dichotomy' },
-    { value: 'genetic-fallacy', label: 'Genetic fallacy (origin-based dismissal)' },
-    { value: 'appeal-to-anecdote', label: 'Appeal to anecdote' },
-    { value: 'strawman', label: 'Straw man argument' },
-    { value: 'other', label: 'Other' }
-  ];
-
   function showAnnotationDialog(quote, url, title) {
     // Remove existing dialog if any
     const existing = document.querySelector('.logic-checker-annotation-overlay');
@@ -1063,10 +1049,13 @@
       
       <div class="logic-checker-annotation-quote">${escapeHtml(quote)}</div>
       
-      <label class="logic-checker-annotation-label">Type of Issue</label>
-      <select class="logic-checker-annotation-select" id="lc-fallacy-type">
-        ${FALLACY_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
-      </select>
+      <label class="logic-checker-annotation-label">Type of Issue (optional)</label>
+      <input 
+        type="text" 
+        class="logic-checker-annotation-input" 
+        id="lc-fallacy-type"
+        placeholder="e.g., non-sequitur, conflation, circular reasoning..."
+      />
       
       <label class="logic-checker-annotation-label">Your Annotation</label>
       <textarea 
@@ -1105,7 +1094,7 @@
     // Submit handler
     dialog.querySelector('#lc-submit').addEventListener('click', async () => {
       const annotationText = textarea.value.trim();
-      const fallacyType = dialog.querySelector('#lc-fallacy-type').value;
+      const fallacyType = dialog.querySelector('#lc-fallacy-type').value.trim();
 
       if (!annotationText) {
         textarea.style.borderColor = '#ef4444';
