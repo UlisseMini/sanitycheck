@@ -58,7 +58,7 @@ const HOMEPAGE_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Logic Checker — Spot Logical Fallacies in Articles</title>
+  <title>SanityCheck — Keep Your Reasoning Sharp</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -388,12 +388,12 @@ const HOMEPAGE_HTML = `
 </head>
 <body>
   <section class="hero">
-    <div class="logo">⚖️</div>
-    <h1>Logic Checker</h1>
-    <p class="tagline">An AI-powered browser extension that spots logical fallacies and reasoning gaps in any article you read.</p>
+    <div class="logo">🧠</div>
+    <h1>SanityCheck</h1>
+    <p class="tagline">An AI-powered browser extension that spots logical gaps and reasoning issues in any article you read.</p>
     
     <div class="cta-group">
-      <a href="/static/logic-checker-extension.zip" class="download-btn" download>
+      <a href="/static/sanitycheck-extension.zip" class="download-btn" download>
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Download Extension
       </a>
@@ -514,7 +514,7 @@ const ADMIN_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Logic Checker Admin</title>
+  <title>SanityCheck Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1073,7 +1073,7 @@ const ADMIN_HTML = `
 <body>
   <div class="login-container" id="loginContainer">
     <div class="login-box">
-      <h1 class="login-title">⚖️ Logic Checker</h1>
+      <h1 class="login-title">🧠 SanityCheck</h1>
       <p class="login-subtitle">Admin Dashboard</p>
       
       <form id="loginForm">
@@ -1090,7 +1090,7 @@ const ADMIN_HTML = `
   <div class="dashboard" id="dashboard">
     <header class="header">
       <div class="header-inner">
-        <h1 class="header-title">⚖️ Logic Checker Admin</h1>
+        <h1 class="header-title">🧠 SanityCheck Admin</h1>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
     </header>

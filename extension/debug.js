@@ -1,4 +1,4 @@
-// Debug logging utility for Logic Checker extension
+// Debug logging utility for SanityCheck extension
 
 const DEBUG_ENABLED = true; // Set to true to enable debug logging
 const EXTENSION_VERSION = '1.1.0'; // Should match manifest.json

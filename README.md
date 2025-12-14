@@ -1,6 +1,6 @@
-# Logic Checker
+# SanityCheck
 
-An AI-powered browser extension that spots logical fallacies and reasoning gaps in articles.
+An AI-powered browser extension that spots logical gaps and reasoning issues in articles.
 
 ## Project Structure
 

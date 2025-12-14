@@ -27,7 +27,7 @@ const scriptDir = __dirname;
 const rootDir = path.dirname(scriptDir);
 const extensionDir = path.join(rootDir, 'extension');
 const outputDir = path.join(rootDir, 'public');
-const outputZip = path.join(outputDir, 'logic-checker-extension.zip');
+const outputZip = path.join(outputDir, 'sanitycheck-extension.zip');
 
 console.log('Bundling extension...');
 console.log('  Extension dir:', extensionDir);

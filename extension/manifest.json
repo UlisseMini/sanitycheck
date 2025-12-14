@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Logic Checker",
+  "name": "SanityCheck",
   "version": "1.1.0",
   "description": "Surfaces genuine logical gaps and reasoning issues in articles",
   "permissions": [

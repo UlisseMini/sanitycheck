@@ -1,4 +1,4 @@
-// Background service worker for Logic Checker
+// Background service worker for SanityCheck
 
 // Backend URL - defaults to Railway, can be overridden in extension storage
 // To set: chrome.storage.local.set({ backendUrl: 'https://your-app.railway.app' })
@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ['selection']
   });
   
-  console.log('Logic Checker: Context menu created');
+  console.log('SanityCheck: Context menu created');
 });
 
 // Handle context menu click

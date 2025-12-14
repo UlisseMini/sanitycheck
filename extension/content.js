@@ -1,4 +1,4 @@
-// Content script for extracting article text and highlighting issues
+// SanityCheck - Content script for extracting article text and highlighting issues
 
 (function() {
   // Avoid re-injecting

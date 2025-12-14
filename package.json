@@ -1,5 +1,5 @@
 {
-  "name": "logic-checker-backend",
+  "name": "sanitycheck-backend",
   "version": "1.0.0",
   "description": "Backend for crowdsourcing logical fallacy annotations",
   "main": "dist/index.js",

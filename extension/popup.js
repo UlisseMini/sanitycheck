@@ -1,4 +1,4 @@
-// Logic Checker - Popup Script
+// SanityCheck - Popup Script
 
 const REPLICATE_MODEL = 'anthropic/claude-4.5-sonnet';
 const REPLICATE_VERSION = '459655107e29a683cb6deb73a9640cf9aeae39ea7c87803a2ae81c311f6ef44f'; // Claude 4.5 Sonnet version
