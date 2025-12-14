@@ -2,7 +2,7 @@
 
 // Backend URL - defaults to Railway, can be overridden in extension storage
 // To set: chrome.storage.local.set({ backendUrl: 'https://your-app.railway.app' })
-const BACKEND_URL = 'https://sanitycheck-backend-production.up.railway.app';
+const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Create context menu on install
 chrome.runtime.onInstalled.addListener(() => {
