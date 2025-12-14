@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logic Checker</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Bitter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span class="icon">⚖️</span>
+        <h1>Logic Checker</h1>
+      </div>
+      <p class="tagline">Spotting fallacies so you don't have to</p>
+    </header>
+
+    <div id="api-key-section" class="section">
+      <label for="api-key">Replicate API Key</label>
+      <div class="input-group">
+        <input type="password" id="api-key" placeholder="r8_xxxxxxxxxxxx">
+        <button id="save-key" class="btn-secondary">Save</button>
+      </div>
+      <p class="hint">Get your key at <a href="https://replicate.com/account/api-tokens" target="_blank">replicate.com</a></p>
+    </div>
+
+    <div id="status-section" class="section">
+      <div id="page-status" class="status-card clickable">
+        <span class="status-icon">🔍</span>
+        <span class="status-text">Checking page...</span>
+        <span class="view-text-hint hidden">👆 Click to view article text</span>
+      </div>
+    </div>
+
+    <div id="article-text-section" class="section hidden">
+      <div class="article-text-header">
+        <h3>Extracted Article Text</h3>
+        <button id="close-article-text" class="btn-close" title="Close">×</button>
+      </div>
+      <div id="article-text-content" class="article-text-content"></div>
+    </div>
+
+    <div id="action-section" class="section hidden">
+      <button id="analyze-btn" class="btn-primary">
+        <span class="btn-icon">🧠</span>
+        Analyze for Fallacies
+      </button>
+    </div>
+
+    <div id="loading-section" class="section hidden">
+      <div class="loader">
+        <div class="loader-bar"></div>
+      </div>
+      <p class="loading-text">Analyzing logic structure...</p>
+    </div>
+
+    <div id="results-section" class="section hidden">
+      <h2>Analysis Results</h2>
+      <div id="results-content"></div>
+    </div>
+
+    <div id="error-section" class="section hidden">
+      <div class="error-card">
+        <span class="error-icon">⚠️</span>
+        <p id="error-message"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="debug.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
+

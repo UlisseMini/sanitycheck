@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Logic Checker",
+  "version": "1.0.0",
+  "description": "Analyzes articles for logical fallacies and non-sequiturs using AI",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.replicate.com/*",
+    "http://localhost:3000/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["debug.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
+
