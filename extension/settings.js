@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   // Load saved prompt
-  const stored = await chrome.storage.local.get(['customPrompt', 'replicateApiKey']);
+  const stored = await chrome.storage.local.get(['customPrompt', 'anthropicApiKey']);
   
   if (stored.customPrompt) {
     promptEditor.value = stored.customPrompt;
@@ -71,8 +71,8 @@ async function init() {
   }
   
   // Load API key
-  if (stored.replicateApiKey) {
-    apiKeyInput.value = stored.replicateApiKey;
+  if (stored.anthropicApiKey) {
+    apiKeyInput.value = stored.anthropicApiKey;
   } else {
     apiKeyInput.value = DEFAULT_API_KEY;
   }
@@ -138,7 +138,7 @@ async function saveApiKey() {
   const key = apiKeyInput.value.trim();
   
   if (key) {
-    await chrome.storage.local.set({ replicateApiKey: key });
+    await chrome.storage.local.set({ anthropicApiKey: key });
     saveKeyBtn.textContent = 'Saved!';
     setTimeout(() => {
       saveKeyBtn.textContent = 'Save';

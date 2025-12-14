@@ -90,16 +90,18 @@ async function init() {
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
     // Load saved API key and custom prompt
-    const stored = await chrome.storage.local.get(['replicateApiKey', 'customPrompt']);
-    debug.log('Storage loaded', { hasKey: !!stored.replicateApiKey, hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
+    // Clear old Replicate key if present and migrate to Anthropic
+    const stored = await chrome.storage.local.get(['anthropicApiKey', 'replicateApiKey', 'customPrompt']);
+    debug.log('Storage loaded', { hasKey: !!stored.anthropicApiKey, hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
     
-    if (stored.replicateApiKey) {
-      apiKeyInput.value = stored.replicateApiKey;
-      debug.log('Using stored API key', { keyLength: stored.replicateApiKey.length }, 'popup-init');
+    if (stored.anthropicApiKey) {
+      apiKeyInput.value = stored.anthropicApiKey;
+      debug.log('Using stored API key', { keyLength: stored.anthropicApiKey.length }, 'popup-init');
     } else {
-      // Use hardcoded key from .env
+      // Use hardcoded key - also clear old Replicate key
       apiKeyInput.value = DEFAULT_API_KEY;
-      await chrome.storage.local.set({ replicateApiKey: DEFAULT_API_KEY });
+      await chrome.storage.local.set({ anthropicApiKey: DEFAULT_API_KEY });
+      await chrome.storage.local.remove('replicateApiKey');
       debug.log('Using default API key', { keyLength: DEFAULT_API_KEY.length }, 'popup-init');
     }
     
@@ -135,7 +137,7 @@ async function saveApiKey() {
     debug.log('Saving API key', { keyLength: key.length }, 'popup-save-key');
     
     if (key) {
-      await chrome.storage.local.set({ replicateApiKey: key });
+      await chrome.storage.local.set({ anthropicApiKey: key });
       saveKeyBtn.textContent = 'Saved!';
       debug.log('API key saved successfully', {}, 'popup-save-key');
       
