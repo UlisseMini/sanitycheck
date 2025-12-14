@@ -43,6 +43,10 @@ model Analysis {
   rawResponse  Json        // Full model output for debugging/replay
   severity     String?     // none/minor/moderate/significant
   
+  // Prompt tracking
+  promptUsed   String?     // Full prompt used for this analysis
+  isCustomPrompt Boolean   @default(false)  // True if user modified the default
+  
   highlights   Highlight[]
   
   @@index([articleId])

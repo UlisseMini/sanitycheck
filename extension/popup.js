@@ -7,7 +7,7 @@ const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 
 // Debug logging will be available via window.debug
 
-const ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
+const DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
 
 ## Your Goal
 
@@ -50,9 +50,14 @@ Return JSON:
 ARTICLE:
 `;
 
+// Current prompt (may be customized)
+let currentPrompt = DEFAULT_ANALYSIS_PROMPT;
+let isCustomPrompt = false;
+
 // DOM Elements
 const apiKeyInput = document.getElementById('api-key');
 const saveKeyBtn = document.getElementById('save-key');
+const settingsBtn = document.getElementById('settings-btn');
 const pageStatus = document.getElementById('page-status');
 const actionSection = document.getElementById('action-section');
 const analyzeBtn = document.getElementById('analyze-btn');
@@ -84,9 +89,9 @@ async function init() {
     
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
-    // Load saved API key or use default
-    const stored = await chrome.storage.local.get(['replicateApiKey']);
-    debug.log('Storage loaded', { hasKey: !!stored.replicateApiKey }, 'popup-init');
+    // Load saved API key and custom prompt
+    const stored = await chrome.storage.local.get(['replicateApiKey', 'customPrompt']);
+    debug.log('Storage loaded', { hasKey: !!stored.replicateApiKey, hasCustomPrompt: !!stored.customPrompt }, 'popup-init');
     
     if (stored.replicateApiKey) {
       apiKeyInput.value = stored.replicateApiKey;
@@ -98,10 +103,21 @@ async function init() {
       debug.log('Using default API key', { keyLength: DEFAULT_API_KEY.length }, 'popup-init');
     }
     
+    // Load custom prompt if set
+    if (stored.customPrompt) {
+      currentPrompt = stored.customPrompt;
+      isCustomPrompt = true;
+      debug.log('Using custom prompt', { promptLength: currentPrompt.length }, 'popup-init');
+    } else {
+      currentPrompt = DEFAULT_ANALYSIS_PROMPT;
+      isCustomPrompt = false;
+    }
+    
     // Check current page
     await checkCurrentPage();
     
     // Set up event listeners
+    settingsBtn.addEventListener('click', openSettings);
     saveKeyBtn.addEventListener('click', saveApiKey);
     analyzeBtn.addEventListener('click', analyzeArticle);
     pageStatus.addEventListener('click', toggleArticleText);
@@ -132,6 +148,11 @@ async function saveApiKey() {
   } catch (error) {
     debug.error('Failed to save API key', error, 'popup-save-key');
   }
+}
+
+function openSettings() {
+  // Open settings page in a new tab
+  chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
 }
 
 async function checkCurrentPage() {
@@ -317,12 +338,13 @@ async function analyzeArticle() {
     }
     
     debug.log('Prepared prompt', {
-      promptLength: ANALYSIS_PROMPT.length,
+      promptLength: currentPrompt.length,
       articleLength: articleText.length,
-      totalLength: ANALYSIS_PROMPT.length + articleText.length
+      totalLength: currentPrompt.length + articleText.length,
+      isCustomPrompt
     }, 'popup-analyze');
     
-    const fullPrompt = ANALYSIS_PROMPT + articleText;
+    const fullPrompt = currentPrompt + articleText;
     
     // Call Replicate API
     debug.log('Calling Replicate API', {
@@ -415,6 +437,8 @@ async function storeAnalysisToBackend(article, rawResult, parsed) {
         modelVersion: REPLICATE_MODEL,
         rawResponse: rawResult,
         severity: parsed?.severity,
+        promptUsed: currentPrompt,
+        isCustomPrompt: isCustomPrompt,
         highlights: parsed?.issues?.map(issue => ({
           quote: issue.quote,
           importance: issue.importance,

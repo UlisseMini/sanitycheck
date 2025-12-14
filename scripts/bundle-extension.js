@@ -12,6 +12,8 @@ const EXTENSION_FILES = [
   'manifest.json',
   'popup.html',
   'popup.js',
+  'settings.html',
+  'settings.js',
   'styles.css',
   'content.js',
   'content-styles.css',

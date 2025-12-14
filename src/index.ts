@@ -2117,7 +2117,7 @@ app.post('/articles', async (req: Request, res: Response, next: NextFunction) =>
 app.post('/articles/:articleId/analysis', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { articleId } = req.params;
-    const { modelVersion, rawResponse, severity, highlights } = req.body;
+    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = req.body;
     
     if (!rawResponse) {
       res.status(400).json({ error: 'Missing required field: rawResponse' });
@@ -2138,6 +2138,8 @@ app.post('/articles/:articleId/analysis', async (req: Request, res: Response, ne
         modelVersion,
         rawResponse,
         severity,
+        promptUsed: promptUsed || null,
+        isCustomPrompt: isCustomPrompt || false,
         highlights: highlights ? {
           create: highlights.map((h: any) => ({
             quote: h.quote,

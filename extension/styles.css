@@ -45,6 +45,31 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.settings-btn {
+  position: absolute;
+  right: 0;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  opacity: 0.6;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.settings-btn:hover {
+  opacity: 1;
+  background: var(--bg-tertiary);
+}
+
 .logo {
   display: flex;
   align-items: center;

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SanityCheck Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Bitter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      width: 600px;
+      min-height: 500px;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .container {
+      padding: 20px;
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 16px;
+      transition: color 0.2s;
+    }
+    
+    .back-link:hover {
+      color: var(--accent);
+    }
+    
+    .settings-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .settings-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .settings-section p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    
+    .prompt-editor {
+      width: 100%;
+      min-height: 300px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    
+    .prompt-editor:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .button-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .btn-reset {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    
+    .btn-reset:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+    
+    .status-message {
+      font-size: 12px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .custom-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(249, 115, 22, 0.2);
+      color: var(--accent);
+      margin-left: auto;
+    }
+    
+    .custom-badge.default {
+      background: rgba(107, 114, 128, 0.2);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="popup.html" class="back-link" id="back-btn">← Back to SanityCheck</a>
+    
+    <header>
+      <div class="logo">
+        <span class="icon">⚙️</span>
+        <h1>Settings</h1>
+      </div>
+    </header>
+    
+    <div class="settings-section">
+      <h3>
+        <span>📝</span>
+        Analysis Prompt
+        <span class="custom-badge default" id="prompt-badge">Default</span>
+      </h3>
+      <p>
+        Customize the system prompt used when analyzing articles. The prompt tells the AI what to look for and how to format its response.
+      </p>
+      
+      <textarea class="prompt-editor" id="prompt-editor" spellcheck="false"></textarea>
+      
+      <div class="button-row">
+        <button class="btn-primary" id="save-prompt">💾 Save Prompt</button>
+        <button class="btn-secondary btn-reset" id="reset-prompt">↩️ Reset to Default</button>
+      </div>
+      
+      <div class="status-message" id="status-message"></div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>
+        <span>🔑</span>
+        API Configuration
+      </h3>
+      <p>
+        Your Replicate API key is stored locally and used to run the AI analysis.
+      </p>
+      
+      <div class="input-group">
+        <input type="password" id="api-key" placeholder="r8_xxxxxxxxxxxx">
+        <button id="save-key" class="btn-secondary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
+
