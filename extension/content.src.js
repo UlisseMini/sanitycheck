@@ -339,32 +339,66 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     return result;
   }
 
-  function extractArticleText() {
-    debug.log('Extracting article text using Readability', {}, 'content-extract');
+  // =====================================================
+  // SITE-SPECIFIC EXTRACTORS
+  // =====================================================
+
+  function getSiteSpecificExtractor() {
+    const host = window.location.hostname.toLowerCase();
     
+    // LessWrong / GreaterWrong - use #postContent for cleaner extraction
+    if (host.includes('lesswrong.com') || host.includes('greaterwrong.com')) {
+      return () => {
+        const postContent = document.querySelector('#postContent');
+        if (!postContent) return null;
+        
+        const title = document.querySelector('h1')?.textContent?.trim() || document.title;
+        const text = postContent.innerText || postContent.textContent || '';
+        const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+        
+        if (wordCount < 10) return null;
+        
+        return { title, text, wordCount, url: window.location.href, source: 'lesswrong' };
+      };
+    }
+    
+    // Add more sites here: if (host.includes('example.com')) { return () => {...}; }
+    
+    return null;
+  }
+
+  function extractArticleText() {
+    const host = window.location.hostname;
+    
+    // Try site-specific extraction first
+    const siteExtractor = getSiteSpecificExtractor();
+    if (siteExtractor) {
+      try {
+        const result = siteExtractor();
+        if (result && result.text && result.wordCount > 10) {
+          debug.log('Article extracted', { 
+            extractor: result.source, 
+            wordCount: result.wordCount 
+          }, 'content-extract');
+          return result;
+        }
+      } catch (e) {
+        debug.warn('Site-specific extraction failed', { error: e.message }, 'content-extract');
+      }
+    }
+    
+    // Default: Readability extraction
     try {
-      // Clone the document to avoid modifying the original
       const docClone = document.cloneNode(true);
-      
-      // Remove obvious junk before parsing
       docClone.querySelectorAll('script, style, noscript, iframe, svg').forEach(el => el.remove());
       
-      // Create Readability instance and parse
-      const reader = new Readability(docClone, {
-        charThreshold: 100 // Lower threshold to catch shorter articles
-      });
+      const reader = new Readability(docClone, { charThreshold: 100 });
       const article = reader.parse();
       
       if (article && article.textContent) {
         const wordCount = article.textContent.split(/\s+/).filter(w => w.length > 0).length;
         
-        debug.log('Readability extraction successful', {
-          title: article.title,
-          textLength: article.textContent.length,
-          wordCount,
-          byline: article.byline,
-          siteName: article.siteName
-        }, 'content-extract');
+        debug.log('Article extracted', { extractor: 'readability', wordCount }, 'content-extract');
         
         return {
           title: article.title || document.title,
@@ -377,12 +411,11 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         };
       }
       
-      // Fallback if Readability fails
-      debug.warn('Readability returned no content, using fallback', {}, 'content-extract');
+      debug.warn('Readability failed, using fallback', {}, 'content-extract');
       return fallbackExtraction();
       
     } catch (error) {
-      debug.error('Readability extraction failed', error, 'content-extract');
+      debug.error('Readability error', error, 'content-extract');
       return fallbackExtraction();
     }
   }
