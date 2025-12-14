@@ -75,6 +75,34 @@ h1 {
   font-style: italic;
 }
 
+.debug-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 12px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--warning);
+}
+
+.debug-indicator.hidden {
+  display: none;
+}
+
+.debug-icon {
+  font-size: 12px;
+}
+
+.debug-text {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .section {
   margin-bottom: 16px;
 }

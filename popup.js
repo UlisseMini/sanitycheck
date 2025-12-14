@@ -81,6 +81,15 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   try {
+    // Check if debug mode is enabled
+    const DEBUG_ENABLED = typeof window.debug !== 'undefined' && window.debug.ENABLED !== false;
+    const debugIndicator = document.getElementById('debug-indicator');
+    if (DEBUG_ENABLED && debugIndicator) {
+      debugIndicator.classList.remove('hidden');
+    } else if (debugIndicator) {
+      debugIndicator.classList.add('hidden');
+    }
+    
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
     // Load saved API key or use default
