@@ -442,33 +442,59 @@ const ADMIN_HTML = `
     let adminKey = '';
     let currentPage = 0;
     const limit = 20;
+    const STORAGE_KEY = 'logicCheckerAdminKey';
     
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      adminKey = document.getElementById('adminKey').value;
-      
+    // Check for stored admin key on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedKey = localStorage.getItem(STORAGE_KEY);
+      if (storedKey) {
+        adminKey = storedKey;
+        // Try to verify the stored key
+        verifyAndLogin(storedKey);
+      }
+    });
+    
+    async function verifyAndLogin(key) {
       try {
         const res = await fetch('/admin/verify', {
-          headers: { 'Authorization': 'Bearer ' + adminKey }
+          headers: { 'Authorization': 'Bearer ' + key }
         });
         
         if (res.ok) {
+          adminKey = key;
+          localStorage.setItem(STORAGE_KEY, key);
           document.getElementById('loginContainer').classList.add('hidden');
           document.getElementById('dashboard').classList.add('active');
           loadDashboard();
         } else {
-          document.getElementById('errorMsg').style.display = 'block';
+          // Stored key is invalid, clear it
+          localStorage.removeItem(STORAGE_KEY);
+          adminKey = '';
         }
       } catch (err) {
+        // Network error, clear stored key
+        localStorage.removeItem(STORAGE_KEY);
+        adminKey = '';
+      }
+    }
+    
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const key = document.getElementById('adminKey').value;
+      await verifyAndLogin(key);
+      
+      if (!adminKey) {
         document.getElementById('errorMsg').style.display = 'block';
       }
     });
     
     function logout() {
       adminKey = '';
+      localStorage.removeItem(STORAGE_KEY);
       document.getElementById('loginContainer').classList.remove('hidden');
       document.getElementById('dashboard').classList.remove('active');
       document.getElementById('adminKey').value = '';
+      document.getElementById('errorMsg').style.display = 'none';
     }
     
     async function loadDashboard() {
