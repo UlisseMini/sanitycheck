@@ -91,10 +91,19 @@
     debug.error('Unhandled promise rejection in content script', event.reason, 'content-promise-rejection');
   });
 
+  // Feature detection for CSS Custom Highlight API
+  const USE_CSS_HIGHLIGHT_API = typeof CSS !== 'undefined' && 
+                                 typeof CSS.highlights !== 'undefined' && 
+                                 typeof Highlight !== 'undefined';
+  
   debug.log('Content script initialized', {
     url: window.location.href,
-    title: document.title
+    title: document.title,
+    useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API
   }, 'content-init');
+
+  // Store highlight metadata for tooltip display (used by CSS Highlight API)
+  const highlightRanges = new Map(); // Map<Range, {issue, index}>
 
   // Inject styles for highlighting
   const styleId = 'logic-checker-styles';
@@ -102,20 +111,40 @@
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
+      /* ===== CSS Custom Highlight API Styles ===== */
+      /* These use ::highlight() pseudo-element - no DOM modification needed */
+      
+      ::highlight(logic-checker-critical) {
+        background-color: rgba(239, 68, 68, 0.25);
+      }
+      
+      ::highlight(logic-checker-significant) {
+        background-color: rgba(234, 179, 8, 0.25);
+      }
+      
+      ::highlight(logic-checker-minor) {
+        background-color: rgba(115, 115, 115, 0.25);
+      }
+      
+      ::highlight(logic-checker-default) {
+        background-color: rgba(249, 115, 22, 0.25);
+      }
+      
+      /* ===== Fallback: Span-based Highlight Styles ===== */
+      /* Used when CSS Highlight API is not available */
+      
       .logic-checker-highlight {
         cursor: help;
         position: relative;
         transition: background 0.2s ease, border-color 0.2s ease;
         border-radius: 2px;
         padding: 1px 0;
-        border-bottom: 2px wavy;
       }
       
       /* Critical issues - Red */
       .logic-checker-highlight.critical,
       .logic-checker-highlight[data-importance="critical"] {
         background: linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
-        border-bottom-color: #ef4444;
       }
       
       .logic-checker-highlight.critical:hover,
@@ -127,7 +156,6 @@
       .logic-checker-highlight.significant,
       .logic-checker-highlight[data-importance="significant"] {
         background: linear-gradient(to bottom, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
-        border-bottom-color: #eab308;
       }
       
       .logic-checker-highlight.significant:hover,
@@ -139,7 +167,6 @@
       .logic-checker-highlight.minor,
       .logic-checker-highlight[data-importance="minor"] {
         background: linear-gradient(to bottom, rgba(115, 115, 115, 0.25) 0%, rgba(115, 115, 115, 0.15) 100%);
-        border-bottom-color: #737373;
       }
       
       .logic-checker-highlight.minor:hover,
@@ -150,12 +177,13 @@
       /* Default (fallback) - Orange */
       .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]) {
         background: linear-gradient(to bottom, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.15) 100%);
-        border-bottom-color: #f97316;
       }
       
       .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]):hover {
         background: rgba(249, 115, 22, 0.35);
       }
+      
+      /* ===== Tooltip Styles (shared) ===== */
       
       .logic-checker-tooltip {
         position: fixed;
@@ -275,7 +303,7 @@
       }
     `;
     document.head.appendChild(style);
-    debug.log('Styles injected', {}, 'content-init');
+    debug.log('Styles injected', { useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API }, 'content-init');
   }
 
   // Get or create tooltip element
@@ -630,17 +658,26 @@
       return null;
     }
 
+    const endPos = Math.min(originalMatchEnd - 1, nodeMap.length - 1);
+    const endNode = nodeMap[endPos].node;
+    const endText = endNode.textContent;
+    
+    // Extend to word end
+    let endOffset = nodeMap[endPos].offset + 1;
+    while (endOffset < endText.length && /\w/.test(endText[endOffset])) endOffset++;
+    
     const matchInfo = {
       startNode: nodeMap[originalMatchStart].node,
       startOffset: nodeMap[originalMatchStart].offset,
-      endNode: nodeMap[Math.min(originalMatchEnd - 1, nodeMap.length - 1)].node,
-      endOffset: nodeMap[Math.min(originalMatchEnd - 1, nodeMap.length - 1)].offset + 1
+      endNode: endNode,
+      endOffset: endOffset
     };
     
     debug.log('Text match found', {
       quotePreview: quote.substring(0, 50),
       matchStart: originalMatchStart,
-      matchEnd: originalMatchEnd
+      matchEnd: originalMatchEnd,
+      finalEndPos: endPos
     }, 'content-find-text');
 
     return matchInfo;
@@ -761,12 +798,167 @@
     return -1;
   }
 
-  // Highlight a range of text
-  function highlightRange(matchInfo, issue, index) {
+  // =====================================================
+  // CSS Custom Highlight API Implementation
+  // =====================================================
+  
+  // Create a range and add to CSS Highlight API
+  function highlightWithCSSAPI(matchInfo, issue, index) {
+    if (!matchInfo) return false;
+    
+    try {
+      const range = document.createRange();
+      range.setStart(matchInfo.startNode, matchInfo.startOffset);
+      range.setEnd(matchInfo.endNode, matchInfo.endOffset);
+      
+      const importance = issue.importance || 'default';
+      const highlightName = `logic-checker-${importance}`;
+      
+      // Store metadata for tooltip display
+      highlightRanges.set(range, {
+        issue,
+        index,
+        importance,
+        explanation: issue.gap || issue.why_it_doesnt_follow || issue.explanation || ''
+      });
+      
+      // Get or create the highlight for this importance level
+      let highlight = CSS.highlights.get(highlightName);
+      if (!highlight) {
+        highlight = new Highlight();
+        CSS.highlights.set(highlightName, highlight);
+      }
+      
+      // Add range to highlight
+      highlight.add(range);
+      
+      debug.log('CSS Highlight API: range added', { 
+        issueIndex: index, 
+        highlightName,
+        rangeText: range.toString().substring(0, 50)
+      }, 'content-highlight');
+      
+      return true;
+    } catch (e) {
+      debug.error('CSS Highlight API failed', e, 'content-highlight', { issueIndex: index });
+      return false;
+    }
+  }
+  
+  // Clear CSS Highlight API highlights
+  function clearCSSHighlights() {
+    const names = ['logic-checker-critical', 'logic-checker-significant', 'logic-checker-minor', 'logic-checker-default'];
+    names.forEach(name => {
+      if (CSS.highlights.has(name)) {
+        CSS.highlights.delete(name);
+      }
+    });
+    highlightRanges.clear();
+    debug.log('CSS Highlight API: cleared all highlights', {}, 'content-highlight');
+  }
+  
+  // Check if a point is within any highlighted range
+  function getHighlightAtPoint(x, y) {
+    // Use caretPositionFromPoint (standard) or caretRangeFromPoint (WebKit)
+    let caretPos;
+    if (document.caretPositionFromPoint) {
+      caretPos = document.caretPositionFromPoint(x, y);
+      if (!caretPos) return null;
+    } else if (document.caretRangeFromPoint) {
+      const range = document.caretRangeFromPoint(x, y);
+      if (!range) return null;
+      caretPos = { offsetNode: range.startContainer, offset: range.startOffset };
+    } else {
+      return null;
+    }
+    
+    const node = caretPos.offsetNode;
+    const offset = caretPos.offset;
+    
+    // Check if this position is within any of our highlight ranges
+    for (const [range, data] of highlightRanges) {
+      try {
+        // Check if the caret position is within this range
+        const startCompare = range.comparePoint(node, offset);
+        // comparePoint returns -1 if before, 0 if inside, 1 if after
+        // But we need to check if the point is between start and end
+        if (range.isPointInRange(node, offset)) {
+          return data;
+        }
+      } catch (e) {
+        // Node might not be comparable (different tree), skip
+        continue;
+      }
+    }
+    
+    return null;
+  }
+  
+  // Mouse move handler for CSS Highlight API tooltips
+  let lastHighlightData = null;
+  
+  function handleMouseMoveForHighlight(e) {
+    if (!USE_CSS_HIGHLIGHT_API) return;
+    
+    const data = getHighlightAtPoint(e.clientX, e.clientY);
+    
+    if (data) {
+      if (data !== lastHighlightData) {
+        // Show tooltip for this highlight
+        showTooltipForData(e, data);
+        lastHighlightData = data;
+      } else {
+        // Just move the tooltip
+        const tooltip = ensureTooltip();
+        positionTooltip(e, tooltip);
+      }
+    } else {
+      if (lastHighlightData) {
+        hideTooltip();
+        lastHighlightData = null;
+      }
+    }
+  }
+  
+  // Show tooltip for CSS Highlight API data
+  function showTooltipForData(e, data) {
+    const tooltip = ensureTooltip();
+    const importance = data.importance || 'minor';
+    
+    tooltip.className = `logic-checker-tooltip ${importance}`;
+    
+    const emoji = importance === 'critical' ? '🔴' : 
+                  importance === 'significant' ? '🟠' : '🟡';
+
+    tooltip.innerHTML = `
+      <div class="logic-checker-tooltip-badge">Logic Issue</div>
+      <div class="logic-checker-tooltip-header">
+        <span class="logic-checker-tooltip-icon">${emoji}</span>
+        <span class="logic-checker-tooltip-type">${escapeHtml(data.issue.type)}</span>
+      </div>
+      <div class="logic-checker-tooltip-explanation">${escapeHtml(data.explanation || 'No explanation available')}</div>
+    `;
+
+    positionTooltip(e, tooltip);
+    tooltip.classList.add('visible');
+  }
+  
+  // Set up mousemove listener for CSS Highlight API
+  if (USE_CSS_HIGHLIGHT_API) {
+    document.addEventListener('mousemove', handleMouseMoveForHighlight, { passive: true });
+    debug.log('CSS Highlight API: mousemove listener attached', {}, 'content-init');
+  }
+
+  // =====================================================
+  // Fallback: Span-based Highlighting
+  // =====================================================
+  
+  // Highlight a range of text using span wrapping (fallback)
+  function highlightRangeWithSpan(matchInfo, issue, index) {
     if (!matchInfo) return false;
 
     try {
-      debug.debug('Highlighting range', {
+      debug.debug('Highlighting range with span', {
         issueIndex: index,
         issueType: issue.type,
         quotePreview: issue.quote?.substring(0, 50)
@@ -783,7 +975,6 @@
       highlight.dataset.issueIndex = index;
       highlight.dataset.issueType = issue.type;
       highlight.dataset.importance = importance;
-      // Handle all formats: new (gap), medium (why_it_doesnt_follow), old (explanation)
       highlight.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
 
       // Wrap the range
@@ -794,7 +985,7 @@
       highlight.addEventListener('mouseleave', hideTooltip);
       highlight.addEventListener('mousemove', moveTooltip);
 
-      debug.log('Range highlighted successfully', { issueIndex: index }, 'content-highlight');
+      debug.log('Span highlight successful', { issueIndex: index }, 'content-highlight');
       return true;
     } catch (e) {
       debug.warn('Could not highlight range (trying alternative)', e, 'content-highlight', {
@@ -802,12 +993,11 @@
         errorMessage: e.message
       });
       
-      // Try alternative: highlight individual text nodes
       return highlightAlternative(matchInfo, issue, index);
     }
   }
 
-  // Alternative highlighting for complex ranges
+  // Alternative highlighting for complex ranges (span-based fallback)
   function highlightAlternative(matchInfo, issue, index) {
     try {
       debug.debug('Trying alternative highlighting', { issueIndex: index }, 'content-highlight-alt');
@@ -816,7 +1006,6 @@
       range.setStart(matchInfo.startNode, matchInfo.startOffset);
       range.setEnd(matchInfo.endNode, matchInfo.endOffset);
       
-      // Get all text nodes in range
       const fragment = range.cloneContents();
       const textContent = fragment.textContent;
       
@@ -825,7 +1014,6 @@
         return false;
       }
 
-      // Just highlight the start node as a fallback
       const startText = matchInfo.startNode.textContent;
       const before = startText.substring(0, matchInfo.startOffset);
       const highlighted = startText.substring(matchInfo.startOffset);
@@ -836,7 +1024,6 @@
       wrapper.dataset.issueIndex = index;
       wrapper.dataset.issueType = issue.type;
       wrapper.dataset.importance = importance;
-      // Handle all formats: new (gap), medium (why_it_doesnt_follow), old (explanation)
       wrapper.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
       wrapper.textContent = highlighted;
       
@@ -858,6 +1045,19 @@
         issueIndex: index
       });
       return false;
+    }
+  }
+  
+  // =====================================================
+  // Unified Highlight Function
+  // =====================================================
+  
+  // Choose the appropriate highlighting method
+  function highlightRange(matchInfo, issue, index) {
+    if (USE_CSS_HIGHLIGHT_API) {
+      return highlightWithCSSAPI(matchInfo, issue, index);
+    } else {
+      return highlightRangeWithSpan(matchInfo, issue, index);
     }
   }
 
@@ -930,10 +1130,19 @@
     return div.innerHTML;
   }
 
-  // Clear previous highlights
+  // Clear previous highlights (handles both CSS API and span-based)
   function clearHighlights() {
+    // Clear CSS Highlight API highlights
+    if (USE_CSS_HIGHLIGHT_API) {
+      clearCSSHighlights();
+    }
+    
+    // Also clear any span-based highlights (in case of mixed mode or fallback)
     const highlights = document.querySelectorAll('.logic-checker-highlight');
-    debug.log('Clearing highlights', { count: highlights.length }, 'content-highlight');
+    debug.log('Clearing highlights', { 
+      spanCount: highlights.length,
+      useCSSAPI: USE_CSS_HIGHLIGHT_API 
+    }, 'content-highlight');
     
     highlights.forEach(el => {
       const parent = el.parentNode;
@@ -946,7 +1155,10 @@
 
   // Main highlight function
   function highlightIssues(issues) {
-    debug.log('Starting highlight process', { issueCount: issues.length }, 'content-highlight');
+    debug.log('Starting highlight process', { 
+      issueCount: issues.length,
+      method: USE_CSS_HIGHLIGHT_API ? 'CSS Highlight API' : 'Span wrapping'
+    }, 'content-highlight');
     
     // Ensure tooltip exists before creating highlights
     ensureTooltip();

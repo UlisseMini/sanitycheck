@@ -185,6 +185,16 @@ async function checkCurrentPage() {
         title: response.title
       }, 'popup-check-page');
       showArticleDetected(response);
+      
+      // Check for cached results
+      const cached = await chrome.storage.local.get([`analysis_${tab.url}`]);
+      if (cached[`analysis_${tab.url}`]) {
+        const parsed = cached[`analysis_${tab.url}`];
+        displayResults(parsed);
+        if (parsed.issues?.length > 0) {
+          await sendHighlightsToPage(parsed.issues);
+        }
+      }
     } else if (response) {
       debug.log('Not an article page', {
         wordCount: response.wordCount,
@@ -293,6 +303,11 @@ async function analyzeArticle() {
   loadingSection.classList.remove('hidden');
   resultsSection.classList.add('hidden');
   
+  // Clear cached results when re-running
+  if (currentArticle?.url) {
+    await chrome.storage.local.remove([`analysis_${currentArticle.url}`]);
+  }
+  
   const analysisStartTime = Date.now();
   
   try {
@@ -343,6 +358,11 @@ async function analyzeArticle() {
     }, 'popup-analyze');
     
     displayResults(parsed);
+    
+    // Cache results
+    if (currentArticle?.url) {
+      await chrome.storage.local.set({ [`analysis_${currentArticle.url}`]: parsed });
+    }
     
     // Send highlights to content script
     if (parsed && parsed.issues && parsed.issues.length > 0) {
