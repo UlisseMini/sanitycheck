@@ -12,7 +12,17 @@ function hashText(text: string): string {
 }
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
-const ADMIN_KEY = process.env.ADMIN_KEY || 'changeme';
+
+// Admin key validation - must be set and not the weak default
+const ADMIN_KEY = process.env.ADMIN_KEY;
+if (!ADMIN_KEY) {
+  console.error('FATAL: ADMIN_KEY environment variable is not set');
+  process.exit(1);
+}
+if (ADMIN_KEY === 'changeme') {
+  console.error('FATAL: ADMIN_KEY cannot be "changeme" - please set a strong admin key');
+  process.exit(1);
+}
 
 // Middleware
 app.use(cors());
