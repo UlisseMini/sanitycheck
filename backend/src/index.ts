@@ -12,8 +12,24 @@ const ADMIN_KEY = process.env.ADMIN_KEY || 'changeme';
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
+// Ensure public directory exists
+const publicDir = path.join(__dirname, '../public');
+if (!require('fs').existsSync(publicDir)) {
+  require('fs').mkdirSync(publicDir, { recursive: true });
+  console.log('Created public directory:', publicDir);
+}
+
 // Serve static files (extension zip)
-app.use('/static', express.static(path.join(__dirname, '../public')));
+app.use('/static', express.static(publicDir));
+
+// Log available static files at startup
+const fs = require('fs');
+if (fs.existsSync(publicDir)) {
+  const files = fs.readdirSync(publicDir);
+  console.log('Static files available:', files);
+} else {
+  console.warn('WARNING: Public directory does not exist:', publicDir);
+}
 
 // Admin auth middleware
 function requireAdmin(req: Request, res: Response, next: NextFunction) {

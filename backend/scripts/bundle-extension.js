@@ -44,10 +44,20 @@ const existingFiles = EXTENSION_FILES.filter(f =>
 );
 
 if (existingFiles.length === 0) {
-  console.log('  Warning: No extension files found in root directory');
-  console.log('  Creating placeholder zip...');
+  console.error('  ERROR: No extension files found in root directory');
+  console.error('  Root dir:', rootDir);
+  console.error('  Looking for files:', EXTENSION_FILES);
+  console.error('  Current working dir:', process.cwd());
+  console.error('  Files in root:', fs.readdirSync(rootDir).slice(0, 10));
   
-  // Create a minimal placeholder
+  // In production, fail loudly
+  if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT) {
+    console.error('  FATAL: Cannot bundle extension in production without source files');
+    process.exit(1);
+  }
+  
+  // In dev, create placeholder
+  console.log('  Creating placeholder zip...');
   fs.writeFileSync(
     path.join(outputDir, 'README.txt'),
     'Extension files not found during build. Please download from source.'
@@ -88,13 +98,26 @@ try {
 
   // Create zip using zip command or fallback
   try {
-    execSync(`cd "${tempDir}" && zip -r "${outputZip}" . -x "*.DS_Store"`, { stdio: 'inherit' });
+    execSync(`cd "${tempDir}" && zip -r "${outputZip}" . -x "*.DS_Store"`, { 
+      stdio: 'inherit',
+      cwd: tempDir
+    });
   } catch (e) {
+    console.error('  ERROR: Failed to create zip:', e.message);
     // Fallback: try using tar if zip isn't available
-    console.log('  zip not available, trying alternative...');
-    execSync(`cd "${tempDir}" && tar -cvf "${outputZip.replace('.zip', '.tar')}" *`, { stdio: 'inherit' });
-    // Rename to .zip (it won't be a real zip but at least exists)
-    fs.renameSync(outputZip.replace('.zip', '.tar'), outputZip);
+    console.log('  Trying tar as fallback...');
+    try {
+      execSync(`tar -czf "${outputZip}" *`, { 
+        stdio: 'inherit',
+        cwd: tempDir
+      });
+      console.log('  Created tar.gz instead of zip');
+    } catch (tarError) {
+      console.error('  FATAL: Both zip and tar failed');
+      console.error('  Zip error:', e.message);
+      console.error('  Tar error:', tarError.message);
+      throw new Error('Failed to create extension archive');
+    }
   }
 
   console.log('');
