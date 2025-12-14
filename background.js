@@ -1,7 +1,8 @@
 // Background service worker for Logic Checker
 
-// Backend URL - change this after deploying to Railway
-const BACKEND_URL = 'http://localhost:3001';
+// Backend URL - defaults to Railway, can be overridden in extension storage
+// To set: chrome.storage.local.set({ backendUrl: 'https://your-app.railway.app' })
+const BACKEND_URL = 'https://sanitycheck-backend-production.up.railway.app';
 
 // Create context menu on install
 chrome.runtime.onInstalled.addListener(() => {
