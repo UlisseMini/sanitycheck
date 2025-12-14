@@ -26,3 +26,4 @@ Thumbs.db
 *.swp
 *.swo
 test-anthropic-api.js
+test-debug-logging.js
