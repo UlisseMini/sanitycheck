@@ -45,7 +45,7 @@
     }
     
     .container {
-      max-width: 680px;
+      max-width: 720px;
       width: 100%;
     }
     
@@ -75,9 +75,10 @@
       color: #ffffff;
     }
     
-    /* ===== Examples Section ===== */
-    .examples-section {
+    /* ===== Demo Section ===== */
+    .demo-section {
       margin-bottom: 40px;
+      position: relative;
     }
     
     .section-label {
@@ -91,11 +92,11 @@
     }
     
     .browser-window {
-      margin-bottom: 28px;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border-strong);
       background: #1c1c1c;
+      position: relative;
     }
     
     .browser-header {
@@ -133,15 +134,24 @@
     }
     
     .browser-content {
-      padding: 24px;
+      padding: 28px 32px;
       background: #ffffff;
+      position: relative;
     }
     
-    .example-text {
+    .article-text {
       font-size: 17px;
-      line-height: 1.8;
+      line-height: 1.9;
       color: #1a1a1a;
       font-family: Georgia, 'Times New Roman', serif;
+    }
+    
+    .article-text p {
+      margin-bottom: 1em;
+    }
+    
+    .article-text p:last-child {
+      margin-bottom: 0;
     }
     
     /* ===== Highlight Styles ===== */
@@ -156,30 +166,55 @@
     }
     
     .highlight.critical {
-      background: linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+      background: linear-gradient(to bottom, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
     }
     
+    .highlight.critical.active,
     .highlight.critical:hover {
-      background: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.45);
     }
     
     .highlight.significant {
-      background: linear-gradient(to bottom, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
+      background: linear-gradient(to bottom, rgba(234, 179, 8, 0.3) 0%, rgba(234, 179, 8, 0.2) 100%);
     }
     
+    .highlight.significant.active,
     .highlight.significant:hover {
-      background: rgba(234, 179, 8, 0.4);
+      background: rgba(234, 179, 8, 0.45);
     }
     
     .highlight.minor {
-      background: linear-gradient(to bottom, rgba(115, 115, 115, 0.25) 0%, rgba(115, 115, 115, 0.15) 100%);
+      background: linear-gradient(to bottom, rgba(115, 115, 115, 0.3) 0%, rgba(115, 115, 115, 0.2) 100%);
     }
     
+    .highlight.minor.active,
     .highlight.minor:hover {
-      background: rgba(115, 115, 115, 0.4);
+      background: rgba(115, 115, 115, 0.45);
     }
     
-    /* ===== Tooltip Styles (Fixed position, follows mouse) ===== */
+    /* ===== Fake Cursor ===== */
+    .fake-cursor {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 100;
+      transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1), top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 1;
+    }
+    
+    .fake-cursor.hidden {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .fake-cursor svg {
+      width: 20px;
+      height: 20px;
+      filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+    }
+    
+    /* ===== Tooltip Styles ===== */
     .tooltip {
       position: fixed;
       z-index: 10000;
@@ -318,54 +353,37 @@
       <p class="tagline">Identify logical fallacies in what you read.</p>
     </div>
     
-    <div class="examples-section">
-      <p class="section-label">Hover over highlighted text to see analysis</p>
+    <div class="demo-section">
+      <p class="section-label">Watch the demo or hover to explore</p>
       
-      <div class="browser-window">
+      <div class="browser-window" id="browser-window">
         <div class="browser-header">
           <div class="browser-dots">
             <span class="browser-dot red"></span>
             <span class="browser-dot yellow"></span>
             <span class="browser-dot green"></span>
           </div>
-          <div class="browser-url">techdigest.com/startup-hits-2m-downloads</div>
+          <div class="browser-url">techdigest.com/ai-revolution-workplace</div>
         </div>
-        <div class="browser-content">
-          <p class="example-text">
-            The startup's app has been downloaded over 2 million times since launch. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Download numbers don't indicate product quality or user satisfaction. Many downloaded apps are quickly abandoned, and high downloads often result from marketing spend rather than genuine value.">With numbers like these, it's clear the product is solving a real problem for users.</span> The company is now in talks with several major investors.
-          </p>
-        </div>
-      </div>
-      
-      <div class="browser-window">
-        <div class="browser-header">
-          <div class="browser-dots">
-            <span class="browser-dot red"></span>
-            <span class="browser-dot yellow"></span>
-            <span class="browser-dot green"></span>
+        <div class="browser-content" id="browser-content">
+          <div class="article-text">
+            <p>
+              A recent survey found that 78% of companies have adopted at least one AI tool in the past year. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Adoption rates don't indicate effectiveness or satisfaction. Many companies adopt tools that go unused, and the survey doesn't reveal whether these tools actually improved productivity or outcomes.">This widespread adoption proves that AI is fundamentally transforming how businesses operate.</span> Industry experts predict this trend will only accelerate.
+            </p>
+            <p>
+              One CEO reported that after implementing an AI assistant, his team's output doubled within weeks. <span class="highlight significant" data-type="Anecdotal Evidence" data-importance="significant" data-explanation="A single company's experience cannot be generalized. The timing could be coincidental, other factors may have contributed, and 'output' is vague—quantity doesn't equal quality.">His experience demonstrates the massive productivity gains available to any company willing to embrace these tools.</span>
+            </p>
+            <p>
+              Critics who worry about job displacement are missing the bigger picture. <span class="highlight minor" data-type="Dismissive Framing" data-importance="minor" data-explanation="Characterizing legitimate concerns as 'missing the bigger picture' dismisses them without addressing the substance. Job displacement concerns are supported by economic research and historical precedent.">Every major technological shift has ultimately created more jobs than it eliminated.</span>
+            </p>
           </div>
-          <div class="browser-url">medium.com/@healthylife/standing-desk-review</div>
-        </div>
-        <div class="browser-content">
-          <p class="example-text">
-            After switching to a standing desk three months ago, I've noticed I feel more alert during afternoon meetings. <span class="highlight significant" data-type="Correlation vs Causation" data-importance="significant" data-explanation="Many factors could explain increased alertness: seasonal changes, different projects, sleep improvements, or even just the novelty effect. A single personal experience can't establish that the desk caused the change.">The standing desk has completely transformed my energy levels.</span> I'd recommend anyone struggling with the 3pm slump give it a try.
-          </p>
-        </div>
-      </div>
-      
-      <div class="browser-window">
-        <div class="browser-header">
-          <div class="browser-dots">
-            <span class="browser-dot red"></span>
-            <span class="browser-dot yellow"></span>
-            <span class="browser-dot green"></span>
+          
+          <!-- Fake cursor -->
+          <div class="fake-cursor" id="fake-cursor">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4L10.5 20L12.5 13.5L19 11.5L4 4Z" fill="black" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
           </div>
-          <div class="browser-url">businessweekly.com/restaurant-chain-expansion</div>
-        </div>
-        <div class="browser-content">
-          <p class="example-text">
-            The restaurant chain expanded from 50 to 200 locations in just three years while maintaining profitability. <span class="highlight minor" data-type="Incomplete Picture" data-importance="minor" data-explanation="Rapid expansion with maintained profitability is notable, but doesn't guarantee continued success. Market saturation, rising costs, or economic downturns could change the picture—past performance isn't always indicative of future results.">This track record suggests they'll have no trouble hitting their goal of 500 locations by 2027.</span>
-          </p>
         </div>
       </div>
     </div>
@@ -387,15 +405,23 @@
     </div>
   </div>
   
-  <!-- Tooltip element (positioned by JS like the extension) -->
+  <!-- Tooltip element -->
   <div class="tooltip" id="tooltip"></div>
   
   <script>
-    // Tooltip behavior matching the extension
     const tooltip = document.getElementById('tooltip');
+    const fakeCursor = document.getElementById('fake-cursor');
+    const browserContent = document.getElementById('browser-content');
+    const browserWindow = document.getElementById('browser-window');
     const highlights = document.querySelectorAll('.highlight');
     
-    function showTooltip(e, highlight) {
+    let isUserControlling = false;
+    let animationPaused = false;
+    let currentHighlightIndex = 0;
+    let animationTimeout = null;
+    
+    // Show tooltip for a highlight
+    function showTooltipForHighlight(highlight, cursorX, cursorY) {
       const type = highlight.dataset.type || 'Issue';
       const importance = highlight.dataset.importance || 'minor';
       const explanation = highlight.dataset.explanation || '';
@@ -413,37 +439,125 @@
         <div class="tooltip-text">${explanation}</div>
       `;
       
-      positionTooltip(e);
+      positionTooltipAt(cursorX, cursorY);
       tooltip.classList.add('visible');
+      highlight.classList.add('active');
     }
     
     function hideTooltip() {
       tooltip.classList.remove('visible');
+      highlights.forEach(h => h.classList.remove('active'));
     }
     
-    function positionTooltip(e) {
+    function positionTooltipAt(x, y) {
       const padding = 15;
       const rect = tooltip.getBoundingClientRect();
       
-      let x = e.clientX + padding;
-      let y = e.clientY + padding;
+      let left = x + padding;
+      let top = y + padding;
       
-      // Keep tooltip on screen
-      if (x + rect.width > window.innerWidth - padding) {
-        x = e.clientX - rect.width - padding;
+      if (left + rect.width > window.innerWidth - padding) {
+        left = x - rect.width - padding;
       }
-      if (y + rect.height > window.innerHeight - padding) {
-        y = e.clientY - rect.height - padding;
+      if (top + rect.height > window.innerHeight - padding) {
+        top = y - rect.height - padding;
       }
       
-      tooltip.style.left = `${Math.max(padding, x)}px`;
-      tooltip.style.top = `${Math.max(padding, y)}px`;
+      tooltip.style.left = `${Math.max(padding, left)}px`;
+      tooltip.style.top = `${Math.max(padding, top)}px`;
     }
     
+    // Animate fake cursor through highlights
+    function animateCursor() {
+      if (isUserControlling || animationPaused) return;
+      
+      const highlight = highlights[currentHighlightIndex];
+      const contentRect = browserContent.getBoundingClientRect();
+      const highlightRect = highlight.getBoundingClientRect();
+      
+      // Position cursor relative to browser content
+      const cursorX = highlightRect.left + highlightRect.width / 2 - contentRect.left;
+      const cursorY = highlightRect.top + highlightRect.height / 2 - contentRect.top;
+      
+      fakeCursor.style.left = `${cursorX}px`;
+      fakeCursor.style.top = `${cursorY}px`;
+      
+      // Wait for cursor to arrive, then show tooltip
+      animationTimeout = setTimeout(() => {
+        if (isUserControlling || animationPaused) return;
+        
+        const absX = highlightRect.left + highlightRect.width / 2;
+        const absY = highlightRect.top + highlightRect.height / 2;
+        showTooltipForHighlight(highlight, absX, absY);
+        
+        // Hold tooltip, then move to next
+        animationTimeout = setTimeout(() => {
+          if (isUserControlling || animationPaused) return;
+          
+          hideTooltip();
+          
+          // Wait before moving to next highlight
+          animationTimeout = setTimeout(() => {
+            if (isUserControlling || animationPaused) return;
+            
+            currentHighlightIndex = (currentHighlightIndex + 1) % highlights.length;
+            animateCursor();
+          }, 400);
+          
+        }, 2500);
+        
+      }, 700);
+    }
+    
+    // Start animation
+    function startAnimation() {
+      isUserControlling = false;
+      animationPaused = false;
+      fakeCursor.classList.remove('hidden');
+      animateCursor();
+    }
+    
+    // Stop animation when user enters
+    function stopAnimation() {
+      isUserControlling = true;
+      if (animationTimeout) {
+        clearTimeout(animationTimeout);
+        animationTimeout = null;
+      }
+      fakeCursor.classList.add('hidden');
+      hideTooltip();
+    }
+    
+    // User mouse events
+    browserContent.addEventListener('mouseenter', () => {
+      stopAnimation();
+    });
+    
+    browserContent.addEventListener('mouseleave', () => {
+      hideTooltip();
+      // Restart animation after user leaves
+      setTimeout(() => {
+        if (!isUserControlling) return;
+        startAnimation();
+      }, 1000);
+    });
+    
+    // User hover on highlights
     highlights.forEach(highlight => {
-      highlight.addEventListener('mouseenter', (e) => showTooltip(e, highlight));
-      highlight.addEventListener('mouseleave', hideTooltip);
-      highlight.addEventListener('mousemove', positionTooltip);
+      highlight.addEventListener('mouseenter', (e) => {
+        if (!isUserControlling) return;
+        showTooltipForHighlight(highlight, e.clientX, e.clientY);
+      });
+      
+      highlight.addEventListener('mouseleave', () => {
+        if (!isUserControlling) return;
+        hideTooltip();
+      });
+      
+      highlight.addEventListener('mousemove', (e) => {
+        if (!isUserControlling) return;
+        positionTooltipAt(e.clientX, e.clientY);
+      });
     });
     
     // Settings link
@@ -455,6 +569,9 @@
         window.location.href = 'settings.html';
       }
     });
+    
+    // Start the animation on load
+    setTimeout(startAnimation, 500);
   </script>
 </body>
 </html>
