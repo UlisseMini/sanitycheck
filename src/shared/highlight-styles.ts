@@ -66,7 +66,7 @@ export const highlightCSS = `
 }
 
 .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]) {
-  background: linear-gradient(to bottom, ${colors.highlightDefault} 0%, rgba(249, 115, 22, 0.15) 100%);
+  background: linear-gradient(to bottom, ${colors.highlightDefault} 0%, rgba(96, 165, 250, 0.15) 100%);
 }
 
 .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]):hover {
@@ -116,7 +116,7 @@ export const tooltipCSS = `
 
 .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) {
   border-color: ${colors.severityDefault};
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(249, 115, 22, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(96, 165, 250, 0.2);
 }
 
 .logic-checker-tooltip.visible {

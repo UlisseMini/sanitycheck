@@ -1,7 +1,33 @@
-// SanityCheck - Content script for extracting article text and highlighting issues
-// This file is bundled with Readability.js during build
+/**
+ * SanityCheck - Content script for extracting article text and highlighting issues
+ * This file is bundled with Readability.js during build
+ */
 
 import { Readability, isProbablyReaderable } from '@mozilla/readability';
+import { BACKEND_URL } from '../shared';
+import { contentStyles } from '../shared/highlight-styles';
+
+declare global {
+  interface Window {
+    __logicCheckerInjected?: boolean;
+  }
+}
+
+interface AnalysisIssue {
+  quote?: string;
+  importance?: string;
+  type?: string;
+  gap?: string;
+  why_it_doesnt_follow?: string;
+  explanation?: string;
+}
+
+interface HighlightData {
+  issue: AnalysisIssue;
+  index: number;
+  importance: string;
+  explanation: string;
+}
 
 (function() {
   // Avoid re-injecting
@@ -9,14 +35,14 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   window.__logicCheckerInjected = true;
 
   // Simple inline debug logger for content script
-  const DEBUG_ENABLED = true; // Set to true to enable debug logging
+  const DEBUG_ENABLED = true;
   const EXTENSION_VERSION = '1.2.0';
-  const DEBUG_SERVER_URL = 'https://sanitycheck-production.up.railway.app/debug/log';
+  const DEBUG_SERVER_URL = `${BACKEND_URL}/debug/log`;
   
   const debug = {
-    log: (message, data = {}, source = 'content') => {
+    log: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
       if (!DEBUG_ENABLED) return;
-      fetch(DEBUG_SERVER_URL, {
+      void fetch(DEBUG_SERVER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -29,9 +55,9 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         })
       }).catch(() => {});
     },
-    warn: (message, data = {}, source = 'content') => {
+    warn: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
       if (!DEBUG_ENABLED) return;
-      fetch(DEBUG_SERVER_URL, {
+      void fetch(DEBUG_SERVER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -44,9 +70,10 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         })
       }).catch(() => {});
     },
-    error: (message, error, source = 'content', additionalData = {}) => {
+    error: (message: string, error: unknown, source = 'content', additionalData: Record<string, unknown> = {}): void => {
       if (!DEBUG_ENABLED) return;
-      fetch(DEBUG_SERVER_URL, {
+      const err = error as Error | undefined;
+      void fetch(DEBUG_SERVER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,10 +82,10 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
           data: {
             ...additionalData,
             url: window.location.href,
-            error: error ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack
+            error: err ? {
+              name: err.name,
+              message: err.message,
+              stack: err.stack
             } : undefined
           },
           source,
@@ -67,9 +94,9 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         })
       }).catch(() => {});
     },
-    debug: (message, data = {}, source = 'content') => {
+    debug: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
       if (!DEBUG_ENABLED) return;
-      fetch(DEBUG_SERVER_URL, {
+      void fetch(DEBUG_SERVER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -91,7 +118,6 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
-      error: event.error
     }, 'content-window-error');
   });
 
@@ -101,7 +127,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
 
   // Feature detection for CSS Custom Highlight API
   const USE_CSS_HIGHLIGHT_API = typeof CSS !== 'undefined' && 
-                                 typeof CSS.highlights !== 'undefined' && 
+                                 'highlights' in CSS && 
                                  typeof Highlight !== 'undefined';
   
   debug.log('Content script initialized', {
@@ -111,175 +137,21 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     hasReadability: typeof Readability !== 'undefined'
   }, 'content-init');
 
-  // Store highlight metadata for tooltip display (used by CSS Highlight API)
-  const highlightRanges = new Map(); // Map<Range, {issue, index}>
+  // Store highlight metadata for tooltip display
+  const highlightRanges = new Map<Range, HighlightData>();
 
   // Inject styles for highlighting
   const styleId = 'logic-checker-styles';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
     style.id = styleId;
-    style.textContent = `
-      /* ===== CSS Custom Highlight API Styles ===== */
-      ::highlight(logic-checker-critical) {
-        background-color: rgba(239, 68, 68, 0.25);
-      }
-      
-      ::highlight(logic-checker-significant) {
-        background-color: rgba(234, 179, 8, 0.25);
-      }
-      
-      ::highlight(logic-checker-minor) {
-        background-color: rgba(115, 115, 115, 0.25);
-      }
-      
-      ::highlight(logic-checker-default) {
-        background-color: rgba(249, 115, 22, 0.25);
-      }
-      
-      /* ===== Fallback: Span-based Highlight Styles ===== */
-      .logic-checker-highlight {
-        cursor: help;
-        position: relative;
-        transition: background 0.2s ease, border-color 0.2s ease;
-        border-radius: 2px;
-        padding: 1px 0;
-      }
-      
-      .logic-checker-highlight.critical,
-      .logic-checker-highlight[data-importance="critical"] {
-        background: linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
-      }
-      
-      .logic-checker-highlight.critical:hover,
-      .logic-checker-highlight[data-importance="critical"]:hover {
-        background: rgba(239, 68, 68, 0.35);
-      }
-      
-      .logic-checker-highlight.significant,
-      .logic-checker-highlight[data-importance="significant"] {
-        background: linear-gradient(to bottom, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
-      }
-      
-      .logic-checker-highlight.significant:hover,
-      .logic-checker-highlight[data-importance="significant"]:hover {
-        background: rgba(234, 179, 8, 0.35);
-      }
-      
-      .logic-checker-highlight.minor,
-      .logic-checker-highlight[data-importance="minor"] {
-        background: linear-gradient(to bottom, rgba(115, 115, 115, 0.25) 0%, rgba(115, 115, 115, 0.15) 100%);
-      }
-      
-      .logic-checker-highlight.minor:hover,
-      .logic-checker-highlight[data-importance="minor"]:hover {
-        background: rgba(115, 115, 115, 0.35);
-      }
-      
-      .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]) {
-        background: linear-gradient(to bottom, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.15) 100%);
-      }
-      
-      .logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]):hover {
-        background: rgba(249, 115, 22, 0.35);
-      }
-      
-      /* ===== Tooltip Styles ===== */
-      .logic-checker-tooltip {
-        position: fixed;
-        z-index: 2147483647;
-        max-width: 380px;
-        background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-        border: 1px solid;
-        border-radius: 8px;
-        padding: 14px 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 13px;
-        line-height: 1.5;
-        color: #f5f5f5;
-        pointer-events: none;
-        opacity: 0;
-        transform: translateY(8px);
-        transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-      }
-      
-      .logic-checker-tooltip.critical {
-        border-color: #ef4444;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.2);
-      }
-      
-      .logic-checker-tooltip.significant {
-        border-color: #eab308;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.2);
-      }
-      
-      .logic-checker-tooltip.minor {
-        border-color: #737373;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(115, 115, 115, 0.2);
-      }
-      
-      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) {
-        border-color: #60a5fa;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(96, 165, 250, 0.2);
-      }
-      
-      .logic-checker-tooltip.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      
-      .logic-checker-tooltip-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #333;
-      }
-      
-      .logic-checker-tooltip-icon {
-        font-size: 18px;
-      }
-      
-      .logic-checker-tooltip-type {
-        font-weight: 600;
-        font-size: 14px;
-      }
-      
-      .logic-checker-tooltip.critical .logic-checker-tooltip-type { color: #ef4444; }
-      .logic-checker-tooltip.significant .logic-checker-tooltip-type { color: #eab308; }
-      .logic-checker-tooltip.minor .logic-checker-tooltip-type { color: #737373; }
-      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-type { color: #60a5fa; }
-      
-      .logic-checker-tooltip-explanation {
-        color: #d4d4d4;
-      }
-      
-      .logic-checker-tooltip-badge {
-        position: absolute;
-        top: -8px;
-        right: 12px;
-        color: white;
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      
-      .logic-checker-tooltip.critical .logic-checker-tooltip-badge { background: #ef4444; }
-      .logic-checker-tooltip.significant .logic-checker-tooltip-badge { background: #eab308; }
-      .logic-checker-tooltip.minor .logic-checker-tooltip-badge { background: #737373; }
-      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-badge { background: #60a5fa; }
-    `;
+    style.textContent = contentStyles;
     document.head.appendChild(style);
     debug.log('Styles injected', { useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API }, 'content-init');
   }
 
   // Get or create tooltip element
-  function ensureTooltip() {
+  function ensureTooltip(): HTMLElement {
     let tooltip = document.getElementById('logic-checker-tooltip');
     if (!tooltip) {
       tooltip = document.createElement('div');
@@ -290,36 +162,44 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     return tooltip;
   }
   
-  let tooltip = ensureTooltip();
+  const tooltip = ensureTooltip();
 
   // =====================================================
   // READABILITY-BASED ARTICLE DETECTION AND EXTRACTION
   // =====================================================
 
-  function isArticlePage() {
+  interface ArticleCheckResult {
+    isArticle: boolean;
+    confidence: number;
+    indicators: {
+      isProbablyReaderable: boolean;
+      hasArticleTag: boolean;
+      hasArticleSchema: boolean;
+      hasArticleMeta: boolean;
+    };
+  }
+
+  function isArticlePage(): ArticleCheckResult {
     debug.debug('Checking if page is an article using Readability', {}, 'content-article-check');
     
-    // Use Readability's built-in heuristic
     const isProbablyArticle = isProbablyReaderable(document, {
       minContentLength: 140,
       minScore: 20
     });
     
-    // Also check for common article indicators as a backup
     const hasArticleTag = !!document.querySelector('article');
     const hasArticleSchema = !!document.querySelector('[itemtype*="Article"]') || 
                              !!document.querySelector('[itemtype*="BlogPosting"]');
-    const ogType = document.querySelector('meta[property="og:type"]');
-    const hasArticleMeta = ogType && ogType.content === 'article';
+    const ogType = document.querySelector('meta[property="og:type"]') as HTMLMetaElement | null;
+    const hasArticleMeta = ogType?.content === 'article';
     
-    // Calculate confidence score
     let score = 0;
     if (isProbablyArticle) score += 5;
     if (hasArticleTag) score += 2;
     if (hasArticleSchema) score += 2;
     if (hasArticleMeta) score += 1;
     
-    const result = {
+    const result: ArticleCheckResult = {
       isArticle: score >= 4 || isProbablyArticle,
       confidence: score,
       indicators: {
@@ -343,17 +223,29 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   // SITE-SPECIFIC EXTRACTORS
   // =====================================================
 
-  function getSiteSpecificExtractor() {
+  interface ExtractedArticle {
+    title: string;
+    text: string;
+    wordCount: number;
+    url: string;
+    source?: string;
+    byline?: string;
+    siteName?: string;
+    excerpt?: string;
+  }
+
+  type SiteExtractor = () => ExtractedArticle | null;
+
+  function getSiteSpecificExtractor(): SiteExtractor | null {
     const host = window.location.hostname.toLowerCase();
     
-    // LessWrong / GreaterWrong - use #postContent for cleaner extraction
     if (host.includes('lesswrong.com') || host.includes('greaterwrong.com')) {
       return () => {
         const postContent = document.querySelector('#postContent');
         if (!postContent) return null;
         
-        const title = document.querySelector('h1')?.textContent?.trim() || document.title;
-        const text = postContent.innerText || postContent.textContent || '';
+        const title = document.querySelector('h1')?.textContent?.trim() ?? document.title;
+        const text = postContent.textContent ?? '';
         const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
         
         if (wordCount < 10) return null;
@@ -362,15 +254,10 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       };
     }
     
-    // Add more sites here: if (host.includes('example.com')) { return () => {...}; }
-    
     return null;
   }
 
-  function extractArticleText() {
-    const host = window.location.hostname;
-    
-    // Try site-specific extraction first
+  function extractArticleText(): ExtractedArticle {
     const siteExtractor = getSiteSpecificExtractor();
     if (siteExtractor) {
       try {
@@ -383,31 +270,31 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
           return result;
         }
       } catch (e) {
-        debug.warn('Site-specific extraction failed', { error: e.message }, 'content-extract');
+        const err = e as Error;
+        debug.warn('Site-specific extraction failed', { error: err.message }, 'content-extract');
       }
     }
     
-    // Default: Readability extraction
     try {
-      const docClone = document.cloneNode(true);
+      const docClone = document.cloneNode(true) as Document;
       docClone.querySelectorAll('script, style, noscript, iframe, svg').forEach(el => el.remove());
       
       const reader = new Readability(docClone, { charThreshold: 100 });
       const article = reader.parse();
       
-      if (article && article.textContent) {
+      if (article?.textContent) {
         const wordCount = article.textContent.split(/\s+/).filter(w => w.length > 0).length;
         
         debug.log('Article extracted', { extractor: 'readability', wordCount }, 'content-extract');
         
         return {
-          title: article.title || document.title,
+          title: article.title ?? document.title,
           text: article.textContent,
           wordCount,
           url: window.location.href,
-          byline: article.byline,
-          siteName: article.siteName,
-          excerpt: article.excerpt
+          byline: article.byline ?? undefined,
+          siteName: article.siteName ?? undefined,
+          excerpt: article.excerpt ?? undefined
         };
       }
       
@@ -420,32 +307,27 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     }
   }
 
-  // Fallback extraction for when Readability fails
-  function fallbackExtraction() {
+  function fallbackExtraction(): ExtractedArticle {
     debug.log('Using fallback extraction', {}, 'content-extract-fallback');
     
-    let articleText = '';
-    let title = '';
-    
     const h1 = document.querySelector('h1');
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    title = h1?.textContent?.trim() || ogTitle?.content || document.title;
+    const ogTitle = document.querySelector('meta[property="og:title"]') as HTMLMetaElement | null;
+    const title = h1?.textContent?.trim() ?? ogTitle?.content ?? document.title;
     
-    // Try to get paragraphs
     const paragraphs = document.querySelectorAll('p');
-    const textParts = [];
+    const textParts: string[] = [];
     
     paragraphs.forEach(p => {
       const parent = p.closest('nav, footer, header, aside, .sidebar, .comments, .advertisement');
       if (parent) return;
       
-      const text = p.textContent.trim();
+      const text = p.textContent?.trim() ?? '';
       if (text.length > 50) {
         textParts.push(text);
       }
     });
     
-    articleText = textParts.join('\n\n');
+    const articleText = textParts.join('\n\n');
     const wordCount = articleText.split(/\s+/).filter(w => w.length > 0).length;
     
     debug.log('Fallback extraction complete', {
@@ -466,7 +348,14 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   // TEXT MATCHING AND HIGHLIGHTING
   // =====================================================
 
-  function normalizeText(text) {
+  interface MatchInfo {
+    startNode: Text;
+    startOffset: number;
+    endNode: Text;
+    endOffset: number;
+  }
+
+  function normalizeText(text: string): string {
     return text
       .toLowerCase()
       .replace(/[\u2018\u2019]/g, "'")
@@ -477,7 +366,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       .trim();
   }
 
-  function findTextInPage(quote) {
+  function findTextInPage(quote: string): MatchInfo | null {
     if (!quote || quote.length < 10) {
       return null;
     }
@@ -498,7 +387,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
           if (parent.closest('.logic-checker-tooltip')) {
             return NodeFilter.FILTER_REJECT;
           }
-          if (node.textContent.trim().length === 0) {
+          if ((node.textContent?.trim().length ?? 0) === 0) {
             return NodeFilter.FILTER_REJECT;
           }
           return NodeFilter.FILTER_ACCEPT;
@@ -506,17 +395,17 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       }
     );
 
-    const textNodes = [];
-    let node;
-    while (node = walker.nextNode()) {
+    const textNodes: Text[] = [];
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text | null)) {
       textNodes.push(node);
     }
 
     let fullText = '';
-    const nodeMap = [];
+    const nodeMap: Array<{ node: Text; offset: number }> = [];
     
     for (const textNode of textNodes) {
-      const text = textNode.textContent;
+      const text = textNode.textContent ?? '';
       for (let i = 0; i < text.length; i++) {
         nodeMap.push({ node: textNode, offset: i });
       }
@@ -554,28 +443,34 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     }
 
     const endPos = Math.min(originalMatchEnd - 1, nodeMap.length - 1);
-    const endNode = nodeMap[endPos].node;
-    const endText = endNode.textContent;
+    const endNodeEntry = nodeMap[endPos];
+    if (!endNodeEntry) return null;
     
-    let endOffset = nodeMap[endPos].offset + 1;
-    while (endOffset < endText.length && /\w/.test(endText[endOffset])) endOffset++;
+    const endNode = endNodeEntry.node;
+    const endText = endNode.textContent ?? '';
+    
+    let endOffset = endNodeEntry.offset + 1;
+    while (endOffset < endText.length && /\w/.test(endText[endOffset] ?? '')) endOffset++;
+    
+    const startNodeEntry = nodeMap[originalMatchStart];
+    if (!startNodeEntry) return null;
     
     return {
-      startNode: nodeMap[originalMatchStart].node,
-      startOffset: nodeMap[originalMatchStart].offset,
+      startNode: startNodeEntry.node,
+      startOffset: startNodeEntry.offset,
       endNode: endNode,
       endOffset: endOffset
     };
   }
 
-  function buildNormalizedMapping(original, normalized) {
-    const mapping = [];
+  function buildNormalizedMapping(original: string, normalized: string): number[] {
+    const mapping: number[] = [];
     let origIdx = 0;
     let normIdx = 0;
     let lastWasWhitespace = false;
     
     while (origIdx < original.length && normIdx < normalized.length) {
-      const origChar = original[origIdx];
+      const origChar = original[origIdx] ?? '';
       const isWhitespace = /\s/.test(origChar);
       
       if (isWhitespace) {
@@ -623,7 +518,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       }
     }
     
-    const lastMapped = mapping.length > 0 ? mapping[mapping.length - 1] : Math.max(0, original.length - 1);
+    const lastMapped = mapping.length > 0 ? (mapping[mapping.length - 1] ?? 0) : Math.max(0, original.length - 1);
     while (mapping.length < normalized.length) {
       mapping.push(Math.min(lastMapped, original.length - 1));
     }
@@ -631,7 +526,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     return mapping;
   }
 
-  function fuzzyFind(haystack, needle) {
+  function fuzzyFind(haystack: string, needle: string): number {
     if (needle.length > haystack.length) return -1;
     
     for (let len = needle.length; len >= Math.min(30, needle.length * 0.5); len--) {
@@ -660,22 +555,20 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   // CSS Custom Highlight API
   // =====================================================
   
-  function highlightWithCSSAPI(matchInfo, issue, index) {
-    if (!matchInfo) return false;
-    
+  function highlightWithCSSAPI(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
     try {
       const range = document.createRange();
       range.setStart(matchInfo.startNode, matchInfo.startOffset);
       range.setEnd(matchInfo.endNode, matchInfo.endOffset);
       
-      const importance = issue.importance || 'default';
+      const importance = issue.importance ?? 'default';
       const highlightName = `logic-checker-${importance}`;
       
       highlightRanges.set(range, {
         issue,
         index,
         importance,
-        explanation: issue.gap || issue.why_it_doesnt_follow || issue.explanation || ''
+        explanation: issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? ''
       });
       
       let highlight = CSS.highlights.get(highlightName);
@@ -686,12 +579,12 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       
       highlight.add(range);
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
   
-  function clearCSSHighlights() {
+  function clearCSSHighlights(): void {
     const names = ['logic-checker-critical', 'logic-checker-significant', 'logic-checker-minor', 'logic-checker-default'];
     names.forEach(name => {
       if (CSS.highlights.has(name)) {
@@ -701,11 +594,13 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     highlightRanges.clear();
   }
   
-  function getHighlightAtPoint(x, y) {
-    let caretPos;
-    if (document.caretPositionFromPoint) {
-      caretPos = document.caretPositionFromPoint(x, y);
-      if (!caretPos) return null;
+  function getHighlightAtPoint(x: number, y: number): HighlightData | null {
+    let caretPos: { offsetNode: Node; offset: number } | null = null;
+    
+    if ('caretPositionFromPoint' in document) {
+      const pos = (document as Document & { caretPositionFromPoint(x: number, y: number): { offsetNode: Node; offset: number } | null }).caretPositionFromPoint(x, y);
+      if (!pos) return null;
+      caretPos = pos;
     } else if (document.caretRangeFromPoint) {
       const range = document.caretRangeFromPoint(x, y);
       if (!range) return null;
@@ -722,7 +617,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         if (range.isPointInRange(node, offset)) {
           return data;
         }
-      } catch (e) {
+      } catch (_e) {
         continue;
       }
     }
@@ -730,9 +625,9 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     return null;
   }
   
-  let lastHighlightData = null;
+  let lastHighlightData: HighlightData | null = null;
   
-  function handleMouseMoveForHighlight(e) {
+  function handleMouseMoveForHighlight(e: MouseEvent): void {
     if (!USE_CSS_HIGHLIGHT_API) return;
     
     const data = getHighlightAtPoint(e.clientX, e.clientY);
@@ -742,8 +637,8 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         showTooltipForData(e, data);
         lastHighlightData = data;
       } else {
-        const tooltip = ensureTooltip();
-        positionTooltip(e, tooltip);
+        const tooltipEl = ensureTooltip();
+        positionTooltip(e, tooltipEl);
       }
     } else {
       if (lastHighlightData) {
@@ -753,17 +648,17 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     }
   }
   
-  function showTooltipForData(e, data) {
-    const tooltip = ensureTooltip();
-    const importance = data.importance || 'minor';
+  function showTooltipForData(e: MouseEvent, data: HighlightData): void {
+    const tooltipEl = ensureTooltip();
+    const importance = data.importance ?? 'minor';
     
-    tooltip.className = `logic-checker-tooltip ${importance}`;
+    tooltipEl.className = `logic-checker-tooltip ${importance}`;
     
     const emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
-    const typeLabel = data.issue.type || data.issue.importance || 'Issue';
-    tooltip.innerHTML = `
+    const typeLabel = data.issue.type ?? data.issue.importance ?? 'Issue';
+    tooltipEl.innerHTML = `
       <div class="logic-checker-tooltip-badge">Logic Issue</div>
       <div class="logic-checker-tooltip-header">
         <span class="logic-checker-tooltip-icon">${emoji}</span>
@@ -772,8 +667,8 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       <div class="logic-checker-tooltip-explanation">${escapeHtml(data.explanation || 'No explanation available')}</div>
     `;
 
-    positionTooltip(e, tooltip);
-    tooltip.classList.add('visible');
+    positionTooltip(e, tooltipEl);
+    tooltipEl.classList.add('visible');
   }
   
   if (USE_CSS_HIGHLIGHT_API) {
@@ -784,78 +679,78 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   // Span-based Highlighting (Fallback)
   // =====================================================
   
-  function highlightRangeWithSpan(matchInfo, issue, index) {
-    if (!matchInfo) return false;
-
+  function highlightRangeWithSpan(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
     try {
       const range = document.createRange();
       range.setStart(matchInfo.startNode, matchInfo.startOffset);
       range.setEnd(matchInfo.endNode, matchInfo.endOffset);
 
       const highlight = document.createElement('span');
-      const importance = issue.importance || 'minor';
+      const importance = issue.importance ?? 'minor';
       highlight.className = `logic-checker-highlight ${importance}`;
-      highlight.dataset.issueIndex = index;
-      highlight.dataset.issueType = issue.type || issue.importance || 'issue';
-      highlight.dataset.importance = importance;
-      highlight.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
+      highlight.dataset['issueIndex'] = String(index);
+      highlight.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      highlight.dataset['importance'] = importance;
+      highlight.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
 
       range.surroundContents(highlight);
 
-      highlight.addEventListener('mouseenter', showTooltip);
+      highlight.addEventListener('mouseenter', showTooltipEvent);
       highlight.addEventListener('mouseleave', hideTooltip);
       highlight.addEventListener('mousemove', moveTooltip);
 
       return true;
-    } catch (e) {
+    } catch (_e) {
       return highlightAlternative(matchInfo, issue, index);
     }
   }
 
-  function highlightAlternative(matchInfo, issue, index) {
+  function highlightAlternative(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
     try {
       const range = document.createRange();
       range.setStart(matchInfo.startNode, matchInfo.startOffset);
       range.setEnd(matchInfo.endNode, matchInfo.endOffset);
       
       const fragment = range.cloneContents();
-      const textContent = fragment.textContent;
+      const textContent = fragment.textContent ?? '';
       
       if (textContent.length < 10) {
         return false;
       }
 
-      const startText = matchInfo.startNode.textContent;
+      const startText = matchInfo.startNode.textContent ?? '';
       const before = startText.substring(0, matchInfo.startOffset);
       const highlighted = startText.substring(matchInfo.startOffset);
       
       const wrapper = document.createElement('span');
-      const importance = issue.importance || 'minor';
+      const importance = issue.importance ?? 'minor';
       wrapper.className = `logic-checker-highlight ${importance}`;
-      wrapper.dataset.issueIndex = index;
-      wrapper.dataset.issueType = issue.type || issue.importance || 'issue';
-      wrapper.dataset.importance = importance;
-      wrapper.dataset.issueExplanation = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
+      wrapper.dataset['issueIndex'] = String(index);
+      wrapper.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      wrapper.dataset['importance'] = importance;
+      wrapper.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
       wrapper.textContent = highlighted;
       
       const parent = matchInfo.startNode.parentNode;
+      if (!parent) return false;
+      
       const beforeNode = document.createTextNode(before);
       
       parent.insertBefore(beforeNode, matchInfo.startNode);
       parent.insertBefore(wrapper, matchInfo.startNode);
       parent.removeChild(matchInfo.startNode);
 
-      wrapper.addEventListener('mouseenter', showTooltip);
+      wrapper.addEventListener('mouseenter', showTooltipEvent);
       wrapper.addEventListener('mouseleave', hideTooltip);
       wrapper.addEventListener('mousemove', moveTooltip);
 
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
   
-  function highlightRange(matchInfo, issue, index) {
+  function highlightRange(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
     if (USE_CSS_HIGHLIGHT_API) {
       return highlightWithCSSAPI(matchInfo, issue, index);
     } else {
@@ -864,22 +759,22 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   }
 
   // Tooltip functions
-  function showTooltip(e) {
-    const highlight = e.target.closest('.logic-checker-highlight');
+  function showTooltipEvent(e: Event): void {
+    const highlight = (e.target as HTMLElement).closest('.logic-checker-highlight') as HTMLElement | null;
     if (!highlight) return;
 
-    const tooltip = ensureTooltip();
+    const tooltipEl = ensureTooltip();
     
-    const type = highlight.dataset.issueType;
-    const explanation = highlight.dataset.issueExplanation;
-    const importance = highlight.dataset.importance || 'minor';
+    const type = highlight.dataset['issueType'] ?? 'issue';
+    const explanation = highlight.dataset['issueExplanation'] ?? '';
+    const importance = highlight.dataset['importance'] ?? 'minor';
     
-    tooltip.className = `logic-checker-tooltip ${importance}`;
+    tooltipEl.className = `logic-checker-tooltip ${importance}`;
     
     const emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
-    tooltip.innerHTML = `
+    tooltipEl.innerHTML = `
       <div class="logic-checker-tooltip-badge">Logic Issue</div>
       <div class="logic-checker-tooltip-header">
         <span class="logic-checker-tooltip-icon">${emoji}</span>
@@ -888,24 +783,23 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       <div class="logic-checker-tooltip-explanation">${escapeHtml(explanation || 'No explanation available')}</div>
     `;
 
-    positionTooltip(e, tooltip);
-    tooltip.classList.add('visible');
+    positionTooltip(e as MouseEvent, tooltipEl);
+    tooltipEl.classList.add('visible');
   }
 
-  function hideTooltip() {
-    const tooltip = ensureTooltip();
-    tooltip.classList.remove('visible');
+  function hideTooltip(): void {
+    const tooltipEl = ensureTooltip();
+    tooltipEl.classList.remove('visible');
   }
 
-  function moveTooltip(e) {
-    const tooltip = ensureTooltip();
-    positionTooltip(e, tooltip);
+  function moveTooltip(e: Event): void {
+    const tooltipEl = ensureTooltip();
+    positionTooltip(e as MouseEvent, tooltipEl);
   }
 
-  function positionTooltip(e, tooltipElement) {
-    const tooltip = tooltipElement || ensureTooltip();
+  function positionTooltip(e: MouseEvent, tooltipElement: HTMLElement): void {
     const padding = 15;
-    const tooltipRect = tooltip.getBoundingClientRect();
+    const tooltipRect = tooltipElement.getBoundingClientRect();
     
     let x = e.clientX + padding;
     let y = e.clientY + padding;
@@ -917,18 +811,18 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       y = e.clientY - tooltipRect.height - padding;
     }
 
-    tooltip.style.left = `${Math.max(padding, x)}px`;
-    tooltip.style.top = `${Math.max(padding, y)}px`;
+    tooltipElement.style.left = `${Math.max(padding, x)}px`;
+    tooltipElement.style.top = `${Math.max(padding, y)}px`;
   }
 
-  function escapeHtml(text) {
+  function escapeHtml(text: string): string {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  function clearHighlights() {
+  function clearHighlights(): void {
     if (USE_CSS_HIGHLIGHT_API) {
       clearCSSHighlights();
     }
@@ -936,6 +830,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     const highlights = document.querySelectorAll('.logic-checker-highlight');
     highlights.forEach(el => {
       const parent = el.parentNode;
+      if (!parent) return;
       while (el.firstChild) {
         parent.insertBefore(el.firstChild, el);
       }
@@ -943,7 +838,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     });
   }
 
-  function highlightIssues(issues) {
+  function highlightIssues(issues: AnalysisIssue[]): void {
     debug.log('Starting highlight process', { 
       issueCount: issues.length,
       method: USE_CSS_HIGHLIGHT_API ? 'CSS Highlight API' : 'Span wrapping'
@@ -971,7 +866,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   }
 
   // Listen for messages from popup
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     debug.log('Message received', { action: request.action }, 'content-message');
     
     try {
@@ -987,10 +882,14 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
         };
         sendResponse(response);
       } else if (request.action === 'highlightIssues') {
-        highlightIssues(request.issues);
+        highlightIssues(request.issues as AnalysisIssue[]);
         sendResponse({ success: true });
       } else if (request.action === 'showAnnotationDialog' || request.action === 'showFeedbackDialog') {
-        showFeedbackDialog(request.selectedText || request.quote, request.url, request.title);
+        showFeedbackDialog(
+          (request.selectedText ?? request.quote) as string,
+          request.url as string,
+          request.title as string
+        );
         sendResponse({ success: true });
       } else {
         sendResponse({ error: 'Unknown action' });
@@ -999,7 +898,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       debug.error('Error handling message', error, 'content-message', {
         action: request.action
       });
-      sendResponse({ error: error.message });
+      sendResponse({ error: (error as Error).message });
     }
     
     return true;
@@ -1009,7 +908,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
   // Feedback Dialog
   // =====================================================
 
-  function showFeedbackDialog(selectedText, url, title) {
+  function showFeedbackDialog(selectedText: string, url: string, title: string): void {
     const existing = document.querySelector('.logic-checker-annotation-overlay');
     if (existing) existing.remove();
 
@@ -1049,67 +948,75 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
 
-    const textarea = dialog.querySelector('#lc-feedback-text');
+    const textarea = dialog.querySelector('#lc-feedback-text') as HTMLTextAreaElement;
     setTimeout(() => textarea.focus(), 100);
 
-    const close = () => overlay.remove();
+    const close = (): void => { overlay.remove(); };
     
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) close();
     });
     
-    dialog.querySelector('.logic-checker-annotation-close').addEventListener('click', close);
-    dialog.querySelector('#lc-cancel').addEventListener('click', close);
+    dialog.querySelector('.logic-checker-annotation-close')?.addEventListener('click', close);
+    dialog.querySelector('#lc-cancel')?.addEventListener('click', close);
 
-    dialog.querySelector('#lc-submit').addEventListener('click', async () => {
-      const feedbackText = textarea.value.trim();
+    dialog.querySelector('#lc-submit')?.addEventListener('click', () => {
+      void (async () => {
+        const feedbackText = textarea.value.trim();
 
-      if (!feedbackText) {
-        textarea.style.borderColor = '#ef4444';
-        textarea.focus();
-        return;
-      }
-
-      const submitBtn = dialog.querySelector('#lc-submit');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
-
-      try {
-        const response = await chrome.runtime.sendMessage({
-          action: 'submitFeedback',
-          data: {
-            url,
-            title,
-            articleText,
-            selectedText,
-            commentText: feedbackText
-          }
-        });
-
-        if (response.success) {
-          dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
-            <div class="logic-checker-annotation-success">
-              ✅ Feedback submitted! Thank you.
-            </div>
-          `;
-          setTimeout(close, 1500);
-        } else {
-          throw new Error(response.error || 'Failed to submit');
+        if (!feedbackText) {
+          textarea.style.borderColor = '#ef4444';
+          textarea.focus();
+          return;
         }
-      } catch (error) {
-        debug.error('Failed to submit feedback', error, 'content-feedback');
-        dialog.querySelector('.logic-checker-annotation-actions').innerHTML = `
-          <div class="logic-checker-annotation-error">
-            ❌ ${escapeHtml(error.message)}
-          </div>
-          <button class="logic-checker-annotation-btn logic-checker-annotation-btn-secondary" id="lc-retry">
-            Try Again
-          </button>
-        `;
-      }
+
+        const submitBtn = dialog.querySelector('#lc-submit') as HTMLButtonElement;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        try {
+          const response = await chrome.runtime.sendMessage({
+            action: 'submitFeedback',
+            data: {
+              url,
+              title,
+              articleText,
+              selectedText,
+              commentText: feedbackText
+            }
+          }) as { success: boolean; error?: string };
+
+          if (response.success) {
+            const actionsEl = dialog.querySelector('.logic-checker-annotation-actions');
+            if (actionsEl) {
+              actionsEl.innerHTML = `
+                <div class="logic-checker-annotation-success">
+                  ✅ Feedback submitted! Thank you.
+                </div>
+              `;
+            }
+            setTimeout(close, 1500);
+          } else {
+            throw new Error(response.error ?? 'Failed to submit');
+          }
+        } catch (error) {
+          debug.error('Failed to submit feedback', error, 'content-feedback');
+          const actionsEl = dialog.querySelector('.logic-checker-annotation-actions');
+          if (actionsEl) {
+            actionsEl.innerHTML = `
+              <div class="logic-checker-annotation-error">
+                ❌ ${escapeHtml((error as Error).message)}
+              </div>
+              <button class="logic-checker-annotation-btn logic-checker-annotation-btn-secondary" id="lc-retry">
+                Try Again
+              </button>
+            `;
+          }
+        }
+      })();
     });
 
-    const escHandler = (e) => {
+    const escHandler = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         close();
         document.removeEventListener('keydown', escHandler);
@@ -1117,4 +1024,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
     };
     document.addEventListener('keydown', escHandler);
   }
+
+  // Silence the unused variable warning for tooltip
+  void tooltip;
 })();
