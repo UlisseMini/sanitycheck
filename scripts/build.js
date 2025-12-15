@@ -126,7 +126,13 @@ async function buildExtension() {
 async function bundleExtensionZip() {
   console.log('📦 Bundling extension zip...');
   
-  const outputZip = path.join(buildDir, 'sanitycheck-extension.zip');
+  // Create public directory for static files served by backend
+  const publicDir = path.join(buildDir, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+  
+  const outputZip = path.join(publicDir, 'sanitycheck-extension.zip');
   
   // Create temp directory for production build
   const tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'extension-'));
