@@ -45,7 +45,7 @@
     }
     
     .container {
-      max-width: 720px;
+      max-width: 800px;
       width: 100%;
     }
     
@@ -91,7 +91,40 @@
       text-align: center;
     }
     
+    .demo-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .nav-arrow {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-secondary);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    
+    .nav-arrow:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+    
+    .nav-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+    
     .browser-window {
+      flex: 1;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border-strong);
@@ -137,6 +170,7 @@
       padding: 28px 32px;
       background: #ffffff;
       position: relative;
+      min-height: 220px;
     }
     
     .article-text {
@@ -304,6 +338,33 @@
       color: #d4d4d4;
     }
     
+    /* ===== Page Indicators ===== */
+    .page-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .page-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .page-dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .page-dot:hover:not(.active) {
+      background: var(--bg-hover);
+    }
+    
     /* ===== Divider ===== */
     .divider {
       border: none;
@@ -355,36 +416,42 @@
     <div class="demo-section">
       <p class="section-label">Watch the demo or hover to explore</p>
       
-      <div class="browser-window" id="browser-window">
-        <div class="browser-header">
-          <div class="browser-dots">
-            <span class="browser-dot red"></span>
-            <span class="browser-dot yellow"></span>
-            <span class="browser-dot green"></span>
+      <div class="demo-wrapper">
+        <button class="nav-arrow" id="prev-btn" aria-label="Previous example">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        
+        <div class="browser-window" id="browser-window">
+          <div class="browser-header">
+            <div class="browser-dots">
+              <span class="browser-dot red"></span>
+              <span class="browser-dot yellow"></span>
+              <span class="browser-dot green"></span>
+            </div>
+            <div class="browser-url" id="browser-url">techdigest.com/ai-revolution-workplace</div>
           </div>
-          <div class="browser-url">techdigest.com/ai-revolution-workplace</div>
-        </div>
-        <div class="browser-content" id="browser-content">
-          <div class="article-text">
-            <p>
-              A recent survey found that 78% of companies have adopted at least one AI tool in the past year. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Adoption rates don't indicate effectiveness or satisfaction. Many companies adopt tools that go unused, and the survey doesn't reveal whether these tools actually improved productivity or outcomes.">This widespread adoption proves that AI is fundamentally transforming how businesses operate.</span> Industry experts predict this trend will only accelerate.
-            </p>
-            <p>
-              One CEO reported that after implementing an AI assistant, his team's output doubled within weeks. <span class="highlight significant" data-type="Anecdotal Evidence" data-importance="significant" data-explanation="A single company's experience cannot be generalized. The timing could be coincidental, other factors may have contributed, and 'output' is vague—quantity doesn't equal quality.">His experience demonstrates the massive productivity gains available to any company willing to embrace these tools.</span>
-            </p>
-            <p>
-              Critics who worry about job displacement are missing the bigger picture. <span class="highlight minor" data-type="Dismissive Framing" data-importance="minor" data-explanation="Characterizing legitimate concerns as 'missing the bigger picture' dismisses them without addressing the substance. Job displacement concerns are supported by economic research and historical precedent.">Every major technological shift has ultimately created more jobs than it eliminated.</span>
-            </p>
-          </div>
-          
-          <!-- Fake cursor -->
-          <div class="fake-cursor" id="fake-cursor">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 4L10.5 20L12.5 13.5L19 11.5L4 4Z" fill="black" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-            </svg>
+          <div class="browser-content" id="browser-content">
+            <div class="article-text" id="article-text"></div>
+            
+            <!-- Fake cursor -->
+            <div class="fake-cursor" id="fake-cursor">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4L10.5 20L12.5 13.5L19 11.5L4 4Z" fill="black" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
         </div>
+        
+        <button class="nav-arrow" id="next-btn" aria-label="Next example">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
       </div>
+      
+      <div class="page-indicators" id="page-indicators"></div>
     </div>
     
     <hr class="divider">
@@ -408,16 +475,142 @@
   <div class="tooltip" id="tooltip"></div>
   
   <script>
+    // Article examples data
+    const articles = [
+      {
+        url: "techdigest.com/ai-revolution-workplace",
+        content: `
+          <p>
+            A recent survey found that 78% of companies have adopted at least one AI tool in the past year. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Adoption rates don't indicate effectiveness or satisfaction. Many companies adopt tools that go unused, and the survey doesn't reveal whether these tools actually improved productivity or outcomes.">This widespread adoption proves that AI is fundamentally transforming how businesses operate.</span> Industry experts predict this trend will only accelerate.
+          </p>
+          <p>
+            One CEO reported that after implementing an AI assistant, his team's output doubled within weeks. <span class="highlight significant" data-type="Anecdotal Evidence" data-importance="significant" data-explanation="A single company's experience cannot be generalized. The timing could be coincidental, other factors may have contributed, and 'output' is vague—quantity doesn't equal quality.">His experience demonstrates the massive productivity gains available to any company willing to embrace these tools.</span>
+          </p>
+          <p>
+            Critics who worry about job displacement are missing the bigger picture. <span class="highlight minor" data-type="Dismissive Framing" data-importance="minor" data-explanation="Characterizing legitimate concerns as 'missing the bigger picture' dismisses them without addressing the substance. Job displacement concerns are supported by economic research and historical precedent.">Every major technological shift has ultimately created more jobs than it eliminated.</span>
+          </p>
+        `
+      },
+      {
+        url: "jamesclear.substack.com/p/habits-identity",
+        content: `
+          <p>
+            I used to struggle with consistency until I realized something: you don't rise to the level of your goals, you fall to the level of your systems. <span class="highlight significant" data-type="False Dichotomy" data-importance="significant" data-explanation="Goals and systems aren't mutually exclusive—they work together. Many successful people credit both clear goals AND good systems. Presenting this as either/or oversimplifies the relationship.">Once I stopped focusing on goals entirely and built better systems, everything changed.</span>
+          </p>
+          <p>
+            The key insight is that every action you take is a vote for the type of person you wish to become. <span class="highlight minor" data-type="Unfalsifiable Claim" data-importance="minor" data-explanation="While this framing can be motivating, it's structured so it can't be proven wrong. Any action can be interpreted as 'voting for identity,' making it more of a perspective than a verifiable insight.">This is why identity-based habits are more powerful than outcome-based habits.</span> When you focus on who you want to become rather than what you want to achieve, lasting change becomes inevitable.
+          </p>
+          <p>
+            I've seen this work for thousands of readers who write to me. <span class="highlight critical" data-type="Survivorship Bias" data-importance="critical" data-explanation="Only hearing from readers who succeeded creates a skewed sample. Those for whom the advice didn't work are less likely to write in, making success rates appear higher than they actually are.">The pattern is undeniable—identity change precedes behavior change, every single time.</span>
+          </p>
+        `
+      },
+      {
+        url: "morningnews.com/economy/housing-crisis",
+        content: `
+          <p>
+            Home prices have increased 40% over the past three years while wages grew only 12%. <span class="highlight critical" data-type="Missing Context" data-importance="critical" data-explanation="These national averages mask huge regional variation. Some markets saw prices drop while others doubled. Without geographic breakdown, the comparison is misleading for most readers' actual situations.">Young Americans are now locked out of homeownership for the foreseeable future.</span>
+          </p>
+          <p>
+            Real estate experts point to limited housing supply as the primary driver. <span class="highlight significant" data-type="Oversimplification" data-importance="significant" data-explanation="Housing affordability involves multiple interacting factors: interest rates, investment buying, zoning laws, construction costs, and income inequality. Reducing it to 'supply' ignores policy choices that shape the market.">If we simply built more homes, prices would naturally fall to affordable levels.</span> Several cities have begun relaxing zoning restrictions in response.
+          </p>
+          <p>
+            Some economists argue that remote work migration is responsible, pointing to price spikes in previously affordable cities. <span class="highlight minor" data-type="Post Hoc Reasoning" data-importance="minor" data-explanation="Remote work and price increases happened around the same time, but correlation isn't causation. Low interest rates, pandemic savings, and investor activity also spiked during this period.">Cities that attracted remote workers saw prices double, proving the connection.</span>
+          </p>
+        `
+      }
+    ];
+    
+    let currentArticleIndex = 0;
+    
     const tooltip = document.getElementById('tooltip');
     const fakeCursor = document.getElementById('fake-cursor');
     const browserContent = document.getElementById('browser-content');
-    const browserWindow = document.getElementById('browser-window');
-    const highlights = document.querySelectorAll('.highlight');
+    const browserUrl = document.getElementById('browser-url');
+    const articleText = document.getElementById('article-text');
+    const pageIndicators = document.getElementById('page-indicators');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
     
+    let highlights = [];
     let isUserControlling = false;
     let animationPaused = false;
     let currentHighlightIndex = 0;
     let animationTimeout = null;
+    let cursorX = 50;
+    let cursorY = 50;
+    let animationFrameId = null;
+    
+    // Initialize page indicators
+    function initPageIndicators() {
+      pageIndicators.innerHTML = '';
+      articles.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = `page-dot ${i === currentArticleIndex ? 'active' : ''}`;
+        dot.addEventListener('click', () => goToArticle(i));
+        pageIndicators.appendChild(dot);
+      });
+    }
+    
+    // Update page indicators
+    function updatePageIndicators() {
+      const dots = pageIndicators.querySelectorAll('.page-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentArticleIndex);
+      });
+    }
+    
+    // Load article content
+    function loadArticle(index) {
+      const article = articles[index];
+      browserUrl.textContent = article.url;
+      articleText.innerHTML = article.content;
+      
+      // Re-query highlights after content change
+      highlights = Array.from(document.querySelectorAll('.highlight'));
+      
+      // Re-attach event listeners to new highlights
+      highlights.forEach(highlight => {
+        highlight.addEventListener('mouseenter', (e) => {
+          if (!isUserControlling) return;
+          showTooltipForHighlight(highlight, e.clientX, e.clientY);
+        });
+        
+        highlight.addEventListener('mouseleave', () => {
+          if (!isUserControlling) return;
+          hideTooltip();
+        });
+        
+        highlight.addEventListener('mousemove', (e) => {
+          if (!isUserControlling) return;
+          positionTooltipAt(e.clientX, e.clientY);
+        });
+      });
+      
+      updatePageIndicators();
+    }
+    
+    // Navigate to specific article
+    function goToArticle(index) {
+      stopAnimation();
+      currentArticleIndex = index;
+      currentHighlightIndex = 0;
+      cursorX = 50;
+      cursorY = 50;
+      fakeCursor.style.left = '50px';
+      fakeCursor.style.top = '50px';
+      loadArticle(index);
+      setTimeout(startAnimation, 300);
+    }
+    
+    // Navigate to next/previous
+    function nextArticle() {
+      goToArticle((currentArticleIndex + 1) % articles.length);
+    }
+    
+    function prevArticle() {
+      goToArticle((currentArticleIndex - 1 + articles.length) % articles.length);
+    }
     
     // Show tooltip for a highlight
     function showTooltipForHighlight(highlight, cursorX, cursorY) {
@@ -466,11 +659,6 @@
       tooltip.style.top = `${Math.max(padding, top)}px`;
     }
     
-    // Current cursor position
-    let cursorX = 50;
-    let cursorY = 50;
-    let animationFrameId = null;
-    
     // Quadratic bezier curve interpolation
     function quadraticBezier(t, p0, p1, p2) {
       const mt = 1 - t;
@@ -483,14 +671,12 @@
       const startY = cursorY;
       const startTime = performance.now();
       
-      // Create a random control point for the bezier curve (creates the arc)
       const midX = (startX + targetX) / 2;
       const midY = (startY + targetY) / 2;
       const distance = Math.sqrt((targetX - startX) ** 2 + (targetY - startY) ** 2);
       
-      // Random perpendicular offset for the control point (creates varied arcs)
       const angle = Math.atan2(targetY - startY, targetX - startX) + Math.PI / 2;
-      const arcIntensity = (Math.random() - 0.5) * distance * 0.8; // Random arc direction and size
+      const arcIntensity = (Math.random() - 0.5) * distance * 0.8;
       const controlX = midX + Math.cos(angle) * arcIntensity;
       const controlY = midY + Math.sin(angle) * arcIntensity;
       
@@ -502,11 +688,8 @@
         
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Ease out cubic for natural deceleration
         const eased = 1 - Math.pow(1 - progress, 3);
         
-        // Interpolate along bezier curve
         cursorX = quadraticBezier(eased, startX, controlX, targetX);
         cursorY = quadraticBezier(eased, startY, controlY, targetY);
         
@@ -526,20 +709,18 @@
     // Animate fake cursor through highlights
     function animateCursor() {
       if (isUserControlling || animationPaused) return;
+      if (highlights.length === 0) return;
       
       const highlight = highlights[currentHighlightIndex];
       const contentRect = browserContent.getBoundingClientRect();
       const highlightRect = highlight.getBoundingClientRect();
       
-      // Random horizontal position within the highlight (biased towards left/start)
-      const xOffset = 0.15 + Math.random() * 0.35; // 15% to 50% from left
-      const yOffset = 0.3 + Math.random() * 0.4; // 30% to 70% from top
+      const xOffset = 0.15 + Math.random() * 0.35;
+      const yOffset = 0.3 + Math.random() * 0.4;
       
-      // Target position relative to browser content
       const targetX = highlightRect.left + highlightRect.width * xOffset - contentRect.left;
       const targetY = highlightRect.top + highlightRect.height * yOffset - contentRect.top;
       
-      // Animate cursor along curved path
       animateCursorToPosition(targetX, targetY, 800, () => {
         if (isUserControlling || animationPaused) return;
         
@@ -547,13 +728,11 @@
         const absY = highlightRect.top + highlightRect.height * yOffset;
         showTooltipForHighlight(highlight, absX, absY);
         
-        // Hold tooltip, then move to next
         animationTimeout = setTimeout(() => {
           if (isUserControlling || animationPaused) return;
           
           hideTooltip();
           
-          // Wait before moving to next highlight
           animationTimeout = setTimeout(() => {
             if (isUserControlling || animationPaused) return;
             
@@ -565,7 +744,6 @@
       });
     }
     
-    // Start animation
     function startAnimation() {
       isUserControlling = false;
       animationPaused = false;
@@ -573,7 +751,6 @@
       animateCursor();
     }
     
-    // Stop animation when user enters
     function stopAnimation() {
       isUserControlling = true;
       if (animationTimeout) {
@@ -588,39 +765,22 @@
       hideTooltip();
     }
     
-    // User mouse events
+    // Event listeners
     browserContent.addEventListener('mouseenter', () => {
       stopAnimation();
     });
     
     browserContent.addEventListener('mouseleave', () => {
       hideTooltip();
-      // Restart animation after user leaves
       setTimeout(() => {
         if (!isUserControlling) return;
         startAnimation();
       }, 1000);
     });
     
-    // User hover on highlights
-    highlights.forEach(highlight => {
-      highlight.addEventListener('mouseenter', (e) => {
-        if (!isUserControlling) return;
-        showTooltipForHighlight(highlight, e.clientX, e.clientY);
-      });
-      
-      highlight.addEventListener('mouseleave', () => {
-        if (!isUserControlling) return;
-        hideTooltip();
-      });
-      
-      highlight.addEventListener('mousemove', (e) => {
-        if (!isUserControlling) return;
-        positionTooltipAt(e.clientX, e.clientY);
-      });
-    });
+    prevBtn.addEventListener('click', prevArticle);
+    nextBtn.addEventListener('click', nextArticle);
     
-    // Settings link
     document.getElementById('settings-link').addEventListener('click', (e) => {
       e.preventDefault();
       if (typeof chrome !== 'undefined' && chrome.tabs) {
@@ -630,7 +790,9 @@
       }
     });
     
-    // Start the animation on load
+    // Initialize
+    initPageIndicators();
+    loadArticle(0);
     setTimeout(startAnimation, 500);
   </script>
 </body>
