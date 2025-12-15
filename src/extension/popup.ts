@@ -3,42 +3,17 @@
  */
 
 import { BACKEND_URL } from '../shared';
+import {
+  AnalysisIssue,
+  ParsedAnalysis,
+  ExtractedArticle,
+  sendToBackground,
+  sendToContent,
+} from './messaging';
 import { debug } from './debug';
 
-interface Article {
-  title: string;
-  text: string;
-  url: string;
-  wordCount: number;
-  isArticle?: boolean;
-  confidence?: number;
-}
-
-interface AnalysisIssue {
-  quote?: string;
-  importance?: string;
-  type?: string;
-  gap?: string;
-  why_it_doesnt_follow?: string;
-  explanation?: string;
-}
-
-interface ParsedAnalysis {
-  issues?: AnalysisIssue[];
-  severity?: string;
-  summary?: string;
-  overall_assessment?: string;
-  central_argument_analysis?: {
-    central_logical_gap?: string;
-  };
-  rawText?: string;
-}
-
-interface AnalysisStatus {
-  status: 'none' | 'analyzing' | 'complete' | 'error';
-  parsed?: ParsedAnalysis;
-  error?: string;
-}
+// Extended article type for popup (includes wordCount from extraction)
+type Article = ExtractedArticle;
 
 // DOM Elements
 const settingsBtn = document.getElementById('settings-btn')!;
@@ -101,7 +76,12 @@ async function checkCurrentPage(): Promise<void> {
     debug.log('Checking current page', {}, 'popup-check-page');
     
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    currentTabId = tab.id ?? null;
+    if (!tab || !tab.id) {
+      showError('Cannot access this tab');
+      return;
+    }
+    
+    currentTabId = tab.id;
     
     debug.log('Tab info retrieved', {
       tabId: tab.id,
@@ -110,25 +90,18 @@ async function checkCurrentPage(): Promise<void> {
     }, 'popup-check-page');
     
     try {
-      if (tab.id) {
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          files: ['content.js']
-        });
-      }
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
+      });
       debug.log('Content script injected', {}, 'popup-check-page');
     } catch (injectError) {
-      debug.warn('Content script injection failed (may already be injected)', injectError, 'popup-check-page');
+      debug.warn('Content script injection failed (may already be injected)', { error: injectError }, 'popup-check-page');
     }
     
     debug.log('Sending extractArticle message', {}, 'popup-check-page');
     
-    if (!tab.id) {
-      showError('Cannot access this tab');
-      return;
-    }
-    
-    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractArticle' }) as Article & { isArticle: boolean; confidence: number };
+    const response = await sendToContent(tab.id, { action: 'extractArticle' });
     
     debug.log('Received article extraction response', {
       hasResponse: !!response,
@@ -172,7 +145,7 @@ async function checkCurrentPage(): Promise<void> {
 }
 
 async function checkAnalysisStatus(url: string): Promise<void> {
-  const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url }) as AnalysisStatus;
+  const status = await sendToBackground({ action: 'getAnalysisStatus', url });
   
   debug.log('Analysis status check', { status }, 'popup-status');
   
@@ -210,7 +183,7 @@ function startStatusPolling(url: string): void {
   statusPollInterval = setInterval(() => {
     void (async () => {
       try {
-        const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url }) as AnalysisStatus;
+        const status = await sendToBackground({ action: 'getAnalysisStatus', url });
         
         if (status.status === 'complete') {
           if (statusPollInterval) clearInterval(statusPollInterval);
@@ -331,12 +304,17 @@ async function analyzeArticle(): Promise<void> {
   
   showLoading();
   
+  if (!currentTabId) {
+    showError('No tab available');
+    return;
+  }
+  
   try {
-    const response = await chrome.runtime.sendMessage({
+    const response = await sendToBackground({
       action: 'startAnalysis',
       tabId: currentTabId,
       article: currentArticle
-    }) as { success: boolean; error?: string };
+    });
     
     if (!response.success) {
       throw new Error(response.error ?? 'Failed to start analysis');
@@ -367,7 +345,7 @@ async function sendHighlightsToPage(issues: AnalysisIssue[]): Promise<void> {
   }, 'popup-highlights');
   
   try {
-    await chrome.tabs.sendMessage(currentTabId, {
+    await sendToContent(currentTabId, {
       action: 'highlightIssues',
       issues: issues
     });

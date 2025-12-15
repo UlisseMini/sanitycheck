@@ -3,10 +3,19 @@
  * Built from TypeScript with shared imports
  */
 
-import { BACKEND_URL, DEFAULT_ANALYSIS_PROMPT, AnalysisResult } from '../shared';
+import { BACKEND_URL, DEFAULT_ANALYSIS_PROMPT } from '../shared';
+import {
+  Article,
+  AnalysisStatus,
+  AnalysisIssue,
+  FeedbackPayload,
+  BackgroundMessage,
+  ContentMessage,
+  sendToContent,
+} from './messaging';
 
 // Track ongoing analyses by tab URL
-const ongoingAnalyses = new Map<string, { status: string; result?: AnalysisResult; error?: string }>();
+const ongoingAnalyses = new Map<string, AnalysisStatus>();
 
 // Handle extension install/update
 chrome.runtime.onInstalled.addListener((details) => {
@@ -28,60 +37,54 @@ chrome.runtime.onInstalled.addListener((details) => {
 // Handle context menu click
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'leave-feedback' && info.selectionText && tab?.id) {
-    chrome.tabs.sendMessage(tab.id, {
+    const message: ContentMessage = {
       action: 'showFeedbackDialog',
       selectedText: info.selectionText,
-      url: tab.url,
-      title: tab.title
-    });
+      url: tab.url ?? '',
+      title: tab.title ?? ''
+    };
+    sendToContent(tab.id, message);
   }
 });
 
 // Handle messages from popup and content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'submitFeedback') {
-    submitFeedback(request.data)
-      .then(result => sendResponse({ success: true, ...result }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
-    return true;
+chrome.runtime.onMessage.addListener((request: BackgroundMessage, _sender, sendResponse) => {
+  switch (request.action) {
+    case 'submitFeedback':
+      submitFeedback(request.data)
+        .then(result => sendResponse({ success: true, ...result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+
+    case 'getBackendUrl':
+      chrome.storage.local.get(['backendUrl'], (result) => {
+        sendResponse({ url: result.backendUrl || BACKEND_URL });
+      });
+      return true;
+
+    case 'startAnalysis':
+      startAnalysis(request.tabId, request.article)
+        .then(() => sendResponse({ success: true }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+
+    case 'getAnalysisStatus': {
+      const status = ongoingAnalyses.get(request.url);
+      sendResponse(status || { status: 'none' });
+      return true;
+    }
+
+    case 'clearAnalysis':
+      ongoingAnalyses.delete(request.url);
+      sendResponse({ success: true });
+      return true;
+
+    default:
+      return false;
   }
-  
-  if (request.action === 'getBackendUrl') {
-    chrome.storage.local.get(['backendUrl'], (result) => {
-      sendResponse({ url: result.backendUrl || BACKEND_URL });
-    });
-    return true;
-  }
-  
-  // Start analysis in background
-  if (request.action === 'startAnalysis') {
-    const { tabId, article } = request;
-    startAnalysis(tabId, article)
-      .then(() => sendResponse({ success: true }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
-    return true;
-  }
-  
-  // Get analysis status
-  if (request.action === 'getAnalysisStatus') {
-    const { url } = request;
-    const status = ongoingAnalyses.get(url);
-    sendResponse(status || { status: 'none' });
-    return true;
-  }
-  
-  // Clear analysis
-  if (request.action === 'clearAnalysis') {
-    const { url } = request;
-    ongoingAnalyses.delete(url);
-    sendResponse({ success: true });
-    return true;
-  }
-  
-  return false;
 });
 
-async function submitFeedback(data: { url: string; title: string; articleText: string; selectedText: string; commentText: string }) {
+async function submitFeedback(data: FeedbackPayload) {
   const response = await fetch(`${BACKEND_URL}/comments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -101,7 +104,7 @@ async function submitFeedback(data: { url: string; title: string; articleText: s
   return response.json();
 }
 
-async function startAnalysis(tabId: number, article: { title: string; text: string; url: string }) {
+async function startAnalysis(tabId: number, article: Article) {
   const url = article.url;
   
   // Mark as in progress
@@ -145,14 +148,13 @@ async function startAnalysis(tabId: number, article: { title: string; text: stri
     }
     
     // Store result (as 'parsed' to match what popup.ts expects)
+    const issues: AnalysisIssue[] = result.issues || [];
     ongoingAnalyses.set(url, { status: 'complete', parsed: result });
     
     // Notify the content script to display highlights
     try {
-      await chrome.tabs.sendMessage(tabId, {
-        action: 'highlightIssues',
-        issues: result.issues || []
-      });
+      const message: ContentMessage = { action: 'highlightIssues', issues };
+      await sendToContent(tabId, message);
     } catch (_e) {
       console.log('Could not send highlights to tab (tab may have been closed)');
     }

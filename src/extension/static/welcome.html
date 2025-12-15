@@ -14,7 +14,13 @@
       box-sizing: border-box;
     }
     
-    /* ===== SanityCheck Theme (Default) ===== */
+    /* 
+     * Theme Variables - KEEP IN SYNC with src/shared/colors.ts
+     * This is a static HTML file so we can't import from TypeScript.
+     * If you update colors, update both files!
+     */
+    
+    /* ===== SanityCheck Theme (Default) - from colors.ts ===== */
     :root {
       --bg-primary: #0f1117;
       --bg-secondary: #1a1d27;
@@ -33,7 +39,7 @@
       --severity-minor: #737373;
     }
     
-    /* ===== Miss Information Theme ===== */
+    /* ===== Miss Information Theme - from missColors in colors.ts ===== */
     body.theme-miss {
       --bg-primary: #1a1520;
       --bg-secondary: #231d2b;

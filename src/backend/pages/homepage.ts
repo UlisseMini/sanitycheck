@@ -2,7 +2,7 @@
  * Homepage HTML generator using shared styles
  */
 
-import { colors } from '../../shared';
+import { themeCssVariables } from '../../shared';
 
 export function generateHomepage(): string {
   
@@ -20,35 +20,8 @@ export function generateHomepage(): string {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    /* ===== SanityCheck Theme (Default) ===== */
-    :root {
-      --bg-primary: ${colors.bgPrimary};
-      --bg-secondary: ${colors.bgSecondary};
-      --bg-tertiary: ${colors.bgTertiary};
-      --bg-hover: ${colors.bgHover};
-      --text-primary: ${colors.textPrimary};
-      --text-secondary: ${colors.textSecondary};
-      --text-muted: ${colors.textMuted};
-      --accent: ${colors.accent};
-      --accent-hover: ${colors.accentHover};
-      --border: ${colors.border};
-      --border-strong: ${colors.borderStrong};
-    }
-    
-    /* ===== Miss Information Theme ===== */
-    body.theme-miss {
-      --bg-primary: #1a1520;
-      --bg-secondary: #231d2b;
-      --bg-tertiary: #2d2638;
-      --bg-hover: #3a3245;
-      --text-primary: #f5f0fa;
-      --text-secondary: #c4b8d4;
-      --text-muted: #8b7fa3;
-      --accent: #c084fc;
-      --accent-hover: #d8b4fe;
-      --border: rgba(192, 132, 252, 0.15);
-      --border-strong: rgba(192, 132, 252, 0.25);
-    }
+    /* ===== Theme Variables (from shared/colors.ts) ===== */
+    ${themeCssVariables}
     
     /* ===== Theme Toggle ===== */
     .theme-toggle-container {

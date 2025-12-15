@@ -5,21 +5,18 @@
 
 import { Readability, isProbablyReaderable } from '@mozilla/readability';
 import { BACKEND_URL } from '../shared';
+import {
+  AnalysisIssue,
+  ContentMessage,
+  ContentResponse,
+  sendToBackground,
+} from './messaging';
 import { contentStyles } from '../shared/highlight-styles';
 
 declare global {
   interface Window {
     __logicCheckerInjected?: boolean;
   }
-}
-
-interface AnalysisIssue {
-  quote?: string;
-  importance?: string;
-  type?: string;
-  gap?: string;
-  why_it_doesnt_follow?: string;
-  explanation?: string;
 }
 
 interface HighlightData {
@@ -865,34 +862,39 @@ interface HighlightData {
     }, 'content-highlight');
   }
 
-  // Listen for messages from popup
-  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  // Listen for messages from popup/background
+  chrome.runtime.onMessage.addListener((request: ContentMessage, _sender, sendResponse) => {
     debug.log('Message received', { action: request.action }, 'content-message');
     
     try {
-      if (request.action === 'checkArticle') {
-        const result = isArticlePage();
-        sendResponse(result);
-      } else if (request.action === 'extractArticle') {
-        const article = extractArticleText();
-        const articleCheck = isArticlePage();
-        const response = {
-          ...article,
-          ...articleCheck
-        };
-        sendResponse(response);
-      } else if (request.action === 'highlightIssues') {
-        highlightIssues(request.issues as AnalysisIssue[]);
-        sendResponse({ success: true });
-      } else if (request.action === 'showAnnotationDialog' || request.action === 'showFeedbackDialog') {
-        showFeedbackDialog(
-          (request.selectedText ?? request.quote) as string,
-          request.url as string,
-          request.title as string
-        );
-        sendResponse({ success: true });
-      } else {
-        sendResponse({ error: 'Unknown action' });
+      switch (request.action) {
+        case 'checkArticle': {
+          const result: ContentResponse<'checkArticle'> = isArticlePage();
+          sendResponse(result);
+          break;
+        }
+        case 'extractArticle': {
+          const article = extractArticleText();
+          const articleCheck = isArticlePage();
+          const response: ContentResponse<'extractArticle'> = {
+            ...article,
+            ...articleCheck
+          };
+          sendResponse(response);
+          break;
+        }
+        case 'highlightIssues': {
+          highlightIssues(request.issues);
+          sendResponse({ success: true });
+          break;
+        }
+        case 'showFeedbackDialog': {
+          showFeedbackDialog(request.selectedText, request.url, request.title);
+          sendResponse({ success: true });
+          break;
+        }
+        default:
+          sendResponse({ error: 'Unknown action' });
       }
     } catch (error) {
       debug.error('Error handling message', error, 'content-message', {
@@ -975,7 +977,7 @@ interface HighlightData {
         submitBtn.textContent = 'Submitting...';
 
         try {
-          const response = await chrome.runtime.sendMessage({
+          const response = await sendToBackground({
             action: 'submitFeedback',
             data: {
               url,
@@ -984,7 +986,7 @@ interface HighlightData {
               selectedText,
               commentText: feedbackText
             }
-          }) as { success: boolean; error?: string };
+          });
 
           if (response.success) {
             const actionsEl = dialog.querySelector('.logic-checker-annotation-actions');
