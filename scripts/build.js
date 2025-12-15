@@ -133,18 +133,18 @@ async function bundleExtensionZip() {
     fs.mkdirSync(publicDir, { recursive: true });
   }
   
-  // Copy icon files to public directory for favicon
+  // Copy icon/image files to public directory for favicon and backgrounds
   const iconsDir = path.join(staticDir, 'icons');
   if (fs.existsSync(iconsDir)) {
-    for (const icon of fs.readdirSync(iconsDir)) {
-      if (icon.endsWith('.png')) {
+    for (const file of fs.readdirSync(iconsDir)) {
+      if (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')) {
         fs.copyFileSync(
-          path.join(iconsDir, icon),
-          path.join(publicDir, icon)
+          path.join(iconsDir, file),
+          path.join(publicDir, file)
         );
       }
     }
-    console.log('  ✓ Icons copied to public/');
+    console.log('  ✓ Icons and images copied to public/');
   }
   
   const outputZip = path.join(publicDir, 'sanitycheck-extension.zip');
