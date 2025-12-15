@@ -14,10 +14,11 @@ export function generateHomepage(): string {
   <title>SanityCheck — Catch the Reasoning Gaps You'd Miss</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Comfortaa:wght@700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
+    /* ===== SanityCheck Theme (Default) ===== */
     :root {
       --bg-primary: ${colors.bgPrimary};
       --bg-secondary: ${colors.bgSecondary};
@@ -30,6 +31,86 @@ export function generateHomepage(): string {
       --accent-hover: ${colors.accentHover};
       --border: ${colors.border};
       --border-strong: ${colors.borderStrong};
+    }
+    
+    /* ===== Miss Information Theme ===== */
+    body.theme-miss {
+      --bg-primary: #1a1520;
+      --bg-secondary: #231d2b;
+      --bg-tertiary: #2d2638;
+      --bg-hover: #3a3245;
+      --text-primary: #f5f0fa;
+      --text-secondary: #c4b8d4;
+      --text-muted: #8b7fa3;
+      --accent: #c084fc;
+      --accent-hover: #d8b4fe;
+      --border: rgba(192, 132, 252, 0.15);
+      --border-strong: rgba(192, 132, 252, 0.25);
+    }
+    
+    /* ===== Theme Toggle ===== */
+    .theme-toggle-container {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .theme-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+    
+    .theme-label.active {
+      color: var(--accent);
+    }
+    
+    .theme-toggle {
+      position: relative;
+      width: 56px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+    
+    .theme-toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.68, -0.15, 0.32, 1.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .theme-toggle.active .theme-toggle-slider {
+      transform: translateX(28px);
+    }
+    
+    /* Miss Information specific sparkle effect */
+    body.theme-miss .theme-toggle-slider::after {
+      content: '✨';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
     }
     
     body {
@@ -58,10 +139,126 @@ export function generateHomepage(): string {
       letter-spacing: -1px;
       color: var(--text-primary);
       margin-bottom: 16px;
+      transition: all 0.4s ease;
     }
     
     h1 .accent {
       color: var(--accent);
+      transition: color 0.4s ease;
+    }
+    
+    /* Miss Information Logo Styles */
+    body.theme-miss h1 {
+      font-family: 'Comfortaa', 'Quicksand', cursive;
+      font-size: 2.8rem;
+      letter-spacing: 1px;
+    }
+    
+    .logo-sanity {
+      display: inline;
+    }
+    
+    .logo-miss {
+      display: none;
+    }
+    
+    body.theme-miss .logo-sanity {
+      display: none;
+    }
+    
+    body.theme-miss .logo-miss {
+      display: inline;
+    }
+    
+    .logo-miss .miss-heart {
+      color: #f472b6;
+      display: inline-block;
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    
+    .logo-miss .sparkle {
+      color: #fcd34d;
+      font-size: 0.7em;
+      vertical-align: super;
+    }
+    
+    /* Miss Information button styles */
+    body.theme-miss .download-btn {
+      background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #f472b6 100%);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(192, 132, 252, 0.4);
+    }
+    
+    body.theme-miss .download-btn:hover {
+      background: linear-gradient(135deg, #d8b4fe 0%, #c084fc 50%, #f9a8d4 100%);
+      transform: translateY(-2px) scale(1.02);
+    }
+    
+    /* Miss Information subtle background sparkles */
+    body.theme-miss::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(2px 2px at 20% 30%, rgba(244, 114, 182, 0.3), transparent),
+        radial-gradient(2px 2px at 40% 70%, rgba(192, 132, 252, 0.2), transparent),
+        radial-gradient(2px 2px at 60% 20%, rgba(252, 211, 77, 0.2), transparent),
+        radial-gradient(2px 2px at 80% 50%, rgba(192, 132, 252, 0.3), transparent),
+        radial-gradient(1px 1px at 10% 80%, rgba(244, 114, 182, 0.2), transparent),
+        radial-gradient(1px 1px at 90% 10%, rgba(252, 211, 77, 0.15), transparent);
+      pointer-events: none;
+      z-index: 0;
+      animation: sparkle-drift 20s linear infinite;
+    }
+    
+    @keyframes sparkle-drift {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-20px); }
+    }
+    
+    body.theme-miss .hero,
+    body.theme-miss .demo-section,
+    body.theme-miss .how-section,
+    body.theme-miss .install-section,
+    body.theme-miss footer {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Miss Information nav arrows */
+    body.theme-miss .nav-arrow {
+      border-color: rgba(192, 132, 252, 0.3);
+      background: rgba(192, 132, 252, 0.1);
+    }
+    
+    body.theme-miss .nav-arrow:hover {
+      background: rgba(192, 132, 252, 0.25);
+      border-color: #c084fc;
+      color: #f5f0fa;
+    }
+    
+    /* Miss Information page dots */
+    body.theme-miss .page-dot.active {
+      background: linear-gradient(135deg, #c084fc, #f472b6);
+      border-color: transparent;
+    }
+    
+    /* Miss Information how-section styling */
+    body.theme-miss .how-step-num {
+      background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
+    }
+    
+    /* Smooth theme transitions */
+    body, .download-btn, .nav-arrow, .page-dot, .how-step-num {
+      transition: all 0.4s ease;
     }
     
     .tagline {
@@ -565,10 +762,25 @@ export function generateHomepage(): string {
   </style>
 </head>
 <body>
+  <!-- Theme Toggle -->
+  <div class="theme-toggle-container">
+    <span class="theme-label active" id="label-sanity">Sanity</span>
+    <div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+      <div class="theme-toggle-slider"></div>
+    </div>
+    <span class="theme-label" id="label-miss">Miss Info</span>
+  </div>
+
   <section class="hero">
     <div class="hero-content">
-      <h1>Sanity<span class="accent">Check</span></h1>
-      <p class="tagline">A browser extension that catches the reasoning gaps you'd normally miss.</p>
+      <h1>
+        <span class="logo-sanity">Sanity<span class="accent">Check</span></span>
+        <span class="logo-miss">Miss <span class="accent">Info</span><span class="miss-heart">♡</span><span class="sparkle">✧</span></span>
+      </h1>
+      <p class="tagline">
+        <span class="logo-sanity">A browser extension that catches the reasoning gaps you'd normally miss.</span>
+        <span class="logo-miss">Your kawaii detective for spotting sneaky logic~ ♪</span>
+      </p>
       
       <div class="cta-group">
         <a href="/static/sanitycheck-extension.zip" class="download-btn" download>
@@ -1012,6 +1224,37 @@ export function generateHomepage(): string {
     initPageIndicators();
     loadArticle(0);
     setTimeout(startAnimation, 500);
+    
+    // ===== Theme Toggle =====
+    function toggleTheme() {
+      const body = document.body;
+      const toggle = document.getElementById('theme-toggle');
+      const labelSanity = document.getElementById('label-sanity');
+      const labelMiss = document.getElementById('label-miss');
+      
+      body.classList.toggle('theme-miss');
+      toggle.classList.toggle('active');
+      
+      const isMiss = body.classList.contains('theme-miss');
+      labelSanity.classList.toggle('active', !isMiss);
+      labelMiss.classList.toggle('active', isMiss);
+      
+      // Update page title
+      document.title = isMiss 
+        ? 'Miss Information ♡ Your Kawaii Logic Detective~' 
+        : 'SanityCheck — Catch the Reasoning Gaps You\\'d Miss';
+      
+      // Save preference
+      localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+    }
+    
+    // Load saved theme preference
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'miss') {
+        toggleTheme();
+      }
+    })();
   </script>
 </body>
 </html>`;
