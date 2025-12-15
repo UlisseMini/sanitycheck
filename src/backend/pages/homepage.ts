@@ -42,7 +42,7 @@ export function generateHomepage(): string {
     
     /* Hero Section */
     .hero {
-      padding: 60px 24px 40px;
+      padding: 60px 24px 20px;
       text-align: center;
     }
     
@@ -118,7 +118,7 @@ export function generateHomepage(): string {
     
     /* Demo Section */
     .demo-section {
-      padding: 60px 24px 80px;
+      padding: 20px 24px 80px;
       max-width: 960px;
       margin: 0 auto;
       position: relative;
