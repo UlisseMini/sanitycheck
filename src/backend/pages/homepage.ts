@@ -429,8 +429,8 @@ export function generateHomepage(): string {
     
     .how-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
     }
     
     .how-step {
@@ -550,9 +550,12 @@ export function generateHomepage(): string {
       color: var(--accent);
     }
 
-    @media (max-width: 800px) {
-      .demo-grid { grid-template-columns: 1fr; }
-      .how-grid { grid-template-columns: 1fr; gap: 24px; }
+    @media (max-width: 900px) {
+      .how-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    }
+    
+    @media (max-width: 600px) {
+      .how-grid { grid-template-columns: 1fr; gap: 20px; }
     }
     
     @media (max-width: 600px) {
@@ -636,12 +639,17 @@ export function generateHomepage(): string {
         <div class="how-step">
           <div class="how-step-num">2</div>
           <h3>AI analyzes the logic</h3>
-          <p>Claude reads the article and identifies where conclusions don't follow from premises.</p>
+          <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
         </div>
         <div class="how-step">
           <div class="how-step-num">3</div>
           <h3>See issues inline</h3>
           <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">4</div>
+          <h3>Leave us feedback</h3>
+          <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
         </div>
       </div>
     </div>
