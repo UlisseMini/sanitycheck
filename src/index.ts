@@ -1496,7 +1496,7 @@ app.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
     res.json({
       total,
       last24h: recentCount,
-      byFallacyType: byType.map((b) => ({
+      byFallacyType: byType.map((b: { fallacyType: string | null; _count: number }) => ({
         type: b.fallacyType || 'unspecified',
         count: b._count
       }))
@@ -1641,7 +1641,7 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map((i) => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i: { ip: string; _count: number }) => ({ ip: i.ip, count: i._count }))
     });
   } catch (error) {
     next(error);
@@ -1853,7 +1853,8 @@ app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, nex
     ]);
     
     res.json({
-      articles: articles.map((a) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      articles: articles.map((a: any) => {
         const latestAnalysis = a.analyses[0];
         return {
           id: a.id,
@@ -1974,7 +1975,7 @@ app.get('/admin/feedback-stats', requireAdmin, async (_req: Request, res: Respon
       comments: commentCount,
       highlights: highlightCount,
       articlesLast24h: recentArticles,
-      highlightsByImportance: highlightsByImportance.map((h) => ({
+      highlightsByImportance: highlightsByImportance.map((h: { importance: string; _count: number }) => ({
         importance: h.importance,
         count: h._count
       }))
