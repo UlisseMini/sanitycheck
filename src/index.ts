@@ -1655,7 +1655,7 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map((i: { ip: string; _count: number }) => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i: { ip: string | null; _count: number }) => ({ ip: i.ip, count: i._count }))
     });
   } catch (error) {
     next(error);
