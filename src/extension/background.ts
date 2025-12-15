@@ -3,10 +3,10 @@
  * Built from TypeScript with shared imports
  */
 
-import { BACKEND_URL, DEFAULT_ANALYSIS_PROMPT } from '../shared';
+import { BACKEND_URL, DEFAULT_ANALYSIS_PROMPT, AnalysisResult } from '../shared';
 
 // Track ongoing analyses by tab URL
-const ongoingAnalyses = new Map<string, { status: string; result?: any; error?: string }>();
+const ongoingAnalyses = new Map<string, { status: string; result?: AnalysisResult; error?: string }>();
 
 // Handle extension install/update
 chrome.runtime.onInstalled.addListener((details) => {
@@ -139,7 +139,7 @@ async function startAnalysis(tabId: number, article: { title: string; text: stri
         jsonText = jsonMatch[1];
       }
       result = JSON.parse(jsonText);
-    } catch (e) {
+    } catch (_e) {
       throw new Error('Failed to parse API response as JSON');
     }
     
@@ -152,7 +152,7 @@ async function startAnalysis(tabId: number, article: { title: string; text: stri
         action: 'displayHighlights',
         result
       });
-    } catch (e) {
+    } catch (_e) {
       console.log('Could not send highlights to tab (tab may have been closed)');
     }
     

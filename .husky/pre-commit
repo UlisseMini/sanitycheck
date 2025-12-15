@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Type check the whole project
+echo "🔍 Type checking..."
+npx tsc --noEmit
+
+# Run lint-staged for staged files
+npx lint-staged

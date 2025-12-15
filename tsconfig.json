@@ -5,11 +5,36 @@
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
+    
+    // Strict type checking
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    
+    // Additional checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // Note: exactOptionalPropertyTypes and noPropertyAccessFromIndexSignature
+    // are intentionally disabled as they're overly strict for this codebase
+    
+    // Module resolution
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node",
+    
+    // Output
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

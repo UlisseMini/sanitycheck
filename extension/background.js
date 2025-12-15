@@ -439,7 +439,7 @@ ARTICLE:
           jsonText = jsonMatch[1];
         }
         result = JSON.parse(jsonText);
-      } catch (e) {
+      } catch (_e) {
         throw new Error("Failed to parse API response as JSON");
       }
       ongoingAnalyses.set(url, { status: "complete", result });
@@ -448,7 +448,7 @@ ARTICLE:
           action: "displayHighlights",
           result
         });
-      } catch (e) {
+      } catch (_e) {
         console.log("Could not send highlights to tab (tab may have been closed)");
       }
     } catch (error) {

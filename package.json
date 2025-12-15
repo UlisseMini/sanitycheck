@@ -9,10 +9,19 @@
     "build:backend": "node scripts/build.js --backend-only",
     "build:extension": "node scripts/build.js --extension-only",
     "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix"
+    ]
   },
   "engines": {
     "node": ">=18"
@@ -27,15 +36,22 @@
     "prisma": "^6.2.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@mozilla/readability": "^0.6.0",
     "@types/chrome": "^0.1.32",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
     "esbuild": "^0.27.1",
+    "eslint": "^9.39.2",
+    "husky": "^9.1.7",
     "jsdom": "^27.0.1",
+    "lint-staged": "^16.2.7",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.49.0"
   }
 }

@@ -4,7 +4,6 @@ import path from 'path';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { generateHomepage } from './backend/pages/homepage';
-import { ANTHROPIC_MODEL as SHARED_ANTHROPIC_MODEL } from './shared';
 
 const app = express();
 
@@ -62,7 +61,7 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -128,8 +127,9 @@ app.post('/analyze', async (req: Request, res: Response) => {
     console.log(`[analyze] Success in ${duration}ms, model: ${data.model}`);
 
     // Extract text from response
-    if (data.content && data.content.length > 0) {
-      const text = data.content[0].text;
+    const firstContent = data.content[0];
+    if (data.content && data.content.length > 0 && firstContent) {
+      const text = firstContent.text;
       res.json({ 
         text,
         model: data.model,
@@ -148,7 +148,7 @@ app.post('/analyze', async (req: Request, res: Response) => {
 // Homepage (generated from shared modules)
 // =====================================================
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(generateHomepage());
 });
@@ -1358,13 +1358,13 @@ const ADMIN_HTML = `
 `;
 
 // Serve admin page
-app.get('/admin', (req: Request, res: Response) => {
+app.get('/admin', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(ADMIN_HTML);
 });
 
 // Verify admin key
-app.get('/admin/verify', requireAdmin, (req: Request, res: Response) => {
+app.get('/admin/verify', requireAdmin, (_req: Request, res: Response) => {
   res.json({ success: true });
 });
 
@@ -1475,7 +1475,7 @@ app.get('/annotations/by-url', async (req: Request, res: Response, next: NextFun
 });
 
 // Get stats
-app.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
+app.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const [total, byType, recentCount] = await Promise.all([
       prisma.annotation.count(),
@@ -1496,7 +1496,7 @@ app.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
     res.json({
       total,
       last24h: recentCount,
-      byFallacyType: byType.map((b: any) => ({
+      byFallacyType: byType.map((b) => ({
         type: b.fallacyType || 'unspecified',
         count: b._count
       }))
@@ -1507,7 +1507,7 @@ app.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Export annotations as JSONL (for prompt engineering) - requires admin key
-app.get('/export', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+app.get('/export', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const annotations = await prisma.annotation.findMany({
       orderBy: { createdAt: 'asc' },
@@ -1537,7 +1537,7 @@ app.get('/export', requireAdmin, async (req: Request, res: Response, next: NextF
 // =====================================================
 
 // Receive debug logs from extension (public endpoint)
-app.post('/debug/log', async (req: Request, res: Response, next: NextFunction) => {
+app.post('/debug/log', async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const { level, message, data, source, version } = req.body;
     
@@ -1583,7 +1583,11 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
     const since = req.query.since as string | undefined; // ISO date or relative like "5m", "1h", "24h"
     
     // Build where clause
-    const where: any = {};
+    const where: {
+      ip?: string;
+      level?: string;
+      createdAt?: { gte: Date };
+    } = {};
     
     if (ip) {
       where.ip = ip;
@@ -1598,8 +1602,8 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       
       // Parse relative time
       const match = since.match(/^(\d+)(m|h|d)$/);
-      if (match) {
-        const amount = parseInt(match[1]);
+      if (match && match[1] && match[2]) {
+        const amount = parseInt(match[1], 10);
         const unit = match[2];
         const ms = unit === 'm' ? amount * 60 * 1000 
                  : unit === 'h' ? amount * 60 * 60 * 1000 
@@ -1637,7 +1641,7 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map((i: any) => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i) => ({ ip: i.ip, count: i._count }))
     });
   } catch (error) {
     next(error);
@@ -1650,12 +1654,12 @@ app.delete('/debug/logs', requireAdmin, async (req: Request, res: Response, next
     const olderThan = req.query.olderThan as string || '7d';
     
     const match = olderThan.match(/^(\d+)(m|h|d)$/);
-    if (!match) {
+    if (!match || !match[1] || !match[2]) {
       res.status(400).json({ error: 'Invalid olderThan format. Use format like 5m, 1h, 7d' });
       return;
     }
     
-    const amount = parseInt(match[1]);
+    const amount = parseInt(match[1], 10);
     const unit = match[2];
     const ms = unit === 'm' ? amount * 60 * 1000 
              : unit === 'h' ? amount * 60 * 60 * 1000 
@@ -1710,10 +1714,28 @@ app.post('/articles', async (req: Request, res: Response, next: NextFunction) =>
 });
 
 // Add analysis results to article
+interface HighlightInput {
+  quote: string;
+  importance?: string;
+  gap?: string;
+}
+
 app.post('/articles/:articleId/analysis', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { articleId } = req.params;
-    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = req.body;
+    const articleId = req.params['articleId'];
+    if (!articleId) {
+      res.status(400).json({ error: 'Missing articleId parameter' });
+      return;
+    }
+    
+    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = req.body as {
+      modelVersion?: string;
+      rawResponse: unknown;
+      severity?: string;
+      highlights?: HighlightInput[];
+      promptUsed?: string;
+      isCustomPrompt?: boolean;
+    };
     
     if (!rawResponse) {
       res.status(400).json({ error: 'Missing required field: rawResponse' });
@@ -1731,16 +1753,16 @@ app.post('/articles/:articleId/analysis', async (req: Request, res: Response, ne
     const analysis = await prisma.analysis.create({
       data: {
         articleId,
-        modelVersion,
+        modelVersion: modelVersion ?? null,
         rawResponse,
-        severity,
-        promptUsed: promptUsed || null,
-        isCustomPrompt: isCustomPrompt || false,
+        severity: severity ?? null,
+        promptUsed: promptUsed ?? null,
+        isCustomPrompt: isCustomPrompt ?? false,
         highlights: highlights ? {
-          create: highlights.map((h: any) => ({
+          create: highlights.map((h) => ({
             quote: h.quote,
-            importance: h.importance || 'minor',
-            gap: h.gap || ''
+            importance: h.importance ?? 'minor',
+            gap: h.gap ?? ''
           }))
         } : undefined
       },
@@ -1831,20 +1853,23 @@ app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, nex
     ]);
     
     res.json({
-      articles: articles.map((a: any) => ({
-        id: a.id,
-        createdAt: a.createdAt,
-        url: a.url,
-        title: a.title,
-        textPreview: a.textContent.substring(0, 200) + (a.textContent.length > 200 ? '...' : ''),
-        analysisCount: a._count.analyses,
-        commentCount: a._count.comments,
-        latestAnalysis: a.analyses[0] ? {
-          severity: a.analyses[0].severity || 'none',
-          highlightCount: a.analyses[0].highlights.length
-        } : null,
-        ip: a.ip
-      })),
+      articles: articles.map((a) => {
+        const latestAnalysis = a.analyses[0];
+        return {
+          id: a.id,
+          createdAt: a.createdAt,
+          url: a.url,
+          title: a.title,
+          textPreview: a.textContent.substring(0, 200) + (a.textContent.length > 200 ? '...' : ''),
+          analysisCount: a._count.analyses,
+          commentCount: a._count.comments,
+          latestAnalysis: latestAnalysis ? {
+            severity: latestAnalysis.severity ?? 'none',
+            highlightCount: latestAnalysis.highlights.length
+          } : null,
+          ip: a.ip
+        };
+      }),
       total,
       limit,
       offset
@@ -1926,7 +1951,7 @@ app.delete('/admin/comments/:id', requireAdmin, async (req: Request, res: Respon
 });
 
 // Get feedback stats
-app.get('/admin/feedback-stats', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+app.get('/admin/feedback-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const [articleCount, analysisCount, commentCount, highlightCount, recentArticles] = await Promise.all([
       prisma.article.count(),
@@ -1949,7 +1974,7 @@ app.get('/admin/feedback-stats', requireAdmin, async (req: Request, res: Respons
       comments: commentCount,
       highlights: highlightCount,
       articlesLast24h: recentArticles,
-      highlightsByImportance: highlightsByImportance.map((h: any) => ({
+      highlightsByImportance: highlightsByImportance.map((h) => ({
         importance: h.importance,
         count: h._count
       }))
@@ -1960,7 +1985,7 @@ app.get('/admin/feedback-stats', requireAdmin, async (req: Request, res: Respons
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
