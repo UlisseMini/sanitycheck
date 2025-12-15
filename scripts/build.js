@@ -132,6 +132,20 @@ async function bundleExtensionZip() {
     fs.mkdirSync(publicDir, { recursive: true });
   }
   
+  // Copy icon files to public directory for favicon
+  const iconsDir = path.join(staticDir, 'icons');
+  if (fs.existsSync(iconsDir)) {
+    for (const icon of fs.readdirSync(iconsDir)) {
+      if (icon.endsWith('.png')) {
+        fs.copyFileSync(
+          path.join(iconsDir, icon),
+          path.join(publicDir, icon)
+        );
+      }
+    }
+    console.log('  ✓ Icons copied to public/');
+  }
+  
   const outputZip = path.join(publicDir, 'sanitycheck-extension.zip');
   
   // Create temp directory for production build
