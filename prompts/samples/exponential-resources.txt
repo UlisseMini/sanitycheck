@@ -1,0 +1,5 @@
+There have been studies about progress in all kinds of fields that come to the same conclusion: linear progress needs exponential resources. What does that mean? If you want to improve a system further and further, you need more and more resources. This has been observed in semiconductor manufacturing, medical research, and even sports performance.
+
+Take Moore's Law as an example. While transistor counts doubled every two years, the cost of fabrication plants grew exponentially. Intel's latest fabs cost over $20 billion. This proves that progress always hits diminishing returns, and we should expect AI development to follow the same pattern.
+
+Therefore, claims about rapidly accelerating AI capabilities are overblown. The exponential resource requirements will inevitably slow things down, just as they have in every other field.
