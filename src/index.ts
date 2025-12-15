@@ -31,6 +31,8 @@ app.use(express.json({ limit: '5mb' }));
 
 // Ensure public directory exists
 const publicDir = path.join(__dirname, '../public');
+console.log('Public directory path:', publicDir);
+
 if (!require('fs').existsSync(publicDir)) {
   require('fs').mkdirSync(publicDir, { recursive: true });
   console.log('Created public directory:', publicDir);
@@ -47,6 +49,18 @@ if (fs.existsSync(publicDir)) {
 } else {
   console.warn('WARNING: Public directory does not exist:', publicDir);
 }
+
+// Explicit route for extension download (fallback)
+app.get('/static/sanitycheck-extension.zip', (_req, res) => {
+  const zipPath = path.join(publicDir, 'sanitycheck-extension.zip');
+  console.log('Extension download requested, looking for:', zipPath);
+  if (fs.existsSync(zipPath)) {
+    res.download(zipPath, 'sanitycheck-extension.zip');
+  } else {
+    console.error('Extension zip not found at:', zipPath);
+    res.status(404).send('Extension zip not found. Please contact support.');
+  }
+});
 
 // Admin auth middleware
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
