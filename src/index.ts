@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { generateHomepage } from './backend/pages/homepage';
+import { generateFaqPage } from './backend/pages/faq';
 
 const app = express();
 
@@ -165,6 +166,11 @@ app.post('/analyze', async (req: Request, res: Response) => {
 app.get('/', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(generateHomepage());
+});
+
+app.get('/faq', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(generateFaqPage());
 });
 
 // =====================================================

@@ -890,7 +890,7 @@ export function generateHomepage(): string {
   </section>
   
   <footer>
-    <p>Built by humans, with AI assistance · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
+    <p>Built by humans, with AI assistance · <a href="/faq">FAQ</a> · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
   </footer>
   
   <script>
