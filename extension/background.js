@@ -12,9 +12,9 @@
     textSecondary: "#9ca3b0",
     textMuted: "#6b7280",
     // Accent
-    accent: "#f97316",
-    accentHover: "#fb923c",
-    accentSubtle: "rgba(249, 115, 22, 0.12)",
+    accent: "#60a5fa",
+    accentHover: "#93c5fd",
+    accentSubtle: "rgba(96, 165, 250, 0.12)",
     // Status colors
     error: "#ef4444",
     errorSubtle: "rgba(239, 68, 68, 0.12)",
@@ -32,13 +32,13 @@
     highlightSignificantHover: "rgba(234, 179, 8, 0.4)",
     highlightMinor: "rgba(115, 115, 115, 0.25)",
     highlightMinorHover: "rgba(115, 115, 115, 0.4)",
-    highlightDefault: "rgba(249, 115, 22, 0.25)",
-    highlightDefaultHover: "rgba(249, 115, 22, 0.4)",
+    highlightDefault: "rgba(96, 165, 250, 0.25)",
+    highlightDefaultHover: "rgba(96, 165, 250, 0.4)",
     // Severity border colors
     severityCritical: "#ef4444",
     severitySignificant: "#eab308",
     severityMinor: "#737373",
-    severityDefault: "#f97316"
+    severityDefault: "#60a5fa"
   };
   var cssVariables = `
 :root {

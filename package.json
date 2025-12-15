@@ -9,6 +9,7 @@
     "build:backend": "node scripts/build.js --backend-only",
     "build:extension": "node scripts/build.js --extension-only",
     "start": "node dist/index.js",
+    "preview": "node scripts/preview-extension.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",

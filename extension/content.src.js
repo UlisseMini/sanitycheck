@@ -220,8 +220,8 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       }
       
       .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) {
-        border-color: #f97316;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(249, 115, 22, 0.2);
+        border-color: #60a5fa;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(96, 165, 250, 0.2);
       }
       
       .logic-checker-tooltip.visible {
@@ -250,7 +250,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       .logic-checker-tooltip.critical .logic-checker-tooltip-type { color: #ef4444; }
       .logic-checker-tooltip.significant .logic-checker-tooltip-type { color: #eab308; }
       .logic-checker-tooltip.minor .logic-checker-tooltip-type { color: #737373; }
-      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-type { color: #f97316; }
+      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-type { color: #60a5fa; }
       
       .logic-checker-tooltip-explanation {
         color: #d4d4d4;
@@ -272,7 +272,7 @@ import { Readability, isProbablyReaderable } from '@mozilla/readability';
       .logic-checker-tooltip.critical .logic-checker-tooltip-badge { background: #ef4444; }
       .logic-checker-tooltip.significant .logic-checker-tooltip-badge { background: #eab308; }
       .logic-checker-tooltip.minor .logic-checker-tooltip-badge { background: #737373; }
-      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-badge { background: #f97316; }
+      .logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-badge { background: #60a5fa; }
     `;
     document.head.appendChild(style);
     debug.log('Styles injected', { useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API }, 'content-init');

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Preview - SanityCheck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&family=Montserrat:wght@800&family=Space+Grotesk:wght@700&family=Outfit:wght@800&family=Poppins:wght@800&family=Rajdhani:wght@700&family=Orbitron:wght@700&family=Exo+2:wght@800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f1117;
+      color: #f0f2f5;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    h2 {
+      font-size: 24px;
+      margin-bottom: 40px;
+      color: #9ca3b0;
+      text-align: center;
+    }
+    
+    .font-option {
+      margin-bottom: 50px;
+      padding: 30px;
+      background: #1a1d27;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+    }
+    
+    .font-name {
+      font-size: 14px;
+      color: #60a5fa;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    
+    .font-preview {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: transparent;
+      -webkit-text-stroke: 2px #60a5fa;
+      text-stroke: 2px #60a5fa;
+      text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+      text-rendering: optimizeLegibility;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+    
+    .font-preview.regular-weight {
+      font-weight: 700;
+      -webkit-text-stroke: 1.5px #60a5fa;
+      text-stroke: 1.5px #60a5fa;
+    }
+    
+    .font-preview.thin-stroke {
+      -webkit-text-stroke: 1px #60a5fa;
+      text-stroke: 1px #60a5fa;
+    }
+    
+    .font-description {
+      font-size: 13px;
+      color: #6b7280;
+      font-style: italic;
+    }
+    
+    /* Font-specific styles */
+    .font-inter { font-family: 'Inter', -apple-system, sans-serif; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    .font-space-grotesk { font-family: 'Space Grotesk', sans-serif; }
+    .font-outfit { font-family: 'Outfit', sans-serif; }
+    .font-poppins { font-family: 'Poppins', sans-serif; }
+    .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+    .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    .font-exo { font-family: 'Exo 2', sans-serif; }
+    .font-system { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>SanityCheck Font Options</h2>
+    
+    <div class="font-option">
+      <div class="font-name">System Font (SF Pro / Segoe UI)</div>
+      <div class="font-preview font-system">SanityCheck</div>
+      <div class="font-description">Native, sharp, modern - no loading time</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Inter</div>
+      <div class="font-preview font-inter">SanityCheck</div>
+      <div class="font-description">Geometric, clean, highly legible</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Montserrat</div>
+      <div class="font-preview font-montserrat">SanityCheck</div>
+      <div class="font-description">Bold, geometric, urban feel</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Space Grotesk</div>
+      <div class="font-preview font-space-grotesk">SanityCheck</div>
+      <div class="font-description">Modern, tech-forward, slightly rounded</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Outfit</div>
+      <div class="font-preview font-outfit">SanityCheck</div>
+      <div class="font-description">Geometric, contemporary, clean</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Poppins</div>
+      <div class="font-preview font-poppins">SanityCheck</div>
+      <div class="font-description">Geometric, friendly, modern</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Rajdhani</div>
+      <div class="font-preview font-rajdhani">SanityCheck</div>
+      <div class="font-description">Condensed, tech-inspired, sharp</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Orbitron</div>
+      <div class="font-preview font-orbitron">SanityCheck</div>
+      <div class="font-description">Futuristic, geometric, sci-fi feel</div>
+    </div>
+    
+    <div class="font-option">
+      <div class="font-name">Exo 2</div>
+      <div class="font-preview font-exo">SanityCheck</div>
+      <div class="font-description">Modern, geometric, tech-forward</div>
+    </div>
+    
+  </div>
+</body>
+</html>
+
