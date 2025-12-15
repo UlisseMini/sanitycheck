@@ -15,7 +15,7 @@ export function generateFaqPage(): string {
   <link rel="icon" type="image/png" sizes="48x48" href="/static/icon48.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Comfortaa:wght@700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -27,6 +27,80 @@ export function generateFaqPage(): string {
       color: var(--text-primary);
       min-height: 100vh;
       line-height: 1.6;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+    
+    /* ===== Theme Toggle ===== */
+    .theme-toggle-container {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .theme-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+    
+    .theme-label.active {
+      color: var(--accent);
+    }
+    
+    .theme-toggle {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+    
+    .theme-toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.68, -0.15, 0.32, 1.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .theme-toggle.active .theme-toggle-slider {
+      transform: translateX(24px);
+    }
+    
+    body.theme-miss .theme-toggle-slider::after {
+      content: '✨';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px;
+    }
+    
+    /* Miss Info theme adjustments */
+    body.theme-miss h1 {
+      font-family: 'Comfortaa', 'Quicksand', cursive;
+    }
+    
+    body.theme-miss .step-number {
+      background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
     }
     
     .container {
@@ -322,24 +396,13 @@ export function generateFaqPage(): string {
       align-items: center;
       justify-content: center;
       position: relative;
+      flex-shrink: 0;
     }
     
-    .ext-icon-main {
-      font-size: 32px;
-    }
-    
-    .ext-icon-badge {
-      position: absolute;
-      bottom: -4px;
-      right: -4px;
-      width: 20px;
-      height: 20px;
-      background: #ea4335;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
+    .ext-icon-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
     }
     
     .ext-details {
@@ -492,6 +555,15 @@ export function generateFaqPage(): string {
   </style>
 </head>
 <body>
+  <!-- Theme Toggle -->
+  <div class="theme-toggle-container">
+    <span class="theme-label active" id="label-sanity">Sanity</span>
+    <div class="theme-toggle" id="theme-toggle">
+      <div class="theme-toggle-slider"></div>
+    </div>
+    <span class="theme-label" id="label-miss">Miss Info</span>
+  </div>
+
   <div class="container">
     <a href="/" class="back-link">← Back to Home</a>
     
@@ -608,8 +680,7 @@ export function generateFaqPage(): string {
                     <div class="section-title">All Extensions</div>
                     <div class="ext-card">
                       <div class="ext-icon">
-                        <span class="ext-icon-main">🔍</span>
-                        <span class="ext-icon-badge">🔴</span>
+                        <img src="/static/icon48.png" alt="SanityCheck" class="ext-icon-img">
                       </div>
                       <div class="ext-details">
                         <div class="ext-name">
@@ -634,6 +705,13 @@ export function generateFaqPage(): string {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    
+    <div class="faq-item">
+      <div class="faq-question">What's the difference between SanityCheck and Miss Info?</div>
+      <div class="faq-answer">
+        They both run on the same backend—that is, both will catch the same logical issues. However, Miss Info communicates far more casually and has more of a human tone (and a different colour palette!). Try toggling the switch in the top-right corner to see the difference.
       </div>
     </div>
     
@@ -676,6 +754,32 @@ export function generateFaqPage(): string {
       <a href="/">Home</a> · <a href="https://github.com/UlisseMini/sanitycheck" target="_blank">GitHub</a>
     </footer>
   </div>
+  
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const labelSanity = document.getElementById('label-sanity');
+    const labelMiss = document.getElementById('label-miss');
+    
+    function toggleTheme() {
+      document.body.classList.toggle('theme-miss');
+      themeToggle.classList.toggle('active');
+      
+      const isMiss = document.body.classList.contains('theme-miss');
+      labelSanity.classList.toggle('active', !isMiss);
+      labelMiss.classList.toggle('active', isMiss);
+      
+      document.title = isMiss ? 'FAQ — Miss Information ♡' : 'FAQ — SanityCheck';
+      localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+    }
+    
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Load saved theme preference
+    if (localStorage.getItem('theme') === 'miss') {
+      toggleTheme();
+    }
+  </script>
 </body>
 </html>`;
 }
