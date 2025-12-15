@@ -897,44 +897,44 @@ export function generateHomepage(): string {
     // Article examples data
     const articles = [
       {
-        url: "techdigest.com/ai-revolution-workplace",
+        url: "healthnews.com/coffee-longevity-study",
         content: \`
           <p>
-            A recent survey found that 78% of companies have adopted at least one AI tool in the past year. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Adoption rates don't indicate effectiveness or satisfaction. Many companies adopt tools that go unused, and the survey doesn't reveal whether these tools actually improved productivity or outcomes.">This widespread adoption proves that AI is fundamentally transforming how businesses operate.</span> Industry experts predict this trend will only accelerate.
+            A new study of 180,000 adults found that those who drank 3-4 cups of coffee daily had a 15% lower risk of death over the 12-year follow-up period. <span class="highlight significant" data-type="Hidden Confounders" data-importance="significant" data-explanation="Standard controls miss key confounders like socioeconomic status, sleep quality, and pre-existing conditions. Coffee drinkers may differ from non-drinkers in unmeasured ways that actually explain the longevity difference.">The researchers controlled for smoking, alcohol, and exercise.</span> The findings suggest coffee could be a key to living longer.
           </p>
           <p>
-            One CEO reported that after implementing an AI assistant, his team's output doubled within weeks. <span class="highlight significant" data-type="Anecdotal Evidence" data-importance="significant" data-explanation="A single company's experience cannot be generalized. The timing could be coincidental, other factors may have contributed, and 'output' is vague—quantity doesn't equal quality.">His experience demonstrates the massive productivity gains available to any company willing to embrace these tools.</span>
+            Lead author Dr. Martinez notes that coffee's antioxidant properties may explain the protective effect. <span class="highlight minor" data-type="Publication Bias" data-importance="minor" data-explanation="Studies finding no effect are less likely to be published. Consistent positive findings across studies may reflect shared methodological biases rather than genuine truth.">Previous studies have shown similar associations,</span> making this one of the most robust findings in nutritional science.
           </p>
           <p>
-            Critics who worry about job displacement are missing the bigger picture. <span class="highlight minor" data-type="Dismissive Framing" data-importance="minor" data-explanation="Characterizing legitimate concerns as 'missing the bigger picture' dismisses them without addressing the substance. Job displacement concerns are supported by economic research and historical precedent.">Every major technological shift has ultimately created more jobs than it eliminated.</span>
+            Interestingly, the effect was strongest among participants who had been drinking coffee for decades. <span class="highlight critical" data-type="Reverse Causation" data-importance="critical" data-explanation="Long-term coffee drinkers still alive may have been healthier to begin with. Sicker people often quit coffee on medical advice, creating the false appearance of a dose-response relationship.">This suggests the benefits compound over time,</span> so starting early may be especially important.
           </p>
         \`
       },
       {
-        url: "jamesclear.substack.com/p/habits-identity",
+        url: "techinsider.com/unicorn-patterns",
         content: \`
           <p>
-            I used to struggle with consistency until I realized something: you don't rise to the level of your goals, you fall to the level of your systems. <span class="highlight significant" data-type="False Dichotomy" data-importance="significant" data-explanation="Goals and systems aren't mutually exclusive—they work together. Many successful people credit both clear goals AND good systems. Presenting this as either/or oversimplifies the relationship.">Once I stopped focusing on goals entirely and built better systems, everything changed.</span>
+            After analyzing 500 successful startups, we identified three common traits: strong founding teams, rapid iteration, and deep customer empathy. <span class="highlight critical" data-type="Base Rate Neglect" data-importance="critical" data-explanation="Without knowing how common these traits are in failed startups, 87% tells us nothing. If 90% of failures also had these traits, they're not predictive of success at all.">These factors were present in 87% of companies that reached unicorn status.</span>
           </p>
           <p>
-            The key insight is that every action you take is a vote for the type of person you wish to become. <span class="highlight minor" data-type="Unfalsifiable Claim" data-importance="minor" data-explanation="While this framing can be motivating, it's structured so it can't be proven wrong. Any action can be interpreted as 'voting for identity,' making it more of a perspective than a verifiable insight.">This is why identity-based habits are more powerful than outcome-based habits.</span> When you focus on who you want to become rather than what you want to achieve, lasting change becomes inevitable.
+            What's remarkable is how consistent the pattern is. <span class="highlight significant" data-type="Narrative Fallacy" data-importance="significant" data-explanation="Post-hoc analysis finds patterns because humans are pattern-seekers. The 'playbook' is constructed backward from success—their paths likely looked very different in real-time, with luck playing a major role.">From Stripe to Notion to Figma, the same playbook appears again and again.</span> This suggests a replicable formula for startup success.
           </p>
           <p>
-            I've seen this work for thousands of readers who write to me. <span class="highlight critical" data-type="Survivorship Bias" data-importance="critical" data-explanation="Only hearing from readers who succeeded creates a skewed sample. Those for whom the advice didn't work are less likely to write in, making success rates appear higher than they actually are.">The pattern is undeniable—identity change precedes behavior change, every single time.</span>
+            Notably, many of these founders had no formal business training. <span class="highlight significant" data-type="Survivorship Bias" data-importance="significant" data-explanation="We're not hearing from founders with intuition and hustle who failed. Credentials may reduce variance in outcomes even if some succeed without them—we just don't see the failures.">Their success came from intuition and hustle rather than MBA frameworks</span>—a lesson for aspiring entrepreneurs.
           </p>
         \`
       },
       {
-        url: "morningnews.com/economy/housing-crisis",
+        url: "wealthwise.substack.com/long-term-investing",
         content: \`
           <p>
-            Home prices have increased 40% over the past three years while wages grew only 12%. <span class="highlight critical" data-type="Missing Context" data-importance="critical" data-explanation="These national averages mask huge regional variation. Some markets saw prices drop while others doubled. Without geographic breakdown, the comparison is misleading for most readers' actual situations.">Young Americans are now locked out of homeownership for the foreseeable future.</span>
+            The data is clear: over any 20-year period in U.S. history, the stock market has recovered from every crash. <span class="highlight critical" data-type="Survivorship Bias in Markets" data-importance="critical" data-explanation="We study markets that recovered. Markets that went to zero (Russia 1917, China 1949, Germany 1945) aren't in our dataset. The U.S. surviving and thriving isn't guaranteed—it's one draw from possible histories.">This makes staying invested through downturns the only rational strategy.</span>
           </p>
           <p>
-            Real estate experts point to limited housing supply as the primary driver. <span class="highlight significant" data-type="Oversimplification" data-importance="significant" data-explanation="Housing affordability involves multiple interacting factors: interest rates, investment buying, zoning laws, construction costs, and income inequality. Reducing it to 'supply' ignores policy choices that shape the market.">If we simply built more homes, prices would naturally fall to affordable levels.</span> Several cities have begun relaxing zoning restrictions in response.
+            Dollar-cost averaging removes the stress of timing. <span class="highlight significant" data-type="Mathematically Misleading" data-importance="significant" data-explanation="This sounds like a timing advantage, but it isn't. DCA actually underperforms lump-sum investing roughly 68% of the time. The 'buy more when low' framing obscures that you're just slowly entering a rising market.">By investing the same amount monthly, you automatically buy more shares when prices are low and fewer when high.</span>
           </p>
           <p>
-            Some economists argue that remote work migration is responsible, pointing to price spikes in previously affordable cities. <span class="highlight minor" data-type="Post Hoc Reasoning" data-importance="minor" data-explanation="Remote work and price increases happened around the same time, but correlation isn't causation. Low interest rates, pandemic savings, and investor activity also spiked during this period.">Cities that attracted remote workers saw prices double, proving the connection.</span>
+            The math speaks for itself: the S&P 500 has returned roughly 10% annually over the past century. <span class="highlight significant" data-type="Geometric vs. Arithmetic Mean" data-importance="significant" data-explanation="10% average annual returns ≠ 10% compound growth. Volatility drag means actual wealth grows slower than the average suggests. A portfolio gaining 50% then losing 33% 'averages' 8.5% annually but has returned exactly 0%.">Even accounting for inflation, that's 7% real returns—enough to double your money every decade.</span>
           </p>
         \`
       }
