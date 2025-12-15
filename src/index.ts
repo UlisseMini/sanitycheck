@@ -31,6 +31,8 @@ app.use(express.json({ limit: '5mb' }));
 
 // Ensure public directory exists
 const publicDir = path.join(__dirname, '../public');
+console.log('Public directory path:', publicDir);
+
 if (!require('fs').existsSync(publicDir)) {
   require('fs').mkdirSync(publicDir, { recursive: true });
   console.log('Created public directory:', publicDir);
@@ -47,6 +49,18 @@ if (fs.existsSync(publicDir)) {
 } else {
   console.warn('WARNING: Public directory does not exist:', publicDir);
 }
+
+// Explicit route for extension download (fallback)
+app.get('/static/sanitycheck-extension.zip', (_req, res) => {
+  const zipPath = path.join(publicDir, 'sanitycheck-extension.zip');
+  console.log('Extension download requested, looking for:', zipPath);
+  if (fs.existsSync(zipPath)) {
+    res.download(zipPath, 'sanitycheck-extension.zip');
+  } else {
+    console.error('Extension zip not found at:', zipPath);
+    res.status(404).send('Extension zip not found. Please contact support.');
+  }
+});
 
 // Admin auth middleware
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -1496,7 +1510,7 @@ app.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
     res.json({
       total,
       last24h: recentCount,
-      byFallacyType: byType.map((b) => ({
+      byFallacyType: byType.map((b: { fallacyType: string | null; _count: number }) => ({
         type: b.fallacyType || 'unspecified',
         count: b._count
       }))
@@ -1641,7 +1655,7 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map((i) => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i: { ip: string | null; _count: number }) => ({ ip: i.ip, count: i._count }))
     });
   } catch (error) {
     next(error);
@@ -1853,7 +1867,8 @@ app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, nex
     ]);
     
     res.json({
-      articles: articles.map((a) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      articles: articles.map((a: any) => {
         const latestAnalysis = a.analyses[0];
         return {
           id: a.id,
@@ -1974,7 +1989,7 @@ app.get('/admin/feedback-stats', requireAdmin, async (_req: Request, res: Respon
       comments: commentCount,
       highlights: highlightCount,
       articlesLast24h: recentArticles,
-      highlightsByImportance: highlightsByImportance.map((h) => ({
+      highlightsByImportance: highlightsByImportance.map((h: { importance: string; _count: number }) => ({
         importance: h.importance,
         count: h._count
       }))

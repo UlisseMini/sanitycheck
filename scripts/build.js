@@ -126,7 +126,13 @@ async function buildExtension() {
 async function bundleExtensionZip() {
   console.log('📦 Bundling extension zip...');
   
-  const outputZip = path.join(buildDir, 'sanitycheck-extension.zip');
+  // Create public directory for static files served by backend
+  const publicDir = path.join(buildDir, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+  
+  const outputZip = path.join(publicDir, 'sanitycheck-extension.zip');
   
   // Create temp directory for production build
   const tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'extension-'));
@@ -160,20 +166,25 @@ async function bundleExtensionZip() {
       }
     }
     
-    // Create zip
-    try {
-      execSync(`cd "${tempDir}" && zip -r "${outputZip}" . -x "*.DS_Store"`, { 
-        stdio: 'pipe'
-      });
-    } catch (e) {
-      // Fallback to tar if zip not available
-      console.log('  zip not available, using tar...');
-      execSync(`tar -czf "${outputZip}.tar.gz" -C "${tempDir}" .`, { stdio: 'pipe' });
-    }
+    // Create zip using Node.js (cross-platform)
+    const archiver = require('archiver');
+    const output = fs.createWriteStream(outputZip);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    
+    await new Promise((resolve, reject) => {
+      output.on('close', resolve);
+      archive.on('error', reject);
+      
+      archive.pipe(output);
+      archive.directory(tempDir, false);
+      archive.finalize();
+    });
     
     if (fs.existsSync(outputZip)) {
       const stats = fs.statSync(outputZip);
       console.log(`  ✓ Extension bundled: ${(stats.size / 1024).toFixed(1)} KB`);
+    } else {
+      throw new Error('Failed to create extension zip');
     }
     
   } finally {
