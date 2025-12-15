@@ -199,13 +199,12 @@
       height: 20px;
       pointer-events: none;
       z-index: 100;
-      transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1), top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 1;
+      transition: opacity 0.2s ease;
     }
     
     .fake-cursor.hidden {
       opacity: 0;
-      transition: opacity 0.2s ease;
     }
     
     .fake-cursor svg {
@@ -467,6 +466,63 @@
       tooltip.style.top = `${Math.max(padding, top)}px`;
     }
     
+    // Current cursor position
+    let cursorX = 50;
+    let cursorY = 50;
+    let animationFrameId = null;
+    
+    // Quadratic bezier curve interpolation
+    function quadraticBezier(t, p0, p1, p2) {
+      const mt = 1 - t;
+      return mt * mt * p0 + 2 * mt * t * p1 + t * t * p2;
+    }
+    
+    // Animate cursor along a curved path
+    function animateCursorToPosition(targetX, targetY, duration, callback) {
+      const startX = cursorX;
+      const startY = cursorY;
+      const startTime = performance.now();
+      
+      // Create a random control point for the bezier curve (creates the arc)
+      const midX = (startX + targetX) / 2;
+      const midY = (startY + targetY) / 2;
+      const distance = Math.sqrt((targetX - startX) ** 2 + (targetY - startY) ** 2);
+      
+      // Random perpendicular offset for the control point (creates varied arcs)
+      const angle = Math.atan2(targetY - startY, targetX - startX) + Math.PI / 2;
+      const arcIntensity = (Math.random() - 0.5) * distance * 0.8; // Random arc direction and size
+      const controlX = midX + Math.cos(angle) * arcIntensity;
+      const controlY = midY + Math.sin(angle) * arcIntensity;
+      
+      function animate(currentTime) {
+        if (isUserControlling || animationPaused) {
+          if (animationFrameId) cancelAnimationFrame(animationFrameId);
+          return;
+        }
+        
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease out cubic for natural deceleration
+        const eased = 1 - Math.pow(1 - progress, 3);
+        
+        // Interpolate along bezier curve
+        cursorX = quadraticBezier(eased, startX, controlX, targetX);
+        cursorY = quadraticBezier(eased, startY, controlY, targetY);
+        
+        fakeCursor.style.left = `${cursorX}px`;
+        fakeCursor.style.top = `${cursorY}px`;
+        
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(animate);
+        } else {
+          if (callback) callback();
+        }
+      }
+      
+      animationFrameId = requestAnimationFrame(animate);
+    }
+    
     // Animate fake cursor through highlights
     function animateCursor() {
       if (isUserControlling || animationPaused) return;
@@ -475,19 +531,20 @@
       const contentRect = browserContent.getBoundingClientRect();
       const highlightRect = highlight.getBoundingClientRect();
       
-      // Position cursor relative to browser content
-      const cursorX = highlightRect.left + highlightRect.width / 2 - contentRect.left;
-      const cursorY = highlightRect.top + highlightRect.height / 2 - contentRect.top;
+      // Random horizontal position within the highlight (biased towards left/start)
+      const xOffset = 0.15 + Math.random() * 0.35; // 15% to 50% from left
+      const yOffset = 0.3 + Math.random() * 0.4; // 30% to 70% from top
       
-      fakeCursor.style.left = `${cursorX}px`;
-      fakeCursor.style.top = `${cursorY}px`;
+      // Target position relative to browser content
+      const targetX = highlightRect.left + highlightRect.width * xOffset - contentRect.left;
+      const targetY = highlightRect.top + highlightRect.height * yOffset - contentRect.top;
       
-      // Wait for cursor to arrive, then show tooltip
-      animationTimeout = setTimeout(() => {
+      // Animate cursor along curved path
+      animateCursorToPosition(targetX, targetY, 800, () => {
         if (isUserControlling || animationPaused) return;
         
-        const absX = highlightRect.left + highlightRect.width / 2;
-        const absY = highlightRect.top + highlightRect.height / 2;
+        const absX = highlightRect.left + highlightRect.width * xOffset;
+        const absY = highlightRect.top + highlightRect.height * yOffset;
         showTooltipForHighlight(highlight, absX, absY);
         
         // Hold tooltip, then move to next
@@ -502,11 +559,10 @@
             
             currentHighlightIndex = (currentHighlightIndex + 1) % highlights.length;
             animateCursor();
-          }, 400);
+          }, 300);
           
         }, 2500);
-        
-      }, 700);
+      });
     }
     
     // Start animation
@@ -523,6 +579,10 @@
       if (animationTimeout) {
         clearTimeout(animationTimeout);
         animationTimeout = null;
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
       }
       fakeCursor.classList.add('hidden');
       hideTooltip();
