@@ -155,6 +155,38 @@ ${generateCssVariables(missColors)}
 `;
 
 /**
- * Combined CSS with both themes for pages that support theme switching
+ * Miss Information theme background styling
+ * Uses a semi-transparent overlay on top of the background image
+ * 
+ * @param imagePath - Path to missinfo_bg.jpg (differs between homepage and extension)
+ *   - Homepage: '/static/missinfo_bg.jpg'
+ *   - Extension welcome page: 'icons/missinfo_bg.jpg'
  */
-export const themeCssVariables = cssVariables + missCssVariables;
+export function missBackgroundCss(imagePath: string): string {
+  return `
+body.theme-miss {
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(26, 21, 32, 0.85) 0%,
+      rgba(26, 21, 32, 0.75) 50%,
+      rgba(26, 21, 32, 0.9) 100%
+    ),
+    url('${imagePath}');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+`;
+}
+
+/**
+ * Combined CSS with both themes for pages that support theme switching
+ * For homepage (backend), includes background image
+ */
+export const themeCssVariables = cssVariables + missCssVariables + missBackgroundCss('/static/missinfo_bg.jpg');
+
+/**
+ * Combined CSS for extension welcome page (different image path)
+ */
+export const themeCssVariablesExtension = cssVariables + missCssVariables + missBackgroundCss('icons/missinfo_bg.jpg');
