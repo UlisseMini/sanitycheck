@@ -147,115 +147,272 @@ export function generateFaqPage(): string {
       margin-bottom: 16px;
     }
     
-    /* Screenshot mockup */
-    .screenshot {
-      background: #1e1e1e;
-      border-radius: 8px;
+    /* Chrome Extensions Page Mockup - Realistic Light Theme */
+    .chrome-screenshot {
+      background: #fff;
+      border-radius: 12px;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
     }
     
-    .browser-bar {
-      background: #2d2d2d;
-      padding: 8px 12px;
+    .chrome-header {
+      background: #f8f9fa;
+      padding: 16px 24px;
+      border-bottom: 1px solid #e0e0e0;
       display: flex;
       align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 16px;
     }
     
-    .browser-dots {
-      display: flex;
-      gap: 6px;
-    }
-    
-    .browser-dot {
-      width: 12px;
-      height: 12px;
+    .chrome-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #ea4335 25%, #fbbc04 25%, #fbbc04 50%, #34a853 50%, #34a853 75%, #4285f4 75%);
       border-radius: 50%;
     }
     
-    .browser-dot.red { background: #ff5f57; }
-    .browser-dot.yellow { background: #febc2e; }
-    .browser-dot.green { background: #28c840; }
+    .chrome-title {
+      font-size: 22px;
+      font-weight: 400;
+      color: #202124;
+    }
     
-    .browser-url {
+    .chrome-search {
       flex: 1;
-      background: #1e1e1e;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #888;
-      font-family: monospace;
-    }
-    
-    .screenshot-content {
-      padding: 20px;
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    
-    /* Chrome menu mockup */
-    .chrome-menu {
-      background: #292929;
-      border-radius: 8px;
-      padding: 8px 0;
-      width: fit-content;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
-    
-    .chrome-menu-item {
-      padding: 8px 40px 8px 16px;
-      color: #e0e0e0;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .chrome-menu-item.highlight {
-      background: var(--accent);
-      color: #fff;
-    }
-    
-    .chrome-menu-item .arrow {
-      margin-left: auto;
-      opacity: 0.5;
-    }
-    
-    /* Extensions page mockup */
-    .extensions-page {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .extensions-header {
-      font-size: 18px;
-      font-weight: 500;
-      color: #e0e0e0;
-      margin-bottom: 8px;
-    }
-    
-    .dev-mode-toggle {
+      max-width: 600px;
+      margin-left: 24px;
+      background: #f1f3f4;
+      border: 2px solid #1a73e8;
+      border-radius: 24px;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #5f6368;
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      color: #888;
     }
     
-    .toggle-switch {
+    .chrome-search-icon {
+      color: #9aa0a6;
+    }
+    
+    .dev-mode-area {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #202124;
+    }
+    
+    .toggle-pill {
+      width: 44px;
+      height: 24px;
+      background: #1a73e8;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px;
+      right: 2px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    .chrome-toolbar {
+      background: #fff;
+      padding: 12px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .chrome-btn {
+      background: #fff;
+      border: 1px solid #1a73e8;
+      color: #1a73e8;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .chrome-btn:hover {
+      background: #f0f7ff;
+    }
+    
+    .chrome-btn.primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+    
+    .chrome-body {
+      display: flex;
+      min-height: 200px;
+    }
+    
+    .chrome-sidebar {
+      width: 200px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      padding: 16px 0;
+    }
+    
+    .sidebar-item {
+      padding: 10px 24px;
+      font-size: 14px;
+      color: #5f6368;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .sidebar-item.active {
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-left: 3px solid #1a73e8;
+      padding-left: 21px;
+    }
+    
+    .sidebar-icon {
+      font-size: 18px;
+    }
+    
+    .chrome-main {
+      flex: 1;
+      padding: 24px;
+      background: #f8f9fa;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 16px;
+    }
+    
+    /* Extension Card - Realistic */
+    .ext-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .ext-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .ext-icon-main {
+      font-size: 32px;
+    }
+    
+    .ext-icon-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      background: #ea4335;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    .ext-details {
+      flex: 1;
+    }
+    
+    .ext-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .ext-version {
+      font-weight: 400;
+      color: #5f6368;
+    }
+    
+    .ext-desc {
+      font-size: 13px;
+      color: #5f6368;
+      margin-top: 4px;
+    }
+    
+    .ext-id {
+      font-size: 12px;
+      color: #9aa0a6;
+      margin-top: 12px;
+      font-family: monospace;
+    }
+    
+    .ext-links {
+      font-size: 12px;
+      color: #1a73e8;
+      margin-top: 4px;
+    }
+    
+    .ext-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .ext-btn {
+      background: #fff;
+      border: 1px solid #dadce0;
+      color: #1a73e8;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .ext-toggle {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .ext-toggle-pill {
       width: 36px;
       height: 20px;
-      background: var(--accent);
+      background: #1a73e8;
       border-radius: 10px;
       position: relative;
     }
     
-    .toggle-switch::after {
+    .ext-toggle-pill::after {
       content: '';
       position: absolute;
       width: 16px;
@@ -266,86 +423,52 @@ export function generateFaqPage(): string {
       right: 2px;
     }
     
-    .load-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-      width: fit-content;
-    }
-    
-    /* Folder picker mockup */
-    .folder-picker {
-      background: #2a2a2a;
+    /* Folder Dialog */
+    .folder-dialog {
+      background: #fff;
       border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      max-width: 400px;
     }
     
-    .folder-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      color: #aaa;
-    }
-    
-    .folder-item.selected {
-      background: rgba(96, 165, 250, 0.2);
-      color: var(--accent);
-    }
-    
-    .folder-icon {
+    .folder-dialog-title {
       font-size: 16px;
-    }
-    
-    /* Success state */
-    .extension-card {
-      background: #2a2a2a;
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .extension-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--accent), #3b82f6);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-    
-    .extension-info h3 {
-      color: #e0e0e0;
-      font-size: 15px;
-      margin-bottom: 4px;
-    }
-    
-    .extension-info p {
-      color: #888;
-      font-size: 12px;
-    }
-    
-    .enabled-badge {
-      margin-left: auto;
-      background: rgba(40, 200, 64, 0.2);
-      color: #28c840;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
       font-weight: 500;
+      color: #202124;
+      margin-bottom: 16px;
+    }
+    
+    .folder-list {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 8px;
+    }
+    
+    .folder-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #5f6368;
+      cursor: pointer;
+    }
+    
+    .folder-row:hover {
+      background: #e8f0fe;
+    }
+    
+    .folder-row.selected {
+      background: #d2e3fc;
+      color: #1a73e8;
+    }
+    
+    .folder-row-icon {
+      font-size: 18px;
+      color: #fbbc04;
     }
     
     footer {
@@ -393,27 +516,27 @@ export function generateFaqPage(): string {
           <div class="install-step">
             <div class="step-header">
               <div class="step-number">2</div>
-              <div class="step-title">Open Chrome Extensions</div>
+              <div class="step-title">Open Chrome Extensions & Enable Developer Mode</div>
             </div>
             <div class="step-content">
-              <p class="step-description">In Chrome, go to the menu (⋮) → Extensions → Manage Extensions. Or type <code>chrome://extensions</code> in your address bar.</p>
-              <div class="screenshot">
-                <div class="browser-bar">
-                  <div class="browser-dots">
-                    <div class="browser-dot red"></div>
-                    <div class="browser-dot yellow"></div>
-                    <div class="browser-dot green"></div>
+              <p class="step-description">Type <code>chrome://extensions</code> in your address bar. Toggle on "Developer mode" in the top-right corner.</p>
+              <div class="chrome-screenshot">
+                <div class="chrome-header">
+                  <div class="chrome-logo"></div>
+                  <span class="chrome-title">Extensions</span>
+                  <div class="chrome-search">
+                    <span class="chrome-search-icon">🔍</span>
+                    Search extensions
                   </div>
-                  <div class="browser-url">chrome://extensions</div>
+                  <div class="dev-mode-area">
+                    Developer mode
+                    <div class="toggle-pill"></div>
+                  </div>
                 </div>
-                <div class="screenshot-content">
-                  <div class="extensions-page">
-                    <div class="extensions-header">Extensions</div>
-                    <div class="dev-mode-toggle">
-                      Developer mode
-                      <div class="toggle-switch"></div>
-                    </div>
-                  </div>
+                <div class="chrome-toolbar">
+                  <button class="chrome-btn primary">Load unpacked</button>
+                  <button class="chrome-btn">Pack extension</button>
+                  <button class="chrome-btn">Update</button>
                 </div>
               </div>
             </div>
@@ -422,38 +545,23 @@ export function generateFaqPage(): string {
           <div class="install-step">
             <div class="step-header">
               <div class="step-number">3</div>
-              <div class="step-title">Enable Developer Mode</div>
-            </div>
-            <div class="step-content">
-              <p class="step-description">Toggle on "Developer mode" in the top-right corner. This allows you to load unpacked extensions.</p>
-            </div>
-          </div>
-          
-          <div class="install-step">
-            <div class="step-header">
-              <div class="step-number">4</div>
               <div class="step-title">Load the extension</div>
             </div>
             <div class="step-content">
               <p class="step-description">Click "Load unpacked" and select the folder where you unzipped the extension.</p>
-              <div class="screenshot">
-                <div class="browser-bar">
-                  <div class="browser-dots">
-                    <div class="browser-dot red"></div>
-                    <div class="browser-dot yellow"></div>
-                    <div class="browser-dot green"></div>
-                  </div>
-                  <div class="browser-url">chrome://extensions</div>
-                </div>
-                <div class="screenshot-content">
-                  <div class="extensions-page">
-                    <button class="load-btn">Load unpacked</button>
-                    <div class="folder-picker">
-                      <div class="folder-item">
-                        <span class="folder-icon">📁</span> Downloads
+              <div class="chrome-screenshot">
+                <div style="padding: 20px;">
+                  <div class="folder-dialog">
+                    <div class="folder-dialog-title">Select the extension folder</div>
+                    <div class="folder-list">
+                      <div class="folder-row">
+                        <span class="folder-row-icon">📁</span> Downloads
                       </div>
-                      <div class="folder-item selected">
-                        <span class="folder-icon">📂</span> sanitycheck-extension
+                      <div class="folder-row selected">
+                        <span class="folder-row-icon">📂</span> sanitycheck-extension
+                      </div>
+                      <div class="folder-row">
+                        <span class="folder-row-icon">📁</span> Documents
                       </div>
                     </div>
                   </div>
@@ -464,28 +572,62 @@ export function generateFaqPage(): string {
           
           <div class="install-step">
             <div class="step-header">
-              <div class="step-number">5</div>
+              <div class="step-number">4</div>
               <div class="step-title">You're all set!</div>
             </div>
             <div class="step-content">
-              <p class="step-description">SanityCheck should now appear in your extensions. Pin it to your toolbar for easy access.</p>
-              <div class="screenshot">
-                <div class="browser-bar">
-                  <div class="browser-dots">
-                    <div class="browser-dot red"></div>
-                    <div class="browser-dot yellow"></div>
-                    <div class="browser-dot green"></div>
+              <p class="step-description">SanityCheck should now appear in your extensions list. Pin it to your toolbar for easy access.</p>
+              <div class="chrome-screenshot">
+                <div class="chrome-header">
+                  <div class="chrome-logo"></div>
+                  <span class="chrome-title">Extensions</span>
+                  <div class="chrome-search">
+                    <span class="chrome-search-icon">🔍</span>
+                    Search extensions
                   </div>
-                  <div class="browser-url">chrome://extensions</div>
+                  <div class="dev-mode-area">
+                    Developer mode
+                    <div class="toggle-pill"></div>
+                  </div>
                 </div>
-                <div class="screenshot-content">
-                  <div class="extension-card">
-                    <div class="extension-icon">🧠</div>
-                    <div class="extension-info">
-                      <h3>SanityCheck</h3>
-                      <p>Identify logical fallacies in what you read</p>
+                <div class="chrome-toolbar">
+                  <button class="chrome-btn">Load unpacked</button>
+                  <button class="chrome-btn">Pack extension</button>
+                  <button class="chrome-btn">Update</button>
+                </div>
+                <div class="chrome-body">
+                  <div class="chrome-sidebar">
+                    <div class="sidebar-item active">
+                      <span class="sidebar-icon">🧩</span> My extensions
                     </div>
-                    <span class="enabled-badge">Enabled</span>
+                    <div class="sidebar-item">
+                      <span class="sidebar-icon">⌨️</span> Keyboard shortcuts
+                    </div>
+                  </div>
+                  <div class="chrome-main">
+                    <div class="section-title">All Extensions</div>
+                    <div class="ext-card">
+                      <div class="ext-icon">
+                        <span class="ext-icon-main">🔍</span>
+                        <span class="ext-icon-badge">🔴</span>
+                      </div>
+                      <div class="ext-details">
+                        <div class="ext-name">
+                          SanityCheck <span class="ext-version">1.1.0</span>
+                        </div>
+                        <div class="ext-desc">Surfaces genuine logical gaps and reasoning issues in articles</div>
+                        <div class="ext-id">ID: cnonmmniemjiakcfldgpepdopnnbdbjd</div>
+                        <div class="ext-links">Inspect views: <a href="#">service worker</a></div>
+                        <div class="ext-actions">
+                          <button class="ext-btn">Details</button>
+                          <button class="ext-btn">Remove</button>
+                          <div class="ext-toggle">
+                            <span>↻</span>
+                            <div class="ext-toggle-pill"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
