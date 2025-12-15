@@ -81,15 +81,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return false;
 });
 
-async function submitFeedback(data: { url: string; title: string; selectedText: string; feedback: string }) {
+async function submitFeedback(data: { url: string; title: string; articleText: string; selectedText: string; commentText: string }) {
   const response = await fetch(`${BACKEND_URL}/comments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       url: data.url,
       title: data.title,
+      textContent: data.articleText,
       selectedText: data.selectedText,
-      comment: data.feedback
+      commentText: data.commentText
     })
   });
   
@@ -143,14 +144,14 @@ async function startAnalysis(tabId: number, article: { title: string; text: stri
       throw new Error('Failed to parse API response as JSON');
     }
     
-    // Store result
-    ongoingAnalyses.set(url, { status: 'complete', result });
+    // Store result (as 'parsed' to match what popup.ts expects)
+    ongoingAnalyses.set(url, { status: 'complete', parsed: result });
     
     // Notify the content script to display highlights
     try {
       await chrome.tabs.sendMessage(tabId, {
-        action: 'displayHighlights',
-        result
+        action: 'highlightIssues',
+        issues: result.issues || []
       });
     } catch (_e) {
       console.log('Could not send highlights to tab (tab may have been closed)');
