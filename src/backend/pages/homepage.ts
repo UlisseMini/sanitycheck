@@ -227,6 +227,10 @@ export function generateHomepage(): string {
     }
     
     /* Miss Information how-section styling */
+    body.theme-miss .how-section {
+      background: rgba(0, 0, 0, 0.4);
+    }
+    
     body.theme-miss .how-step-num {
       background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
     }
