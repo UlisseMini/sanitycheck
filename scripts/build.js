@@ -53,6 +53,7 @@ async function buildExtension() {
     popup: path.join(extensionSrcDir, 'popup.ts'),
     settings: path.join(extensionSrcDir, 'settings.ts'),
     debug: path.join(extensionSrcDir, 'debug.ts'),
+    welcome: path.join(extensionSrcDir, 'welcome.ts'),
   };
   
   // Filter to only existing files
