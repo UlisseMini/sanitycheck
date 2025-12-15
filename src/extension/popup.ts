@@ -1,34 +1,69 @@
-// SanityCheck - Popup Script
+/**
+ * SanityCheck - Popup Script
+ */
 
-const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
+import { BACKEND_URL } from '../shared';
+import { debug } from './debug';
 
-// Debug logging will be available via window.debug
+interface Article {
+  title: string;
+  text: string;
+  url: string;
+  wordCount: number;
+  isArticle?: boolean;
+  confidence?: number;
+}
+
+interface AnalysisIssue {
+  quote?: string;
+  importance?: string;
+  type?: string;
+  gap?: string;
+  why_it_doesnt_follow?: string;
+  explanation?: string;
+}
+
+interface ParsedAnalysis {
+  issues?: AnalysisIssue[];
+  severity?: string;
+  summary?: string;
+  overall_assessment?: string;
+  central_argument_analysis?: {
+    central_logical_gap?: string;
+  };
+  rawText?: string;
+}
+
+interface AnalysisStatus {
+  status: 'none' | 'analyzing' | 'complete' | 'error';
+  parsed?: ParsedAnalysis;
+  error?: string;
+}
 
 // DOM Elements
-const settingsBtn = document.getElementById('settings-btn');
-const pageStatus = document.getElementById('page-status');
-const actionSection = document.getElementById('action-section');
-const analyzeBtn = document.getElementById('analyze-btn');
-const loadingSection = document.getElementById('loading-section');
-const resultsSection = document.getElementById('results-section');
-const resultsContent = document.getElementById('results-content');
-const errorSection = document.getElementById('error-section');
-const errorMessage = document.getElementById('error-message');
-const articleTextSection = document.getElementById('article-text-section');
-const articleTextContent = document.getElementById('article-text-content');
-const closeArticleTextBtn = document.getElementById('close-article-text');
+const settingsBtn = document.getElementById('settings-btn')!;
+const pageStatus = document.getElementById('page-status')!;
+const actionSection = document.getElementById('action-section')!;
+const analyzeBtn = document.getElementById('analyze-btn')!;
+const loadingSection = document.getElementById('loading-section')!;
+const resultsSection = document.getElementById('results-section')!;
+const resultsContent = document.getElementById('results-content')!;
+const errorSection = document.getElementById('error-section')!;
+const errorMessage = document.getElementById('error-message')!;
+const articleTextSection = document.getElementById('article-text-section')!;
+const articleTextContent = document.getElementById('article-text-content')!;
+const closeArticleTextBtn = document.getElementById('close-article-text')!;
 
-let currentArticle = null;
-let currentTabId = null;
-let statusPollInterval = null;
+let currentArticle: Article | null = null;
+let currentTabId: number | null = null;
+let statusPollInterval: ReturnType<typeof setInterval> | null = null;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => { void init(); });
 
-async function init() {
+async function init(): Promise<void> {
   try {
-    // Check if debug mode is enabled
-    const DEBUG_ENABLED = typeof window.debug !== 'undefined' && window.debug.ENABLED !== false;
+    const DEBUG_ENABLED = typeof (window as unknown as { debug?: { ENABLED?: boolean } }).debug !== 'undefined';
     const debugIndicator = document.getElementById('debug-indicator');
     if (DEBUG_ENABLED && debugIndicator) {
       debugIndicator.classList.remove('hidden');
@@ -38,12 +73,10 @@ async function init() {
     
     debug.log('Popup initialized', { timestamp: new Date().toISOString() }, 'popup-init');
     
-    // Check current page
     await checkCurrentPage();
     
-    // Set up event listeners
     settingsBtn.addEventListener('click', openSettings);
-    analyzeBtn.addEventListener('click', analyzeArticle);
+    analyzeBtn.addEventListener('click', () => { void analyzeArticle(); });
     pageStatus.addEventListener('click', toggleArticleText);
     closeArticleTextBtn.addEventListener('click', hideArticleText);
     
@@ -53,24 +86,22 @@ async function init() {
   }
 }
 
-// Clean up when popup closes
 window.addEventListener('unload', () => {
   if (statusPollInterval) {
     clearInterval(statusPollInterval);
   }
 });
 
-function openSettings() {
-  // Open settings page in a new tab
-  chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+function openSettings(): void {
+  void chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
 }
 
-async function checkCurrentPage() {
+async function checkCurrentPage(): Promise<void> {
   try {
     debug.log('Checking current page', {}, 'popup-check-page');
     
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    currentTabId = tab.id;
+    currentTabId = tab.id ?? null;
     
     debug.log('Tab info retrieved', {
       tabId: tab.id,
@@ -78,20 +109,26 @@ async function checkCurrentPage() {
       title: tab.title
     }, 'popup-check-page');
     
-    // Inject content script if needed and get article info
     try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      });
+      if (tab.id) {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+      }
       debug.log('Content script injected', {}, 'popup-check-page');
     } catch (injectError) {
       debug.warn('Content script injection failed (may already be injected)', injectError, 'popup-check-page');
     }
     
-    // Request article check from content script
     debug.log('Sending extractArticle message', {}, 'popup-check-page');
-    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractArticle' });
+    
+    if (!tab.id) {
+      showError('Cannot access this tab');
+      return;
+    }
+    
+    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractArticle' }) as Article & { isArticle: boolean; confidence: number };
     
     debug.log('Received article extraction response', {
       hasResponse: !!response,
@@ -109,8 +146,7 @@ async function checkCurrentPage() {
       }, 'popup-check-page');
       showArticleDetected(response);
       
-      // Check for ongoing analysis or cached results
-      await checkAnalysisStatus(tab.url);
+      await checkAnalysisStatus(tab.url ?? '');
       
     } else if (response) {
       debug.log('Not an article page', {
@@ -119,10 +155,9 @@ async function checkCurrentPage() {
       }, 'popup-check-page');
       showNotArticle(response);
       
-      // Still check for ongoing analysis
       if (response.wordCount > 100) {
         currentArticle = response;
-        await checkAnalysisStatus(tab.url);
+        await checkAnalysisStatus(tab.url ?? '');
       }
     } else {
       debug.warn('No response from content script', {}, 'popup-check-page');
@@ -131,101 +166,100 @@ async function checkCurrentPage() {
   } catch (error) {
     debug.error('Error checking page', error, 'popup-check-page', {
       tabId: currentTabId,
-      url: window.location?.href
     });
     showError('Cannot analyze this page. Try refreshing and reopening the extension.');
   }
 }
 
-async function checkAnalysisStatus(url) {
-  // First check if there's an ongoing analysis in background
-  const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url });
+async function checkAnalysisStatus(url: string): Promise<void> {
+  const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url }) as AnalysisStatus;
   
   debug.log('Analysis status check', { status }, 'popup-status');
   
   if (status.status === 'analyzing') {
-    // Analysis is in progress - show loading and poll for updates
     showLoading();
     startStatusPolling(url);
     return;
   }
   
   if (status.status === 'complete' && status.parsed) {
-    // Just completed - show results
     displayResults(status.parsed);
-    if (status.parsed.issues?.length > 0) {
+    if (status.parsed.issues && status.parsed.issues.length > 0) {
       await sendHighlightsToPage(status.parsed.issues);
     }
     return;
   }
   
   if (status.status === 'error') {
-    showError(status.error || 'Analysis failed');
+    showError(status.error ?? 'Analysis failed');
     actionSection.classList.remove('hidden');
     return;
   }
   
-  // Check for cached results
-  const cached = await chrome.storage.local.get([`analysis_${url}`]);
-  if (cached[`analysis_${url}`]) {
-    const parsed = cached[`analysis_${url}`];
-    displayResults(parsed);
-    if (parsed.issues?.length > 0) {
-      await sendHighlightsToPage(parsed.issues);
+  const cached = await chrome.storage.local.get([`analysis_${url}`]) as Record<string, ParsedAnalysis>;
+  const cachedAnalysis = cached[`analysis_${url}`];
+  if (cachedAnalysis) {
+    displayResults(cachedAnalysis);
+    if (cachedAnalysis.issues && cachedAnalysis.issues.length > 0) {
+      await sendHighlightsToPage(cachedAnalysis.issues);
     }
   }
 }
 
-function startStatusPolling(url) {
-  // Poll every 500ms for status updates
-  statusPollInterval = setInterval(async () => {
-    try {
-      const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url });
-      
-      if (status.status === 'complete') {
-        clearInterval(statusPollInterval);
-        statusPollInterval = null;
-        loadingSection.classList.add('hidden');
+function startStatusPolling(url: string): void {
+  statusPollInterval = setInterval(() => {
+    void (async () => {
+      try {
+        const status = await chrome.runtime.sendMessage({ action: 'getAnalysisStatus', url }) as AnalysisStatus;
         
-        if (status.parsed) {
-          displayResults(status.parsed);
-          // Highlights already sent by background script, but send again to be sure
-          if (status.parsed.issues?.length > 0) {
-            await sendHighlightsToPage(status.parsed.issues);
+        if (status.status === 'complete') {
+          if (statusPollInterval) clearInterval(statusPollInterval);
+          statusPollInterval = null;
+          loadingSection.classList.add('hidden');
+          
+          if (status.parsed) {
+            displayResults(status.parsed);
+            if (status.parsed.issues && status.parsed.issues.length > 0) {
+              await sendHighlightsToPage(status.parsed.issues);
+            }
           }
+        } else if (status.status === 'error') {
+          if (statusPollInterval) clearInterval(statusPollInterval);
+          statusPollInterval = null;
+          loadingSection.classList.add('hidden');
+          showError(status.error ?? 'Analysis failed');
+          actionSection.classList.remove('hidden');
         }
-      } else if (status.status === 'error') {
-        clearInterval(statusPollInterval);
-        statusPollInterval = null;
-        loadingSection.classList.add('hidden');
-        showError(status.error || 'Analysis failed');
-        actionSection.classList.remove('hidden');
+      } catch (_e) {
+        // Ignore polling errors
       }
-      // If still 'analyzing', keep polling
-    } catch (e) {
-      // Ignore polling errors
-    }
+    })();
   }, 500);
 }
 
-function showLoading() {
+function showLoading(): void {
   hideError();
   actionSection.classList.add('hidden');
   loadingSection.classList.remove('hidden');
   resultsSection.classList.add('hidden');
 }
 
-function showArticleDetected(article) {
+function showArticleDetected(article: Article): void {
   const statusIcon = pageStatus.querySelector('.status-icon');
   const statusText = pageStatus.querySelector('.status-text');
   const viewHint = pageStatus.querySelector('.view-text-hint');
   
-  statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
-  statusIcon.classList.add('ready');
-  statusText.innerHTML = `
-    <strong>Article detected</strong><br>
-    <span style="color: var(--text-muted); font-size: 12px;">${article.wordCount.toLocaleString()} words</span>
-  `;
+  if (statusIcon) {
+    statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+    statusIcon.classList.add('ready');
+  }
+  
+  if (statusText) {
+    statusText.innerHTML = `
+      <strong>Article detected</strong><br>
+      <span style="color: var(--text-muted); font-size: 12px;">${article.wordCount.toLocaleString()} words</span>
+    `;
+  }
   
   if (viewHint) {
     viewHint.classList.remove('hidden');
@@ -241,24 +275,27 @@ function showArticleDetected(article) {
   }, 'popup-ui');
 }
 
-function showNotArticle(info) {
+function showNotArticle(info: Article): void {
   const statusIcon = pageStatus.querySelector('.status-icon');
   const statusText = pageStatus.querySelector('.status-text');
   const viewHint = pageStatus.querySelector('.view-text-hint');
   
-  statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
-  statusText.innerHTML = `
-    <strong>Not an article page</strong><br>
-    <span style="color: var(--text-muted); font-size: 12px;">This appears to be a different type of page</span>
-  `;
+  if (statusIcon) {
+    statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+  }
   
-  // Still allow analysis if there's some content
+  if (statusText) {
+    statusText.innerHTML = `
+      <strong>Not an article page</strong><br>
+      <span style="color: var(--text-muted); font-size: 12px;">This appears to be a different type of page</span>
+    `;
+  }
+  
   if (info && info.wordCount > 100) {
     currentArticle = info;
     actionSection.classList.remove('hidden');
     analyzeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Analyze Anyway`;
     
-    // Make clickable to view text
     if (viewHint) {
       viewHint.classList.remove('hidden');
     }
@@ -271,16 +308,16 @@ function showNotArticle(info) {
   }
 }
 
-function showError(message) {
+function showError(message: string): void {
   errorSection.classList.remove('hidden');
   errorMessage.textContent = message;
 }
 
-function hideError() {
+function hideError(): void {
   errorSection.classList.add('hidden');
 }
 
-async function analyzeArticle() {
+async function analyzeArticle(): Promise<void> {
   if (!currentArticle) {
     debug.warn('Analyze called but no article available', {}, 'popup-analyze');
     return;
@@ -295,32 +332,30 @@ async function analyzeArticle() {
   showLoading();
   
   try {
-    // Send message to background script to start analysis
-    // This will continue even if popup is closed!
     const response = await chrome.runtime.sendMessage({
       action: 'startAnalysis',
       tabId: currentTabId,
       article: currentArticle
-    });
+    }) as { success: boolean; error?: string };
     
     if (!response.success) {
-      throw new Error(response.error || 'Failed to start analysis');
+      throw new Error(response.error ?? 'Failed to start analysis');
     }
     
     debug.log('Analysis started in background', {}, 'popup-analyze');
     
-    // Start polling for status
     startStatusPolling(currentArticle.url);
     
   } catch (error) {
+    const err = error as Error;
     debug.error('Failed to start analysis', error, 'popup-analyze');
-    showError(error.message || 'Failed to start analysis');
+    showError(err.message ?? 'Failed to start analysis');
     actionSection.classList.remove('hidden');
     loadingSection.classList.add('hidden');
   }
 }
 
-async function sendHighlightsToPage(issues) {
+async function sendHighlightsToPage(issues: AnalysisIssue[]): Promise<void> {
   if (!currentTabId) {
     debug.warn('Cannot send highlights: no tab ID', {}, 'popup-highlights');
     return;
@@ -345,12 +380,11 @@ async function sendHighlightsToPage(issues) {
   }
 }
 
-function displayResults(parsed) {
+function displayResults(parsed: ParsedAnalysis): void {
   resultsSection.classList.remove('hidden');
   loadingSection.classList.add('hidden');
   actionSection.classList.add('hidden');
   
-  // Handle raw text fallback
   if (parsed.rawText) {
     resultsContent.innerHTML = `
       <div style="color: var(--warning); margin-bottom: 12px;">
@@ -361,34 +395,30 @@ function displayResults(parsed) {
     return;
   }
   
-  // Display formatted results
   if (!parsed.issues || parsed.issues.length === 0) {
     resultsContent.innerHTML = `
       <div class="no-fallacies">
         <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
         <strong>No significant issues found</strong>
-        <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(parsed.summary || parsed.overall_assessment || 'The article appears to be logically sound.')}</p>
+        <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(parsed.summary ?? parsed.overall_assessment ?? 'The article appears to be logically sound.')}</p>
       </div>
     `;
     return;
   }
   
-  // Build HTML for issues with new styling
   let html = '';
   
-  // Summary section with improved styling
   html += `
     <div class="analysis-summary">
       <div class="summary-header">
         <span class="issue-count">${parsed.issues.length} issue${parsed.issues.length !== 1 ? 's' : ''} found</span>
-        <span class="severity-badge ${parsed.severity || 'none'}">${parsed.severity || 'unknown'}</span>
+        <span class="severity-badge ${parsed.severity ?? 'none'}">${parsed.severity ?? 'unknown'}</span>
       </div>
-      ${parsed.summary || parsed.overall_assessment ? `<p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">${escapeHtml(parsed.summary || parsed.overall_assessment)}</p>` : ''}
+      ${parsed.summary ?? parsed.overall_assessment ? `<p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">${escapeHtml(parsed.summary ?? parsed.overall_assessment ?? '')}</p>` : ''}
       <p style="color: var(--text-muted); margin-top: 10px; font-size: 11px;">Issues are highlighted in the article. Hover to see details.</p>
     </div>
   `;
   
-  // Show central logical gap if available (new Claude format)
   if (parsed.central_argument_analysis?.central_logical_gap) {
     html += `
       <div class="central-gap-box">
@@ -402,22 +432,19 @@ function displayResults(parsed) {
     `;
   }
   
-  // Sort issues by importance (critical first)
   const sortedIssues = [...parsed.issues].sort((a, b) => {
-    const order = { critical: 0, significant: 1, minor: 2 };
-    return (order[a.importance] || 2) - (order[b.importance] || 2);
+    const order: Record<string, number> = { critical: 0, significant: 1, minor: 2 };
+    return (order[a.importance ?? 'minor'] ?? 2) - (order[b.importance ?? 'minor'] ?? 2);
   });
   
   sortedIssues.forEach((issue, index) => {
-    const importanceClass = issue.importance || 'minor';
-    
-    // Handle all formats: new (gap), medium (why_it_doesnt_follow), old (explanation)
-    const gap = issue.gap || issue.why_it_doesnt_follow || issue.explanation || '';
+    const importanceClass = issue.importance ?? 'minor';
+    const gap = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
     
     html += `
       <div class="fallacy-item ${importanceClass}" data-issue-index="${index}">
         <div class="fallacy-header">
-          <span class="importance-badge ${importanceClass}">${issue.importance || 'issue'}</span>
+          <span class="importance-badge ${importanceClass}">${issue.importance ?? 'issue'}</span>
         </div>
         ${issue.quote ? `<div class="fallacy-quote">"${escapeHtml(issue.quote.substring(0, 150))}${issue.quote.length > 150 ? '...' : ''}"</div>` : ''}
         ${gap ? `<div class="fallacy-gap-simple">${escapeHtml(gap)}</div>` : ''}
@@ -428,14 +455,14 @@ function displayResults(parsed) {
   resultsContent.innerHTML = html;
 }
 
-function escapeHtml(text) {
+function escapeHtml(text: string): string {
   if (!text) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-function toggleArticleText() {
+function toggleArticleText(): void {
   if (!currentArticle || !currentArticle.text) {
     debug.warn('No article text to display', {}, 'popup-article-text');
     return;
@@ -448,7 +475,7 @@ function toggleArticleText() {
   }
 }
 
-function showArticleText() {
+function showArticleText(): void {
   if (!currentArticle || !currentArticle.text) {
     debug.warn('Cannot show article text: no article available', {}, 'popup-article-text');
     return;
@@ -460,21 +487,21 @@ function showArticleText() {
     title: currentArticle.title
   }, 'popup-article-text');
   
-  // Update header with title if available
   const header = articleTextSection.querySelector('h3');
   if (header && currentArticle.title) {
     header.textContent = `Extracted Article: ${currentArticle.title}`;
   }
   
-  // Display the article text
   articleTextContent.textContent = currentArticle.text;
   articleTextSection.classList.remove('hidden');
   
-  // Scroll to the article text section
   articleTextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function hideArticleText() {
+function hideArticleText(): void {
   debug.log('Hiding article text', {}, 'popup-article-text');
   articleTextSection.classList.add('hidden');
 }
+
+// Export for potential use
+export { BACKEND_URL };

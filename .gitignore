@@ -13,6 +13,7 @@ tests/
 articles/
 
 # Build artifacts
+build/
 dist/
 *.zip
 public/
