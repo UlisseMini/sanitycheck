@@ -1,16 +1,312 @@
-// Background service worker for SanityCheck
+"use strict";
+(() => {
+  // src/shared/colors.ts
+  var colors = {
+    // Backgrounds
+    bgPrimary: "#0f1117",
+    bgSecondary: "#1a1d27",
+    bgTertiary: "#242936",
+    bgHover: "#2d3344",
+    // Text
+    textPrimary: "#f0f2f5",
+    textSecondary: "#9ca3b0",
+    textMuted: "#6b7280",
+    // Accent
+    accent: "#f97316",
+    accentHover: "#fb923c",
+    accentSubtle: "rgba(249, 115, 22, 0.12)",
+    // Status colors
+    error: "#ef4444",
+    errorSubtle: "rgba(239, 68, 68, 0.12)",
+    success: "#10b981",
+    successSubtle: "rgba(16, 185, 129, 0.12)",
+    warning: "#f59e0b",
+    warningSubtle: "rgba(245, 158, 11, 0.12)",
+    // Borders
+    border: "rgba(255, 255, 255, 0.08)",
+    borderStrong: "rgba(255, 255, 255, 0.12)",
+    // Highlight colors (for reasoning gaps)
+    highlightCritical: "rgba(239, 68, 68, 0.25)",
+    highlightCriticalHover: "rgba(239, 68, 68, 0.4)",
+    highlightSignificant: "rgba(234, 179, 8, 0.25)",
+    highlightSignificantHover: "rgba(234, 179, 8, 0.4)",
+    highlightMinor: "rgba(115, 115, 115, 0.25)",
+    highlightMinorHover: "rgba(115, 115, 115, 0.4)",
+    highlightDefault: "rgba(249, 115, 22, 0.25)",
+    highlightDefaultHover: "rgba(249, 115, 22, 0.4)",
+    // Severity border colors
+    severityCritical: "#ef4444",
+    severitySignificant: "#eab308",
+    severityMinor: "#737373",
+    severityDefault: "#f97316"
+  };
+  var cssVariables = `
+:root {
+  --bg-primary: ${colors.bgPrimary};
+  --bg-secondary: ${colors.bgSecondary};
+  --bg-tertiary: ${colors.bgTertiary};
+  --bg-hover: ${colors.bgHover};
+  --text-primary: ${colors.textPrimary};
+  --text-secondary: ${colors.textSecondary};
+  --text-muted: ${colors.textMuted};
+  --accent: ${colors.accent};
+  --accent-hover: ${colors.accentHover};
+  --accent-subtle: ${colors.accentSubtle};
+  --error: ${colors.error};
+  --error-subtle: ${colors.errorSubtle};
+  --success: ${colors.success};
+  --success-subtle: ${colors.successSubtle};
+  --warning: ${colors.warning};
+  --warning-subtle: ${colors.warningSubtle};
+  --border: ${colors.border};
+  --border-strong: ${colors.borderStrong};
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+`;
 
-// Backend URL - defaults to Railway, can be overridden in extension storage
-const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
+  // src/shared/highlight-styles.ts
+  var highlightCSS = `
+/* ===== CSS Custom Highlight API Styles ===== */
+::highlight(logic-checker-critical) {
+  background-color: ${colors.highlightCritical};
+}
 
-const DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
+::highlight(logic-checker-significant) {
+  background-color: ${colors.highlightSignificant};
+}
+
+::highlight(logic-checker-minor) {
+  background-color: ${colors.highlightMinor};
+}
+
+::highlight(logic-checker-default) {
+  background-color: ${colors.highlightDefault};
+}
+
+/* ===== Fallback: Span-based Highlight Styles ===== */
+.logic-checker-highlight {
+  cursor: help;
+  position: relative;
+  transition: background 0.2s ease;
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.logic-checker-highlight.critical,
+.logic-checker-highlight[data-importance="critical"] {
+  background: linear-gradient(to bottom, ${colors.highlightCritical} 0%, rgba(239, 68, 68, 0.15) 100%);
+}
+
+.logic-checker-highlight.critical:hover,
+.logic-checker-highlight[data-importance="critical"]:hover {
+  background: ${colors.highlightCriticalHover};
+}
+
+.logic-checker-highlight.significant,
+.logic-checker-highlight[data-importance="significant"] {
+  background: linear-gradient(to bottom, ${colors.highlightSignificant} 0%, rgba(234, 179, 8, 0.15) 100%);
+}
+
+.logic-checker-highlight.significant:hover,
+.logic-checker-highlight[data-importance="significant"]:hover {
+  background: ${colors.highlightSignificantHover};
+}
+
+.logic-checker-highlight.minor,
+.logic-checker-highlight[data-importance="minor"] {
+  background: linear-gradient(to bottom, ${colors.highlightMinor} 0%, rgba(115, 115, 115, 0.15) 100%);
+}
+
+.logic-checker-highlight.minor:hover,
+.logic-checker-highlight[data-importance="minor"]:hover {
+  background: ${colors.highlightMinorHover};
+}
+
+.logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]) {
+  background: linear-gradient(to bottom, ${colors.highlightDefault} 0%, rgba(249, 115, 22, 0.15) 100%);
+}
+
+.logic-checker-highlight:not(.critical):not(.significant):not(.minor):not([data-importance]):hover {
+  background: ${colors.highlightDefaultHover};
+}
+`;
+  var tooltipCSS = `
+.logic-checker-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  width: max-content;
+  max-width: 400px;
+  min-width: 280px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f5f5f5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.logic-checker-tooltip.critical {
+  border-color: ${colors.severityCritical};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+.logic-checker-tooltip.significant {
+  border-color: ${colors.severitySignificant};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.2);
+}
+
+.logic-checker-tooltip.minor {
+  border-color: ${colors.severityMinor};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(115, 115, 115, 0.2);
+}
+
+.logic-checker-tooltip:not(.critical):not(.significant):not(.minor) {
+  border-color: ${colors.severityDefault};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+.logic-checker-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.logic-checker-tooltip-header {
+  margin-bottom: 6px;
+}
+
+.logic-checker-tooltip-badge {
+  display: inline-block;
+  color: #000;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logic-checker-tooltip.critical .logic-checker-tooltip-badge {
+  background: ${colors.severityCritical};
+  color: white;
+}
+
+.logic-checker-tooltip.significant .logic-checker-tooltip-badge {
+  background: ${colors.severitySignificant};
+}
+
+.logic-checker-tooltip.minor .logic-checker-tooltip-badge {
+  background: ${colors.severityMinor};
+  color: white;
+}
+
+.logic-checker-tooltip:not(.critical):not(.significant):not(.minor) .logic-checker-tooltip-badge {
+  background: ${colors.severityDefault};
+}
+
+.logic-checker-tooltip-explanation {
+  color: #d4d4d4;
+}
+`;
+  var contentStyles = highlightCSS + "\n" + tooltipCSS;
+  var demoHighlightCSS = `
+.demo-highlight {
+  cursor: help;
+  position: relative;
+  background: linear-gradient(to bottom, ${colors.highlightSignificant} 0%, rgba(234, 179, 8, 0.15) 100%);
+  border-radius: 2px;
+  padding: 1px 2px;
+  transition: background 0.2s ease;
+}
+
+.demo-highlight:hover {
+  background: ${colors.highlightSignificantHover};
+}
+
+.demo-highlight.critical {
+  background: linear-gradient(to bottom, ${colors.highlightCritical} 0%, rgba(239, 68, 68, 0.15) 100%);
+}
+
+.demo-highlight.critical:hover {
+  background: ${colors.highlightCriticalHover};
+}
+
+.demo-highlight.minor {
+  background: linear-gradient(to bottom, ${colors.highlightMinor} 0%, rgba(115, 115, 115, 0.15) 100%);
+}
+
+.demo-highlight.minor:hover {
+  background: ${colors.highlightMinorHover};
+}
+
+.demo-tooltip {
+  position: absolute;
+  z-index: 1000;
+  width: max-content;
+  max-width: 400px;
+  min-width: 280px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+  border: 1px solid ${colors.severitySignificant};
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.2);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f5f5f5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  left: 0;
+  top: 100%;
+  margin-top: 8px;
+}
+
+.demo-highlight:hover .demo-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.demo-tooltip-header {
+  margin-bottom: 6px;
+}
+
+.demo-tooltip-badge {
+  display: inline-block;
+  background: ${colors.severitySignificant};
+  color: #000;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demo-tooltip-explanation {
+  color: #d4d4d4;
+}
+`;
+
+  // src/shared/constants.ts
+  var BACKEND_URL = "https://sanitycheck-production.up.railway.app";
+  var DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles\u2014things they'd agree are valid weaknesses, even if they agree with the conclusions.
 
 ## Your Goal
 
 Surface issues where you're confident it's a real structural flaw AND it matters to the core argument. The cost of a bad objection (annoying the reader, undermining trust) exceeds the cost of missing something. So:
 
 - Only flag things that made you genuinely think "wait, that doesn't follow"
-- Try to steelman first—if there's a reasonable interpretation, don't flag
+- Try to steelman first\u2014if there's a reasonable interpretation, don't flag
 - Ask: would someone who agrees with the article still nod and say "yeah, that's fair"?
 
 Good flags: evidence-conclusion mismatches, load-bearing unstated assumptions, logical leaps that don't follow even charitably.
@@ -38,310 +334,127 @@ Return JSON:
 
 ## Rules
 
-- Keep "gap" explanations brief and immediately recognizable. E.g., "Constraints ≠ impossibility" or "One example doesn't prove a universal"
+- Keep "gap" explanations brief and immediately recognizable. E.g., "Constraints \u2260 impossibility" or "One example doesn't prove a universal"
 - Quote exactly from the text
 - 1-4 issues typical. Zero is fine if nothing clears the bar.
-- Quality over quantity—only flag what you're confident about
+- Quality over quantity\u2014only flag what you're confident about
 
 ARTICLE:
 `;
 
-// Track ongoing analyses by tab URL
-const ongoingAnalyses = new Map();
-
-// Handle extension install/update
-chrome.runtime.onInstalled.addListener((details) => {
-  // Create context menu
-  chrome.contextMenus.create({
-    id: 'leave-feedback',
-    title: 'Leave feedback on this text',
-    contexts: ['selection']
-  });
-  
-  console.log('SanityCheck: Context menu created');
-  
-  // Open welcome page on first install
-  if (details.reason === 'install') {
-    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
-  }
-});
-
-// Handle context menu click
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'leave-feedback' && info.selectionText) {
-    // Send message to content script to show feedback dialog
-    chrome.tabs.sendMessage(tab.id, {
-      action: 'showFeedbackDialog',
-      selectedText: info.selectionText,
-      url: tab.url,
-      title: tab.title
+  // src/extension/background.ts
+  var ongoingAnalyses = /* @__PURE__ */ new Map();
+  chrome.runtime.onInstalled.addListener((details) => {
+    chrome.contextMenus.create({
+      id: "leave-feedback",
+      title: "Leave feedback on this text",
+      contexts: ["selection"]
     });
-  }
-});
-
-// Handle messages from popup and content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'submitFeedback') {
-    submitFeedback(request.data)
-      .then(result => sendResponse({ success: true, ...result }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
-    return true; // Keep channel open for async response
-  }
-  
-  if (request.action === 'getBackendUrl') {
-    chrome.storage.local.get(['backendUrl'], (result) => {
-      sendResponse({ url: result.backendUrl || BACKEND_URL });
-    });
-    return true;
-  }
-  
-  // Start analysis in background
-  if (request.action === 'startAnalysis') {
-    const { tabId, article } = request;
-    startBackgroundAnalysis(tabId, article)
-      .then(() => sendResponse({ success: true, status: 'started' }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
-    return true;
-  }
-  
-  // Check analysis status
-  if (request.action === 'getAnalysisStatus') {
-    const { url } = request;
-    const status = ongoingAnalyses.get(url);
-    sendResponse(status || { status: 'none' });
-    return false;
-  }
-  
-  // Cancel analysis
-  if (request.action === 'cancelAnalysis') {
-    const { url } = request;
-    ongoingAnalyses.delete(url);
-    sendResponse({ success: true });
-    return false;
-  }
-});
-
-// Start analysis in background (persists even if popup closes)
-async function startBackgroundAnalysis(tabId, article) {
-  const url = article.url;
-  
-  console.log('[background] Starting analysis for:', url);
-  
-  // Mark as in progress
-  ongoingAnalyses.set(url, { 
-    status: 'analyzing', 
-    startTime: Date.now(),
-    tabId 
-  });
-  
-  // Clear any cached results
-  await chrome.storage.local.remove([`analysis_${url}`]);
-  
-  try {
-    // Get custom prompt if set
-    const stored = await chrome.storage.local.get(['customPrompt']);
-    const currentPrompt = stored.customPrompt || DEFAULT_ANALYSIS_PROMPT;
-    const isCustomPrompt = !!stored.customPrompt;
-    
-    // Truncate article if too long
-    let articleText = article.text;
-    const words = articleText.split(/\s+/);
-    if (words.length > 8000) {
-      articleText = words.slice(0, 8000).join(' ') + '\n\n[Article truncated for analysis...]';
+    console.log("SanityCheck: Context menu created");
+    if (details.reason === "install") {
+      chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
     }
-    
-    const fullPrompt = currentPrompt + articleText;
-    
-    console.log('[background] Calling /analyze, prompt length:', fullPrompt.length);
-    
-    // Call backend
-    const response = await fetch(`${BACKEND_URL}/analyze`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
+  });
+  chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "leave-feedback" && info.selectionText && tab?.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        action: "showFeedbackDialog",
+        selectedText: info.selectionText,
+        url: tab.url,
+        title: tab.title
+      });
+    }
+  });
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "submitFeedback") {
+      submitFeedback(request.data).then((result) => sendResponse({ success: true, ...result })).catch((error) => sendResponse({ success: false, error: error.message }));
+      return true;
+    }
+    if (request.action === "getBackendUrl") {
+      chrome.storage.local.get(["backendUrl"], (result) => {
+        sendResponse({ url: result.backendUrl || BACKEND_URL });
+      });
+      return true;
+    }
+    if (request.action === "startAnalysis") {
+      const { tabId, article } = request;
+      startAnalysis(tabId, article).then(() => sendResponse({ success: true })).catch((error) => sendResponse({ success: false, error: error.message }));
+      return true;
+    }
+    if (request.action === "getAnalysisStatus") {
+      const { url } = request;
+      const status = ongoingAnalyses.get(url);
+      sendResponse(status || { status: "none" });
+      return true;
+    }
+    if (request.action === "clearAnalysis") {
+      const { url } = request;
+      ongoingAnalyses.delete(url);
+      sendResponse({ success: true });
+      return true;
+    }
+    return false;
+  });
+  async function submitFeedback(data) {
+    const response = await fetch(`${BACKEND_URL}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        prompt: fullPrompt,
-        maxTokens: 8192,
-        temperature: 0.3
+        url: data.url,
+        title: data.title,
+        selectedText: data.selectedText,
+        comment: data.feedback
       })
     });
-    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `API error: ${response.status}`);
+      throw new Error(`Failed to submit feedback: ${response.status}`);
     }
-    
-    const data = await response.json();
-    const rawResult = data.text;
-    
-    console.log('[background] Got response, length:', rawResult?.length);
-    
-    // Parse results
-    const parsed = parseResults(rawResult);
-    
-    console.log('[background] Parsed results, issues:', parsed.issues?.length || 0);
-    
-    // Cache results
-    await chrome.storage.local.set({ [`analysis_${url}`]: parsed });
-    
-    // Update status
-    ongoingAnalyses.set(url, { 
-      status: 'complete', 
-      parsed,
-      duration: Date.now() - ongoingAnalyses.get(url).startTime
-    });
-    
-    // Send highlights to content script
-    if (parsed.issues && parsed.issues.length > 0) {
+    return response.json();
+  }
+  async function startAnalysis(tabId, article) {
+    const url = article.url;
+    ongoingAnalyses.set(url, { status: "analyzing" });
+    try {
+      const stored = await chrome.storage.local.get(["customPrompt"]);
+      const currentPrompt = stored.customPrompt || DEFAULT_ANALYSIS_PROMPT;
+      const response = await fetch(`${BACKEND_URL}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: currentPrompt + article.text,
+          maxTokens: 8192,
+          temperature: 0.3
+        })
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      const data = await response.json();
+      let result;
+      try {
+        let jsonText = data.text;
+        const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          jsonText = jsonMatch[1];
+        }
+        result = JSON.parse(jsonText);
+      } catch (e) {
+        throw new Error("Failed to parse API response as JSON");
+      }
+      ongoingAnalyses.set(url, { status: "complete", result });
       try {
         await chrome.tabs.sendMessage(tabId, {
-          action: 'highlightIssues',
-          issues: parsed.issues
+          action: "displayHighlights",
+          result
         });
-        console.log('[background] Sent highlights to tab:', tabId);
       } catch (e) {
-        console.warn('[background] Could not send highlights (tab may be closed):', e.message);
+        console.log("Could not send highlights to tab (tab may have been closed)");
       }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      ongoingAnalyses.set(url, { status: "error", error: errorMessage });
+      console.error("Analysis error:", error);
     }
-    
-    // Store to backend (fire and forget)
-    storeAnalysisToBackend(article, rawResult, parsed, currentPrompt, isCustomPrompt).catch(err => {
-      console.warn('[background] Failed to store to backend:', err.message);
-    });
-    
-    console.log('[background] Analysis complete for:', url);
-    
-  } catch (error) {
-    console.error('[background] Analysis failed:', error);
-    ongoingAnalyses.set(url, { 
-      status: 'error', 
-      error: error.message 
-    });
   }
-}
-
-// Parse results (same logic as popup.js)
-function parseResults(rawResult) {
-  if (!rawResult || typeof rawResult !== 'string') {
-    return {
-      summary: 'Invalid response format',
-      issues: [],
-      severity: 'unknown',
-      rawText: String(rawResult)
-    };
-  }
-  
-  // Strategy 1: Direct parse
-  try {
-    return JSON.parse(rawResult.trim());
-  } catch (e) {}
-  
-  // Strategy 2: Find JSON object in response
-  try {
-    const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-  } catch (e) {}
-  
-  // Strategy 3: Find JSON between code blocks
-  try {
-    const codeBlockMatch = rawResult.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      return JSON.parse(codeBlockMatch[1].trim());
-    }
-  } catch (e) {}
-  
-  // Strategy 4: Try to fix common JSON issues
-  try {
-    let fixed = rawResult
-      .replace(/^[^{]*/, '')
-      .replace(/[^}]*$/, '')
-      .replace(/,\s*}/g, '}')
-      .replace(/,\s*]/g, ']')
-      .replace(/'/g, '"')
-      .replace(/(\w+):/g, '"$1":');
-    return JSON.parse(fixed);
-  } catch (e) {}
-  
-  // Fallback
-  return {
-    summary: 'Could not parse structured response',
-    issues: [],
-    severity: 'unknown',
-    rawText: rawResult
-  };
-}
-
-// Store analysis to backend
-async function storeAnalysisToBackend(article, rawResult, parsed, currentPrompt, isCustomPrompt) {
-  try {
-    // Step 1: Create article
-    const articleRes = await fetch(`${BACKEND_URL}/articles`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: article.url,
-        title: article.title,
-        textContent: article.text
-      })
-    });
-    
-    if (!articleRes.ok) {
-      throw new Error(`Failed to create article: ${articleRes.status}`);
-    }
-    
-    const { articleId } = await articleRes.json();
-    
-    // Step 2: Add analysis
-    const analysisRes = await fetch(`${BACKEND_URL}/articles/${articleId}/analysis`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        modelVersion: 'claude-sonnet-4-20250514',
-        rawResponse: rawResult,
-        severity: parsed?.severity,
-        promptUsed: currentPrompt,
-        isCustomPrompt: isCustomPrompt,
-        highlights: parsed?.issues?.map(issue => ({
-          quote: issue.quote,
-          importance: issue.importance,
-          gap: issue.gap || issue.why_it_doesnt_follow || issue.explanation || ''
-        })) || []
-      })
-    });
-    
-    if (!analysisRes.ok) {
-      throw new Error(`Failed to store analysis: ${analysisRes.status}`);
-    }
-    
-    console.log('[background] Stored analysis to backend');
-  } catch (error) {
-    console.error('[background] Backend storage failed:', error);
-  }
-}
-
-async function submitFeedback(data) {
-  const stored = await chrome.storage.local.get(['backendUrl']);
-  const backendUrl = stored.backendUrl || BACKEND_URL;
-  
-  const response = await fetch(`${backendUrl}/comments`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      url: data.url,
-      title: data.title,
-      textContent: data.articleText,
-      selectedText: data.selectedText,
-      commentText: data.commentText
-    })
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-  
-  return response.json();
-}
+})();

@@ -10,6 +10,7 @@ node_modules/
 
 # Test files and results
 tests/
+articles/
 
 # Build artifacts
 dist/
