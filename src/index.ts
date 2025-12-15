@@ -152,7 +152,7 @@ const HOMEPAGE_HTML = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SanityCheck — Keep Your Reasoning Sharp</title>
+  <title>SanityCheck — Catch the Reasoning Gaps You'd Miss</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -182,44 +182,49 @@ const HOMEPAGE_HTML = `
       min-height: 100vh;
     }
     
-    /* Hero Section */
+    /* Hero Section - Compact */
     .hero {
-      min-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 24px;
+      padding: 60px 24px 40px;
       text-align: center;
     }
     
+    .hero-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
     .logo-icon {
-      width: 64px;
-      height: 64px;
+      width: 40px;
+      height: 40px;
       fill: var(--accent);
-      margin-bottom: 24px;
     }
     
     h1 {
-      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-size: 2rem;
       font-weight: 700;
-      letter-spacing: -1px;
-      margin-bottom: 16px;
+      letter-spacing: -0.5px;
       color: var(--text-primary);
     }
     
     .tagline {
-      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-      color: var(--text-muted);
-      margin-bottom: 40px;
-      max-width: 560px;
-      line-height: 1.6;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      line-height: 1.5;
     }
     
     .cta-group {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
     }
     
@@ -227,7 +232,7 @@ const HOMEPAGE_HTML = `
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 16px 32px;
+      padding: 14px 28px;
       background: var(--accent);
       color: white;
       font-size: 1rem;
@@ -252,211 +257,269 @@ const HOMEPAGE_HTML = `
       align-items: center;
       gap: 8px;
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
     
     .browser-badge svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       opacity: 0.7;
     }
     
-    /* Features Section */
-    .features {
-      padding: 80px 24px;
-      max-width: 1000px;
+    /* Demo Section - Primary Focus */
+    .demo-section {
+      padding: 60px 24px 80px;
+      max-width: 900px;
       margin: 0 auto;
     }
     
-    .features h2 {
+    .demo-header {
       text-align: center;
-      font-size: 1.75rem;
+      margin-bottom: 40px;
+    }
+    
+    .demo-header h2 {
+      font-size: 1.5rem;
       font-weight: 600;
-      margin-bottom: 48px;
+      margin-bottom: 12px;
       color: var(--text-primary);
     }
     
-    .feature-grid {
+    .demo-header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .demo-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
       gap: 20px;
     }
     
-    .feature-card {
-      background: var(--bg-secondary);
+    .demo-card {
+      background: #18181b;
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 24px;
       transition: border-color 0.15s ease;
     }
     
-    .feature-card:hover {
+    .demo-card:hover {
       border-color: var(--border-strong);
     }
     
-    .feature-icon {
-      width: 32px;
-      height: 32px;
-      stroke: var(--accent);
-      margin-bottom: 14px;
-    }
-    
-    .feature-card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text-primary);
-    }
-    
-    .feature-card p {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      line-height: 1.6;
-    }
-    
-    /* Demo Section */
-    .demo-section {
-      padding: 80px 24px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    
-    .demo-section h2 {
-      text-align: center;
-      font-size: 1.75rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-    
-    .demo-section > p {
-      text-align: center;
-      color: var(--text-muted);
-      margin-bottom: 32px;
-    }
-    
-    .demo-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 28px;
-    }
-    
     .demo-quote {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       line-height: 1.8;
-      margin-bottom: 20px;
-      padding: 16px 20px;
-      background: var(--warning-subtle);
-      border-left: 3px solid var(--warning);
-      border-radius: 6px;
-      color: var(--text-secondary);
+      color: #d4d4d4;
     }
     
-    .demo-quote mark {
-      background: rgba(245, 158, 11, 0.25);
-      color: inherit;
-      padding: 2px 4px;
+    /* Extension-style highlights */
+    .demo-highlight {
+      cursor: help;
+      position: relative;
+      background: linear-gradient(to bottom, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
       border-radius: 2px;
+      padding: 1px 2px;
+      transition: background 0.2s ease;
     }
     
-    .demo-analysis {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 18px;
-      background: var(--bg-tertiary);
+    .demo-highlight:hover {
+      background: rgba(234, 179, 8, 0.4);
+    }
+    
+    .demo-highlight.critical {
+      background: linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+    }
+    
+    .demo-highlight.critical:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+    
+    .demo-highlight.minor {
+      background: linear-gradient(to bottom, rgba(115, 115, 115, 0.25) 0%, rgba(115, 115, 115, 0.15) 100%);
+    }
+    
+    .demo-highlight.minor:hover {
+      background: rgba(115, 115, 115, 0.4);
+    }
+    
+    /* Extension-style tooltip */
+    .demo-tooltip {
+      position: absolute;
+      z-index: 1000;
+      width: max-content;
+      max-width: 400px;
+      min-width: 280px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 1px solid #eab308;
       border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.2);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #f5f5f5;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      left: 0;
+      top: 100%;
+      margin-top: 8px;
     }
     
-    .severity-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--warning);
-      border-radius: 50%;
-      margin-top: 6px;
-      flex-shrink: 0;
+    .demo-highlight:hover .demo-tooltip {
+      opacity: 1;
+      transform: translateY(0);
     }
     
-    .demo-analysis-content h4 {
-      color: var(--warning);
-      font-size: 0.8rem;
+    .demo-tooltip-header {
+      margin-bottom: 6px;
+    }
+    
+    .demo-tooltip-badge {
+      background: #eab308;
+      color: #000;
+      font-size: 10px;
       font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 4px;
     }
     
-    .demo-analysis-content p {
-      color: var(--text-primary);
-      font-size: 0.95rem;
-      line-height: 1.5;
+    .demo-tooltip-type {
+      font-weight: 600;
+      font-size: 13px;
+      color: #eab308;
     }
     
-    /* Install Section */
-    .install-section {
-      padding: 80px 24px;
+    .demo-tooltip-explanation {
+      color: #d4d4d4;
+    }
+    
+    /* How It Works - Minimal */
+    .how-section {
+      padding: 60px 24px;
       background: var(--bg-secondary);
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
     }
     
-    .install-content {
-      max-width: 640px;
+    .how-content {
+      max-width: 800px;
       margin: 0 auto;
+      text-align: center;
     }
     
-    .install-section h2 {
-      text-align: center;
-      font-size: 1.75rem;
+    .how-section h2 {
+      font-size: 1.5rem;
       font-weight: 600;
       margin-bottom: 40px;
     }
     
-    .install-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
     }
     
-    .step {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
+    .how-step {
+      text-align: center;
     }
     
-    .step-number {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
+    .how-step-num {
+      width: 40px;
+      height: 40px;
       background: var(--accent);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 0.9rem;
+      font-weight: 700;
+      font-size: 1.1rem;
       color: white;
+      margin: 0 auto 16px;
     }
     
-    .step-content h3 {
+    .how-step h3 {
       font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
       color: var(--text-primary);
     }
     
-    .step-content p {
+    .how-step p {
       color: var(--text-muted);
       font-size: 0.9rem;
       line-height: 1.5;
     }
     
+    /* Install Section */
+    .install-section {
+      padding: 60px 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .install-content {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    
+    .install-section h2 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+    
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    
+    .step-number {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .step-content h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+      color: var(--text-primary);
+    }
+    
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    
     .step-content code {
-      background: var(--bg-primary);
-      padding: 2px 8px;
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
       border-radius: 4px;
       font-family: 'SF Mono', 'Menlo', monospace;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--accent);
     }
     
@@ -466,6 +529,7 @@ const HOMEPAGE_HTML = `
       text-align: center;
       color: var(--text-muted);
       font-size: 0.85rem;
+      border-top: 1px solid var(--border);
     }
     
     footer a {
@@ -478,84 +542,92 @@ const HOMEPAGE_HTML = `
       color: var(--accent);
     }
 
+    @media (max-width: 800px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .how-grid { grid-template-columns: 1fr; gap: 24px; }
+    }
+    
     @media (max-width: 600px) {
-      .hero { padding: 40px 20px; min-height: 80vh; }
-      .features, .demo-section, .install-section { padding: 60px 20px; }
+      .hero { padding: 40px 20px 32px; }
+      .demo-section, .how-section, .install-section { padding: 48px 20px; }
     }
   </style>
 </head>
 <body>
   <section class="hero">
-    <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-    </svg>
-    <h1>SanityCheck</h1>
-    <p class="tagline">An AI-powered browser extension that spots logical gaps and reasoning issues in any article you read.</p>
-    
-    <div class="cta-group">
-      <a href="/static/sanitycheck-extension.zip" class="download-btn" download>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Download Extension
-      </a>
-      <div class="browser-badge">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29L1.931 5.47zm13.069 7.64a5.45 5.45 0 0 1-1.09 3.254l-3.953 6.847c.566.063 1.142.096 1.727.096 6.627 0 12-5.373 12-12 0-1.24-.188-2.437-.537-3.561H13.091a5.454 5.454 0 0 1 1.909 5.364z"/></svg>
-        Works on Chrome, Edge, Brave & Arc
-      </div>
-    </div>
-  </section>
-  
-  <section class="features">
-    <h2>What It Does</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 16v-4"></path>
-          <path d="M12 8h.01"></path>
+    <div class="hero-content">
+      <div class="logo-row">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
         </svg>
-        <h3>AI-Powered Analysis</h3>
-        <p>Uses Claude to deeply analyze article logic, finding non-sequiturs, conflations, and unsupported claims.</p>
+        <h1>SanityCheck</h1>
       </div>
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg>
-        <h3>Inline Highlighting</h3>
-        <p>Problematic passages are highlighted directly in the article. Hover to see what's wrong with the reasoning.</p>
-      </div>
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"></line>
-          <line x1="12" y1="20" x2="12" y2="4"></line>
-          <line x1="6" y1="20" x2="6" y2="14"></line>
-        </svg>
-        <h3>Severity Ranking</h3>
-        <p>Issues are ranked by importance — critical gaps in red, significant issues in yellow, minor concerns in gray.</p>
-      </div>
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <h3>Concise Explanations</h3>
-        <p>Each issue gets a one-line explanation that makes the logical leap immediately obvious.</p>
+      <p class="tagline">A browser extension that catches the reasoning gaps you'd normally miss.</p>
+      
+      <div class="cta-group">
+        <a href="/static/sanitycheck-extension.zip" class="download-btn" download>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Download Extension
+        </a>
+        <div class="browser-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29L1.931 5.47zm13.069 7.64a5.45 5.45 0 0 1-1.09 3.254l-3.953 6.847c.566.063 1.142.096 1.727.096 6.627 0 12-5.373 12-12 0-1.24-.188-2.437-.537-3.561H13.091a5.454 5.454 0 0 1 1.909 5.364z"/></svg>
+          Chrome, Edge, Brave & Arc
+        </div>
       </div>
     </div>
   </section>
   
   <section class="demo-section">
-    <h2>See It In Action</h2>
-    <p>The extension highlights passages with questionable logic and explains the issue on hover.</p>
+    <div class="demo-header">
+      <h2>Statements that sound reasonable—until you look closer</h2>
+      <p>SanityCheck highlights logical leaps in articles and explains exactly what's off.</p>
+    </div>
     
-    <div class="demo-card">
-      <div class="demo-quote">
-        "There have been studies about progress in all kinds of fields that come to the same conclusion: <mark>linear progress needs exponential resources</mark>. What does that mean? If you want to improve a system further and further, you need more and more resources."
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div class="demo-quote">
+          "Remote workers report higher satisfaction and productivity in surveys. <span class="demo-highlight">Companies resisting remote work are simply prioritizing control over results.<span class="demo-tooltip"><div class="demo-tooltip-header"><span class="demo-tooltip-badge">Significant</span></div><div class="demo-tooltip-explanation">Assumes no other reasons (collaboration, training juniors, culture) could matter.</div></span></span>"
+        </div>
       </div>
-      <div class="demo-analysis">
-        <span class="severity-dot"></span>
-        <div class="demo-analysis-content">
-          <h4>Unsupported Generalization</h4>
-          <p>"All fields" is a strong claim — which studies? Does this apply universally?</p>
+      
+      <div class="demo-card">
+        <div class="demo-quote">
+          "The brain uses 20% of our calories despite being only 2% of body weight. <span class="demo-highlight">This explains why thinking hard leaves us mentally exhausted.<span class="demo-tooltip"><div class="demo-tooltip-header"><span class="demo-tooltip-badge">Significant</span></div><div class="demo-tooltip-explanation">High baseline energy use doesn't mean thinking harder uses significantly more.</div></span></span>"
+        </div>
+      </div>
+      
+      <div class="demo-card">
+        <div class="demo-quote">
+          "Critics of the proposal haven't offered any realistic alternatives. <span class="demo-highlight">Until they do, we should move forward with this plan.<span class="demo-tooltip"><div class="demo-tooltip-header"><span class="demo-tooltip-badge">Significant</span></div><div class="demo-tooltip-explanation">Lack of a better idea doesn't make this one good.</div></span></span>"
+        </div>
+      </div>
+      
+      <div class="demo-card">
+        <div class="demo-quote">
+          "The top-performing schools in the district all use this curriculum. <span class="demo-highlight">Adopting it would help struggling schools catch up.<span class="demo-tooltip"><div class="demo-tooltip-header"><span class="demo-tooltip-badge">Significant</span></div><div class="demo-tooltip-explanation">Top schools may succeed for other reasons (funding, demographics, teachers).</div></span></span>"
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="how-section">
+    <div class="how-content">
+      <h2>How It Works</h2>
+      <div class="how-grid">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <h3>Click on any article</h3>
+          <p>Open the extension while reading any online article or blog post.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <h3>AI analyzes the logic</h3>
+          <p>Claude reads the article and identifies where conclusions don't follow from premises.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <h3>See issues inline</h3>
+          <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
         </div>
       </div>
     </div>
@@ -1960,7 +2032,7 @@ app.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
     res.json({
       total,
       last24h: recentCount,
-      byFallacyType: byType.map(b => ({
+      byFallacyType: byType.map((b: any) => ({
         type: b.fallacyType || 'unspecified',
         count: b._count
       }))
@@ -2101,7 +2173,7 @@ app.get('/debug/logs', requireAdmin, async (req: Request, res: Response, next: N
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map(i => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i: any) => ({ ip: i.ip, count: i._count }))
     });
   } catch (error) {
     next(error);
@@ -2295,7 +2367,7 @@ app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, nex
     ]);
     
     res.json({
-      articles: articles.map(a => ({
+      articles: articles.map((a: any) => ({
         id: a.id,
         createdAt: a.createdAt,
         url: a.url,
@@ -2304,7 +2376,7 @@ app.get('/admin/articles', requireAdmin, async (req: Request, res: Response, nex
         analysisCount: a._count.analyses,
         commentCount: a._count.comments,
         latestAnalysis: a.analyses[0] ? {
-          severity: a.analyses[0].severity,
+          severity: a.analyses[0].severity || 'none',
           highlightCount: a.analyses[0].highlights.length
         } : null,
         ip: a.ip
@@ -2413,7 +2485,7 @@ app.get('/admin/feedback-stats', requireAdmin, async (req: Request, res: Respons
       comments: commentCount,
       highlights: highlightCount,
       articlesLast24h: recentArticles,
-      highlightsByImportance: highlightsByImportance.map(h => ({
+      highlightsByImportance: highlightsByImportance.map((h: any) => ({
         importance: h.importance,
         count: h._count
       }))
