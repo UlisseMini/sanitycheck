@@ -27,6 +27,9 @@
       --accent-subtle: rgba(96, 165, 250, 0.12);
       --border: rgba(255, 255, 255, 0.08);
       --border-strong: rgba(255, 255, 255, 0.12);
+      --severity-critical: #ef4444;
+      --severity-significant: #eab308;
+      --severity-minor: #737373;
     }
     
     body {
@@ -37,200 +40,257 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 60px 24px;
+      padding: 100px 24px 60px;
       line-height: 1.5;
     }
     
     .container {
-      max-width: 640px;
+      max-width: 680px;
       width: 100%;
     }
     
     .hero {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
     
     h1 {
       font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 56px;
+      font-size: 72px;
       font-weight: 700;
-      letter-spacing: 4px;
-      margin-bottom: 12px;
+      letter-spacing: 6px;
+      margin-bottom: 16px;
       color: transparent;
-      -webkit-text-stroke: 2px #60a5fa;
-      text-stroke: 2px #60a5fa;
+      -webkit-text-stroke: 2.5px #60a5fa;
+      text-stroke: 2.5px #60a5fa;
       text-shadow: 
         0 0 0 transparent,
-        0 0 20px rgba(96, 165, 250, 0.3);
+        0 0 30px rgba(96, 165, 250, 0.35);
       text-rendering: optimizeLegibility;
       text-transform: uppercase;
     }
     
     .tagline {
-      font-size: 16px;
+      font-size: 20px;
       color: #ffffff;
     }
     
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    /* ===== Examples Section ===== */
+    .examples-section {
       margin-bottom: 40px;
     }
     
-    .step {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      transition: border-color 0.15s ease;
-    }
-    
-    .step:hover {
-      border-color: var(--border-strong);
-    }
-    
-    .step-number {
-      width: 32px;
-      height: 32px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .section-label {
+      font-size: 11px;
       font-weight: 600;
-      font-size: 14px;
-      flex-shrink: 0;
-      color: white;
-    }
-    
-    .step-content h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--text-primary);
-    }
-    
-    .step-content p {
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
       color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    
-    .pin-instruction {
-      background: var(--accent-subtle);
-      border: 1px solid rgba(249, 115, 22, 0.2);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    
-    .pin-instruction h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--accent);
-    }
-    
-    .pin-instruction p {
-      color: var(--text-secondary);
-      font-size: 14px;
       margin-bottom: 16px;
-    }
-    
-    .pin-steps {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    
-    .pin-step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-secondary);
-      font-size: 13px;
-    }
-    
-    .pin-step svg {
-      width: 20px;
-      height: 20px;
-      stroke: var(--text-muted);
-    }
-    
-    .pin-step .arrow {
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    
-    .features {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 40px;
-    }
-    
-    .feature {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
       text-align: center;
     }
     
-    .feature-icon {
-      width: 24px;
-      height: 24px;
-      stroke: var(--accent);
-      margin-bottom: 8px;
+    .browser-window {
+      margin-bottom: 28px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-strong);
+      background: #1c1c1c;
     }
     
-    .feature h4 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 2px;
+    .browser-header {
+      background: #2a2a2a;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
     }
     
-    .feature p {
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .browser-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .browser-dot.red { background: #ff5f56; }
+    .browser-dot.yellow { background: #ffbd2e; }
+    .browser-dot.green { background: #27ca40; }
+    
+    .browser-url {
+      flex: 1;
+      background: #1a1a1a;
+      border-radius: 4px;
+      padding: 5px 12px;
       font-size: 12px;
       color: var(--text-muted);
+      font-family: -apple-system, BlinkMacSystemFont, monospace;
     }
     
-    .cta {
-      text-align: center;
+    .browser-content {
+      padding: 24px;
+      background: #ffffff;
     }
     
-    .cta-btn {
-      display: inline-flex;
+    .example-text {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #1a1a1a;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    
+    /* ===== Highlight Styles ===== */
+    .highlight {
+      cursor: help;
+      position: relative;
+      display: inline;
+      border-radius: 2px;
+      padding: 2px 4px;
+      margin: 0 -2px;
+      transition: background 0.2s ease;
+    }
+    
+    .highlight.critical {
+      background: linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%);
+    }
+    
+    .highlight.critical:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+    
+    .highlight.significant {
+      background: linear-gradient(to bottom, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
+    }
+    
+    .highlight.significant:hover {
+      background: rgba(234, 179, 8, 0.4);
+    }
+    
+    .highlight.minor {
+      background: linear-gradient(to bottom, rgba(115, 115, 115, 0.25) 0%, rgba(115, 115, 115, 0.15) 100%);
+    }
+    
+    .highlight.minor:hover {
+      background: rgba(115, 115, 115, 0.4);
+    }
+    
+    /* ===== Tooltip Styles (Fixed position, follows mouse) ===== */
+    .tooltip {
+      position: fixed;
+      z-index: 10000;
+      width: max-content;
+      max-width: 340px;
+      min-width: 260px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 1px solid;
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #f5f5f5;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .tooltip.critical {
+      border-color: var(--severity-critical);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.2);
+    }
+    
+    .tooltip.significant {
+      border-color: var(--severity-significant);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.2);
+    }
+    
+    .tooltip.minor {
+      border-color: var(--severity-minor);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(115, 115, 115, 0.2);
+    }
+    
+    .tooltip-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    .tooltip.critical .tooltip-badge {
+      background: var(--severity-critical);
+      color: white;
+    }
+    
+    .tooltip.significant .tooltip-badge {
+      background: var(--severity-significant);
+      color: #000;
+    }
+    
+    .tooltip.minor .tooltip-badge {
+      background: var(--severity-minor);
+      color: white;
+    }
+    
+    .tooltip-header {
+      display: flex;
       align-items: center;
       gap: 8px;
-      background: var(--accent);
-      color: white;
-      padding: 14px 28px;
-      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+    
+    .tooltip-icon {
+      font-size: 16px;
+    }
+    
+    .tooltip-type {
       font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      transition: all 0.15s ease;
+      font-size: 14px;
+    }
+    
+    .tooltip.critical .tooltip-type { color: var(--severity-critical); }
+    .tooltip.significant .tooltip-type { color: var(--severity-significant); }
+    .tooltip.minor .tooltip-type { color: var(--severity-minor); }
+    
+    .tooltip-text {
+      color: #d4d4d4;
+    }
+    
+    /* ===== Divider ===== */
+    .divider {
       border: none;
-      cursor: pointer;
+      border-top: 1px solid var(--border-strong);
+      margin: 40px 0;
     }
     
-    .cta-btn:hover {
-      background: var(--accent-hover);
+    /* ===== How To Section ===== */
+    .how-to {
+      text-align: center;
+      margin-bottom: 40px;
     }
     
-    .cta-btn svg {
-      width: 18px;
-      height: 18px;
+    .how-to p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .how-to strong {
+      color: var(--text-primary);
     }
     
     .footer {
@@ -255,107 +315,67 @@
   <div class="container">
     <div class="hero">
       <h1>SanityCheck</h1>
-      <p class="tagline">SanityCheck helps you identify logical fallacies in what you read.</p>
+      <p class="tagline">Identify logical fallacies in what you read.</p>
     </div>
     
-    <div class="pin-instruction">
-      <h2>Pin for Easy Access</h2>
-      <p>Pin SanityCheck to your toolbar for one-click access on any article.</p>
-      <div class="pin-steps">
-        <div class="pin-step">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-          </svg>
-          <span>Click extensions icon</span>
+    <div class="examples-section">
+      <p class="section-label">Hover over highlighted text to see analysis</p>
+      
+      <div class="browser-window">
+        <div class="browser-header">
+          <div class="browser-dots">
+            <span class="browser-dot red"></span>
+            <span class="browser-dot yellow"></span>
+            <span class="browser-dot green"></span>
+          </div>
+          <div class="browser-url">techdigest.com/startup-hits-2m-downloads</div>
         </div>
-        <span class="pin-step arrow">→</span>
-        <div class="pin-step">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="17" x2="12" y2="3"></line>
-            <path d="M5 10l7-7 7 7"></path>
-            <line x1="12" y1="21" x2="12" y2="21"></line>
-          </svg>
-          <span>Pin SanityCheck</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          <h3>Navigate to any article</h3>
-          <p>Go to a blog post, news article, essay, or any text-heavy page you want to analyze.</p>
+        <div class="browser-content">
+          <p class="example-text">
+            The startup's app has been downloaded over 2 million times since launch. <span class="highlight critical" data-type="Unsupported Leap" data-importance="critical" data-explanation="Download numbers don't indicate product quality or user satisfaction. Many downloaded apps are quickly abandoned, and high downloads often result from marketing spend rather than genuine value.">With numbers like these, it's clear the product is solving a real problem for users.</span> The company is now in talks with several major investors.
+          </p>
         </div>
       </div>
       
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          <h3>Click the SanityCheck icon</h3>
-          <p>Click the extension icon in your toolbar. It will detect if you're on an article page.</p>
+      <div class="browser-window">
+        <div class="browser-header">
+          <div class="browser-dots">
+            <span class="browser-dot red"></span>
+            <span class="browser-dot yellow"></span>
+            <span class="browser-dot green"></span>
+          </div>
+          <div class="browser-url">medium.com/@healthylife/standing-desk-review</div>
+        </div>
+        <div class="browser-content">
+          <p class="example-text">
+            After switching to a standing desk three months ago, I've noticed I feel more alert during afternoon meetings. <span class="highlight significant" data-type="Correlation vs Causation" data-importance="significant" data-explanation="Many factors could explain increased alertness: seasonal changes, different projects, sleep improvements, or even just the novelty effect. A single personal experience can't establish that the desk caused the change.">The standing desk has completely transformed my energy levels.</span> I'd recommend anyone struggling with the 3pm slump give it a try.
+          </p>
         </div>
       </div>
       
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          <h3>Analyze the logic</h3>
-          <p>Our AI will scan the text for logical gaps, unsupported claims, and reasoning issues. Results appear in seconds.</p>
+      <div class="browser-window">
+        <div class="browser-header">
+          <div class="browser-dots">
+            <span class="browser-dot red"></span>
+            <span class="browser-dot yellow"></span>
+            <span class="browser-dot green"></span>
+          </div>
+          <div class="browser-url">businessweekly.com/restaurant-chain-expansion</div>
         </div>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          <h3>Review highlighted issues</h3>
-          <p>Problematic sections are highlighted on the page. Hover to see explanations.</p>
+        <div class="browser-content">
+          <p class="example-text">
+            The restaurant chain expanded from 50 to 200 locations in just three years while maintaining profitability. <span class="highlight minor" data-type="Incomplete Picture" data-importance="minor" data-explanation="Rapid expansion with maintained profitability is notable, but doesn't guarantee continued success. Market saturation, rising costs, or economic downturns could change the picture—past performance isn't always indicative of future results.">This track record suggests they'll have no trouble hitting their goal of 500 locations by 2027.</span>
+          </p>
         </div>
       </div>
     </div>
     
-    <div class="features">
-      <div class="feature">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <h4>High Precision</h4>
-        <p>Only flags genuine issues</p>
-      </div>
-      <div class="feature">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-        </svg>
-        <h4>Fast Analysis</h4>
-        <p>Results in seconds</p>
-      </div>
-      <div class="feature">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <h4>Leave Feedback</h4>
-        <p>Right-click to comment</p>
-      </div>
-      <div class="feature">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-        <h4>Customizable</h4>
-        <p>Edit the analysis prompt</p>
-      </div>
-    </div>
+    <hr class="divider">
     
-    <div class="cta">
-      <button class="cta-btn" onclick="window.close()">
-        Get Started
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
+    <div class="how-to">
+      <p>
+        <strong>To use SanityCheck:</strong> Navigate to any article, click the extension icon in your toolbar, then hit "Analyze." Issues will be highlighted directly on the page—hover to see explanations. Pin the extension for quick access.
+      </p>
     </div>
     
     <div class="footer">
@@ -367,10 +387,73 @@
     </div>
   </div>
   
+  <!-- Tooltip element (positioned by JS like the extension) -->
+  <div class="tooltip" id="tooltip"></div>
+  
   <script>
+    // Tooltip behavior matching the extension
+    const tooltip = document.getElementById('tooltip');
+    const highlights = document.querySelectorAll('.highlight');
+    
+    function showTooltip(e, highlight) {
+      const type = highlight.dataset.type || 'Issue';
+      const importance = highlight.dataset.importance || 'minor';
+      const explanation = highlight.dataset.explanation || '';
+      
+      const emoji = importance === 'critical' ? '🔴' : 
+                    importance === 'significant' ? '🟠' : '🟡';
+      
+      tooltip.className = `tooltip ${importance}`;
+      tooltip.innerHTML = `
+        <div class="tooltip-badge">Logic Issue</div>
+        <div class="tooltip-header">
+          <span class="tooltip-icon">${emoji}</span>
+          <span class="tooltip-type">${type}</span>
+        </div>
+        <div class="tooltip-text">${explanation}</div>
+      `;
+      
+      positionTooltip(e);
+      tooltip.classList.add('visible');
+    }
+    
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+    
+    function positionTooltip(e) {
+      const padding = 15;
+      const rect = tooltip.getBoundingClientRect();
+      
+      let x = e.clientX + padding;
+      let y = e.clientY + padding;
+      
+      // Keep tooltip on screen
+      if (x + rect.width > window.innerWidth - padding) {
+        x = e.clientX - rect.width - padding;
+      }
+      if (y + rect.height > window.innerHeight - padding) {
+        y = e.clientY - rect.height - padding;
+      }
+      
+      tooltip.style.left = `${Math.max(padding, x)}px`;
+      tooltip.style.top = `${Math.max(padding, y)}px`;
+    }
+    
+    highlights.forEach(highlight => {
+      highlight.addEventListener('mouseenter', (e) => showTooltip(e, highlight));
+      highlight.addEventListener('mouseleave', hideTooltip);
+      highlight.addEventListener('mousemove', positionTooltip);
+    });
+    
+    // Settings link
     document.getElementById('settings-link').addEventListener('click', (e) => {
       e.preventDefault();
-      chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+      } else {
+        window.location.href = 'settings.html';
+      }
     });
   </script>
 </body>

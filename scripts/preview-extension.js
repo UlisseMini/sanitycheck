@@ -11,7 +11,7 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 const PORT = 3002;
-const EXTENSION_DIR = path.join(__dirname, '..', 'extension');
+const EXTENSION_DIR = path.join(__dirname, '..', 'src', 'extension', 'static');
 
 const app = express();
 
