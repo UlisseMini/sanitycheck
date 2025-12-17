@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { generateHomepage } from './backend/pages/homepage';
 import { generateFaqPage } from './backend/pages/faq';
+import { generatePrivacyPage } from './backend/pages/privacy';
 
 const app = express();
 
@@ -171,6 +172,11 @@ app.get('/', (_req: Request, res: Response) => {
 app.get('/faq', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(generateFaqPage());
+});
+
+app.get('/privacy', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(generatePrivacyPage());
 });
 
 // =====================================================
