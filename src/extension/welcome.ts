@@ -350,12 +350,27 @@ function toggleTheme() {
   
   // Save preference
   localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+  
+  // Also save to chrome.storage for content script access
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    chrome.storage.local.set({ theme: isMiss ? 'miss' : 'sanity' });
+  }
 }
 
 themeToggle.addEventListener('click', toggleTheme);
 
-// Load saved theme preference
-if (localStorage.getItem('theme') === 'miss') {
-  toggleTheme();
+// Load saved theme preference (check chrome.storage first, then localStorage)
+if (typeof chrome !== 'undefined' && chrome.storage) {
+  chrome.storage.local.get(['theme'], (result) => {
+    const savedTheme = result.theme || localStorage.getItem('theme');
+    if (savedTheme === 'miss' && !document.body.classList.contains('theme-miss')) {
+      toggleTheme();
+    }
+  });
+} else {
+  // Fallback to localStorage only
+  if (localStorage.getItem('theme') === 'miss') {
+    toggleTheme();
+  }
 }
 
