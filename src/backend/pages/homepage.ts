@@ -603,41 +603,174 @@ export function generateHomepage(): string {
       margin-bottom: 40px;
     }
     
-    .how-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
+    /* Rotating border container */
+    .how-rotating-container {
+      position: relative;
+      width: 600px;
+      height: 200px;
+      margin: 30px auto;
+      border-radius: 12px;
+    }
+    
+    .how-rotating-border {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border-radius: 16px;
+      background: var(--bg-tertiary);
+      z-index: 1;
+      overflow: hidden;
+    }
+    
+    /* Fixed border */
+    .how-rotating-border::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 4px solid var(--border);
+      pointer-events: none;
+    }
+    
+    /* Trailing border SVG */
+    .how-rotating-border svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .how-rotating-border svg path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 80 320;
+      stroke-dashoffset: 0;
+      animation: trailBorder 20s linear infinite;
+    }
+    
+    .how-rotating-container.paused .how-rotating-border svg path {
+      animation-play-state: paused;
+    }
+    
+    @keyframes trailBorder {
+      0% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -400; }
+    }
+    
+    .how-rotating-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .how-steps-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
     }
     
     .how-step {
-      text-align: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 24px;
+      padding: 30px 40px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    
+    .how-step.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    
+    .how-step.prev {
+      transform: translateX(-100%);
     }
     
     .how-step-num {
-      width: 40px;
-      height: 40px;
+      flex-shrink: 0;
+      width: 60px;
+      height: 60px;
       background: var(--accent);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       color: white;
-      margin: 0 auto 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .how-step-content {
+      flex: 1;
+      text-align: left;
     }
     
     .how-step h3 {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 8px;
       color: var(--text-primary);
     }
     
     .how-step p {
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-size: 0.9rem;
       line-height: 1.5;
+      margin: 0;
+    }
+    
+    .how-nav-dots {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+    
+    .how-nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .how-nav-dot.active {
+      background: var(--accent);
+      width: 32px;
+      border-radius: 5px;
+    }
+    
+    .how-nav-dot:hover:not(.active) {
+      background: var(--text-secondary);
+      transform: scale(1.2);
     }
     
     /* Install Section */
@@ -726,17 +859,13 @@ export function generateHomepage(): string {
       color: var(--accent);
     }
 
-    @media (max-width: 900px) {
-      .how-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    }
-    
-    @media (max-width: 600px) {
-      .how-grid { grid-template-columns: 1fr; gap: 20px; }
-    }
-    
     @media (max-width: 600px) {
       .hero { padding: 40px 20px 32px; }
       .demo-section, .how-section, .install-section { padding: 48px 20px; }
+      .how-rotating-container { width: 95%; max-width: 600px; height: auto; min-height: 180px; }
+      .how-step { padding: 20px 24px; flex-direction: column; gap: 16px; }
+      .how-step-content { text-align: center; }
+      .how-step-num { width: 50px; height: 50px; font-size: 1.25rem; }
     }
   </style>
 </head>
@@ -821,26 +950,49 @@ export function generateHomepage(): string {
   <section class="how-section">
     <div class="how-content">
       <h2>How It Works</h2>
-      <div class="how-grid">
-        <div class="how-step">
-          <div class="how-step-num">1</div>
-          <h3>Click on any article</h3>
-          <p>Open the extension while reading any online article or blog post.</p>
+      <div class="how-rotating-container" id="how-rotating-container">
+        <div class="how-rotating-border">
+          <svg viewBox="0 0 608 208" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 16 4 L 592 4 A 12 12 0 0 1 604 16 L 604 192 A 12 12 0 0 1 592 204 L 16 204 A 12 12 0 0 1 4 192 L 4 16 A 12 12 0 0 1 16 4 Z" />
+          </svg>
         </div>
-        <div class="how-step">
-          <div class="how-step-num">2</div>
-          <h3>AI analyzes the logic</h3>
-          <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
-        </div>
-        <div class="how-step">
-          <div class="how-step-num">3</div>
-          <h3>See issues inline</h3>
-          <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
-        </div>
-        <div class="how-step">
-          <div class="how-step-num">4</div>
-          <h3>Leave us feedback</h3>
-          <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
+        <div class="how-rotating-inner">
+          <div class="how-steps-wrapper">
+            <div class="how-step active" data-step="0">
+              <div class="how-step-num">1</div>
+              <div class="how-step-content">
+                <h3>Click on any article</h3>
+                <p>Open the extension while reading any online article or blog post.</p>
+              </div>
+            </div>
+            <div class="how-step" data-step="1">
+              <div class="how-step-num">2</div>
+              <div class="how-step-content">
+                <h3>AI analyzes the logic</h3>
+                <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
+              </div>
+            </div>
+            <div class="how-step" data-step="2">
+              <div class="how-step-num">3</div>
+              <div class="how-step-content">
+                <h3>See issues inline</h3>
+                <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
+              </div>
+            </div>
+            <div class="how-step" data-step="3">
+              <div class="how-step-num">4</div>
+              <div class="how-step-content">
+                <h3>Leave us feedback</h3>
+                <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
+              </div>
+            </div>
+          </div>
+          <div class="how-nav-dots">
+            <div class="how-nav-dot active" data-step="0"></div>
+            <div class="how-nav-dot" data-step="1"></div>
+            <div class="how-nav-dot" data-step="2"></div>
+            <div class="how-nav-dot" data-step="3"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -890,7 +1042,7 @@ export function generateHomepage(): string {
   </section>
   
   <footer>
-    <p>Built by humans, with AI assistance · <a href="/faq">FAQ</a> · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
+    <p>Built by humans, with AI assistance · <a href="/faq">FAQ</a> · <a href="/technical-faq">Technical FAQ</a> · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
   </footer>
   
   <script>
@@ -1282,6 +1434,105 @@ export function generateHomepage(): string {
       if (savedTheme === 'miss') {
         toggleTheme();
       }
+    })();
+    
+    // ===== How It Works Rotating Border =====
+    (function() {
+      const container = document.getElementById('how-rotating-container');
+      const steps = document.querySelectorAll('.how-step[data-step]');
+      const dots = document.querySelectorAll('.how-nav-dot[data-step]');
+      let currentStep = 0;
+      let autoRotateInterval = null;
+      let isHovered = false;
+      const ROTATION_TIME = 5000; // 5 seconds per step
+      const HOVER_PADDING = 50; // pixels padding for hover detection
+      
+      function showStep(stepIndex) {
+        // Update steps
+        steps.forEach((step, index) => {
+          step.classList.remove('active', 'prev');
+          if (index === stepIndex) {
+            step.classList.add('active');
+          } else if (index < stepIndex) {
+            step.classList.add('prev');
+          }
+        });
+        
+        // Update dots
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('active', index === stepIndex);
+        });
+        
+        currentStep = stepIndex;
+      }
+      
+      function nextStep() {
+        const next = (currentStep + 1) % steps.length;
+        showStep(next);
+      }
+      
+      function startAutoRotate() {
+        if (autoRotateInterval) clearInterval(autoRotateInterval);
+        if (!isHovered) {
+          autoRotateInterval = setInterval(nextStep, ROTATION_TIME);
+        }
+      }
+      
+      function stopAutoRotate() {
+        if (autoRotateInterval) {
+          clearInterval(autoRotateInterval);
+          autoRotateInterval = null;
+        }
+        container.classList.add('paused');
+      }
+      
+      // Check if mouse is near container
+      function checkMouseProximity(e) {
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+        const padding = HOVER_PADDING;
+        
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        const isNear = (
+          x >= rect.left - padding &&
+          x <= rect.right + padding &&
+          y >= rect.top - padding &&
+          y <= rect.bottom + padding
+        );
+        
+        if (isNear && !isHovered) {
+          isHovered = true;
+          stopAutoRotate();
+        } else if (!isNear && isHovered) {
+          isHovered = false;
+          container.classList.remove('paused');
+          startAutoRotate();
+        }
+      }
+      
+      // Click navigation on dots
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+          stopAutoRotate();
+          showStep(index);
+          // Resume after a delay if not hovered
+          setTimeout(() => {
+            if (!isHovered) {
+              container.classList.remove('paused');
+              startAutoRotate();
+            }
+          }, 1000);
+        });
+      });
+      
+      // Mouse proximity detection
+      document.addEventListener('mousemove', checkMouseProximity);
+      
+      // Initialize
+      showStep(0);
+      startAutoRotate();
     })();
   </script>
 </body>

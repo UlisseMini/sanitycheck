@@ -436,3 +436,103 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
   }
 }
 
+// ===== How It Works Rotating Border =====
+(function() {
+  const container = document.getElementById('how-rotating-container');
+  if (!container) return;
+  
+  const steps = document.querySelectorAll('.how-step[data-step]');
+  const dots = document.querySelectorAll('.how-nav-dot[data-step]');
+  let currentStep = 0;
+  let autoRotateInterval: ReturnType<typeof setInterval> | null = null;
+  let isHovered = false;
+  const ROTATION_TIME = 5000; // 5 seconds per step
+  const HOVER_PADDING = 50; // pixels padding for hover detection
+  
+  function showStep(stepIndex: number) {
+    // Update steps
+    steps.forEach((step, index) => {
+      step.classList.remove('active', 'prev');
+      if (index === stepIndex) {
+        step.classList.add('active');
+      } else if (index < stepIndex) {
+        step.classList.add('prev');
+      }
+    });
+    
+    // Update dots
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('active', index === stepIndex);
+    });
+    
+    currentStep = stepIndex;
+  }
+  
+  function nextStep() {
+    const next = (currentStep + 1) % steps.length;
+    showStep(next);
+  }
+  
+  function startAutoRotate() {
+    if (autoRotateInterval) clearInterval(autoRotateInterval);
+    if (!isHovered) {
+      autoRotateInterval = setInterval(nextStep, ROTATION_TIME);
+    }
+  }
+  
+  function stopAutoRotate() {
+    if (autoRotateInterval) {
+      clearInterval(autoRotateInterval);
+      autoRotateInterval = null;
+    }
+    container.classList.add('paused');
+  }
+  
+  // Check if mouse is near container
+  function checkMouseProximity(e: MouseEvent) {
+    const rect = container.getBoundingClientRect();
+    const padding = HOVER_PADDING;
+    
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    const isNear = (
+      x >= rect.left - padding &&
+      x <= rect.right + padding &&
+      y >= rect.top - padding &&
+      y <= rect.bottom + padding
+    );
+    
+    if (isNear && !isHovered) {
+      isHovered = true;
+      stopAutoRotate();
+    } else if (!isNear && isHovered) {
+      isHovered = false;
+      container.classList.remove('paused');
+      startAutoRotate();
+    }
+  }
+  
+  // Click navigation on dots
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      stopAutoRotate();
+      showStep(index);
+      // Resume after a delay if not hovered
+      setTimeout(() => {
+        if (!isHovered) {
+          container.classList.remove('paused');
+          startAutoRotate();
+        }
+      }, 1000);
+    });
+  });
+  
+  // Mouse proximity detection
+  document.addEventListener('mousemove', checkMouseProximity);
+  
+  // Initialize
+  showStep(0);
+  startAutoRotate();
+})();
+
