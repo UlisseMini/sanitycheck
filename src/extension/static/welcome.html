@@ -551,17 +551,7 @@
       overflow: hidden;
     }
     
-    /* Fixed border */
-    .how-rotating-border::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      border: 4px solid var(--border);
-      pointer-events: none;
-    }
-    
-    /* Trailing border SVG */
+    /* Trailing border SVG - single rotating trail */
     .how-rotating-border svg {
       position: absolute;
       inset: 0;
@@ -575,7 +565,7 @@
       stroke: var(--accent);
       stroke-width: 4;
       stroke-linecap: round;
-      stroke-dasharray: 80 320;
+      stroke-dasharray: 100 1500;
       stroke-dashoffset: 0;
       animation: trailBorder 20s linear infinite;
     }
@@ -585,21 +575,37 @@
     }
     
     @keyframes trailBorder {
+      /* Top edge (600px - needs to move faster, 37.5% of path in 25% of time) */
       0% { stroke-dashoffset: 0; }
-      100% { stroke-dashoffset: -400; }
+      25% { stroke-dashoffset: -600; }
+      /* Right edge (200px - moves slower, 12.5% of path in 25% of time) */
+      50% { stroke-dashoffset: -800; }
+      /* Bottom edge (600px - moves faster, 37.5% of path in 25% of time) */
+      75% { stroke-dashoffset: -1400; }
+      /* Left edge (200px - moves slower, 12.5% of path in 25% of time) */
+      100% { stroke-dashoffset: -1600; }
     }
     
     .how-rotating-inner {
       position: relative;
       width: 100%;
       height: 100%;
-      background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
       border-radius: 12px;
       overflow: hidden;
       z-index: 2;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    
+    .how-rotating-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--bg-tertiary);
+      opacity: 0.8;
+      border-radius: 12px;
+      z-index: -1;
     }
     
     .how-steps-wrapper {

@@ -624,17 +624,7 @@ export function generateHomepage(): string {
       overflow: hidden;
     }
     
-    /* Fixed border */
-    .how-rotating-border::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      border: 4px solid var(--border);
-      pointer-events: none;
-    }
-    
-    /* Trailing border SVG */
+    /* Trailing border SVG - single rotating trail */
     .how-rotating-border svg {
       position: absolute;
       inset: 0;
@@ -648,7 +638,7 @@ export function generateHomepage(): string {
       stroke: var(--accent);
       stroke-width: 4;
       stroke-linecap: round;
-      stroke-dasharray: 80 320;
+      stroke-dasharray: 100 1500;
       stroke-dashoffset: 0;
       animation: trailBorder 20s linear infinite;
     }
@@ -658,21 +648,37 @@ export function generateHomepage(): string {
     }
     
     @keyframes trailBorder {
+      /* Top edge (600px - needs to move faster, 37.5% of path in 25% of time) */
       0% { stroke-dashoffset: 0; }
-      100% { stroke-dashoffset: -400; }
+      25% { stroke-dashoffset: -600; }
+      /* Right edge (200px - moves slower, 12.5% of path in 25% of time) */
+      50% { stroke-dashoffset: -800; }
+      /* Bottom edge (600px - moves faster, 37.5% of path in 25% of time) */
+      75% { stroke-dashoffset: -1400; }
+      /* Left edge (200px - moves slower, 12.5% of path in 25% of time) */
+      100% { stroke-dashoffset: -1600; }
     }
     
     .how-rotating-inner {
       position: relative;
       width: 100%;
       height: 100%;
-      background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
       border-radius: 12px;
       overflow: hidden;
       z-index: 2;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    
+    .how-rotating-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--bg-tertiary);
+      opacity: 0.8;
+      border-radius: 12px;
+      z-index: -1;
     }
     
     .how-steps-wrapper {
@@ -1441,10 +1447,12 @@ export function generateHomepage(): string {
       const container = document.getElementById('how-rotating-container');
       const steps = document.querySelectorAll('.how-step[data-step]');
       const dots = document.querySelectorAll('.how-nav-dot[data-step]');
+      const borderPath = container?.querySelector('.how-rotating-border svg path');
       let currentStep = 0;
-      let autoRotateInterval = null;
+      let stepInterval = null;
       let isHovered = false;
-      const ROTATION_TIME = 5000; // 5 seconds per step
+      const FULL_ROTATION_TIME = 20000; // 20 seconds for full rotation
+      const STEP_TIME = FULL_ROTATION_TIME / 4; // 5 seconds per step (each corner)
       const HOVER_PADDING = 50; // pixels padding for hover detection
       
       function showStep(stepIndex) {
@@ -1471,19 +1479,22 @@ export function generateHomepage(): string {
         showStep(next);
       }
       
-      function startAutoRotate() {
-        if (autoRotateInterval) clearInterval(autoRotateInterval);
+      function startStepRotation() {
+        if (stepInterval) clearInterval(stepInterval);
         if (!isHovered) {
-          autoRotateInterval = setInterval(nextStep, ROTATION_TIME);
+          // Change step every time the trail completes one side (at each corner)
+          stepInterval = setInterval(nextStep, STEP_TIME);
         }
       }
       
-      function stopAutoRotate() {
-        if (autoRotateInterval) {
-          clearInterval(autoRotateInterval);
-          autoRotateInterval = null;
+      function stopStepRotation() {
+        if (stepInterval) {
+          clearInterval(stepInterval);
+          stepInterval = null;
         }
-        container.classList.add('paused');
+        if (container) {
+          container.classList.add('paused');
+        }
       }
       
       // Check if mouse is near container
@@ -1504,24 +1515,26 @@ export function generateHomepage(): string {
         
         if (isNear && !isHovered) {
           isHovered = true;
-          stopAutoRotate();
+          stopStepRotation();
         } else if (!isNear && isHovered) {
           isHovered = false;
-          container.classList.remove('paused');
-          startAutoRotate();
+          if (container) {
+            container.classList.remove('paused');
+          }
+          startStepRotation();
         }
       }
       
       // Click navigation on dots
       dots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
-          stopAutoRotate();
+          stopStepRotation();
           showStep(index);
           // Resume after a delay if not hovered
           setTimeout(() => {
-            if (!isHovered) {
+            if (!isHovered && container) {
               container.classList.remove('paused');
-              startAutoRotate();
+              startStepRotation();
             }
           }, 1000);
         });
@@ -1530,9 +1543,9 @@ export function generateHomepage(): string {
       // Mouse proximity detection
       document.addEventListener('mousemove', checkMouseProximity);
       
-      // Initialize
+      // Initialize - show first step and start the rotation
       showStep(0);
-      startAutoRotate();
+      startStepRotation();
     })();
   </script>
 </body>

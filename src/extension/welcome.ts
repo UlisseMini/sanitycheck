@@ -444,9 +444,10 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
   const steps = document.querySelectorAll('.how-step[data-step]');
   const dots = document.querySelectorAll('.how-nav-dot[data-step]');
   let currentStep = 0;
-  let autoRotateInterval: ReturnType<typeof setInterval> | null = null;
+  let stepInterval: ReturnType<typeof setInterval> | null = null;
   let isHovered = false;
-  const ROTATION_TIME = 5000; // 5 seconds per step
+  const FULL_ROTATION_TIME = 20000; // 20 seconds for full rotation
+  const STEP_TIME = FULL_ROTATION_TIME / 4; // 5 seconds per step (each corner)
   const HOVER_PADDING = 50; // pixels padding for hover detection
   
   function showStep(stepIndex: number) {
@@ -473,17 +474,18 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     showStep(next);
   }
   
-  function startAutoRotate() {
-    if (autoRotateInterval) clearInterval(autoRotateInterval);
+  function startStepRotation() {
+    if (stepInterval) clearInterval(stepInterval);
     if (!isHovered) {
-      autoRotateInterval = setInterval(nextStep, ROTATION_TIME);
+      // Change step every time the trail completes one side (at each corner)
+      stepInterval = setInterval(nextStep, STEP_TIME);
     }
   }
   
-  function stopAutoRotate() {
-    if (autoRotateInterval) {
-      clearInterval(autoRotateInterval);
-      autoRotateInterval = null;
+  function stopStepRotation() {
+    if (stepInterval) {
+      clearInterval(stepInterval);
+      stepInterval = null;
     }
     container.classList.add('paused');
   }
@@ -505,24 +507,24 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     
     if (isNear && !isHovered) {
       isHovered = true;
-      stopAutoRotate();
+      stopStepRotation();
     } else if (!isNear && isHovered) {
       isHovered = false;
       container.classList.remove('paused');
-      startAutoRotate();
+      startStepRotation();
     }
   }
   
   // Click navigation on dots
   dots.forEach((dot, index) => {
     dot.addEventListener('click', () => {
-      stopAutoRotate();
+      stopStepRotation();
       showStep(index);
       // Resume after a delay if not hovered
       setTimeout(() => {
         if (!isHovered) {
           container.classList.remove('paused');
-          startAutoRotate();
+          startStepRotation();
         }
       }, 1000);
     });
@@ -531,8 +533,8 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
   // Mouse proximity detection
   document.addEventListener('mousemove', checkMouseProximity);
   
-  // Initialize
+  // Initialize - show first step and start the rotation
   showStep(0);
-  startAutoRotate();
+  startStepRotation();
 })();
 

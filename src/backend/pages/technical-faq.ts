@@ -295,29 +295,29 @@ export function generateTechnicalFaqPage(): string {
     
     <div class="section">
       <h2 class="section-title">The Problem: Why LLMs Miss Logic Gaps</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <p>
-          Most large language models are trained on massive amounts of text from the internet—everything from Wikipedia articles to Reddit threads to news sites. This gives them an impressive ability to understand language and generate coherent responses. But when it comes to <em>critical reasoning</em>, they often fall short.
+          Most large language models are trained on massive amounts of text from the internet; everything from Wikipedia articles to Reddit threads to news sites. This gives them an impressive ability to understand language and generate coherent responses. But when it comes to <em>critical reasoning</em>, they often fall short.
         </p>
         
         <p>
-          Here's the thing: LLMs learn patterns from their training data. If an article uses sophisticated language and cites studies, the model might classify it as "well-reasoned" simply because it <em>looks</em> like high-quality content. The model has learned to recognize the <strong>style</strong> of good reasoning, but not necessarily the <strong>structure</strong> of valid logic.
+          Here's the thing: LLMs learn patterns from their training data. If an article uses sophisticated language and cites studies, the model might classify it as "well-reasoned" simply because it <em>looks</em> like high-quality content. The model has learned to recognize the <strong>style</strong> of good reasoning; it doesn't necessarily recognize the <strong>structure</strong> of valid logic.
         </p>
         
         <div class="highlight-box">
           <strong>Think of it like this:</strong>
-          An LLM might see "Studies show that coffee drinkers live longer" and think it sounds reasonable, because that's the kind of claim that appears in legitimate news articles. But it won't automatically check: <em>Did the study account for confounding variables? Could there be reverse causation? Are we seeing the full picture or just survivors?</em>
+          An LLM might see "Studies show that coffee drinkers live longer" and think it sounds reasonable. That's the kind of claim that appears in legitimate news articles. But it won't automatically check: <em>Did the study account for confounding variables? Could there be reverse causation? Are we seeing the full picture or just survivors?</em>
         </div>
         
         <p>
-          This isn't really a bug—it's a fundamental limitation of how these models work. They're pattern-matching engines, not logical reasoning systems. They're trying to predict "what would a human say next?" rather than "does this argument actually make sense?"
+          This isn't really a bug. It's a fundamental limitation of how these models work. They're pattern-matching engines, not logical reasoning systems. They predict "what would a human say next?" They don't ask "does this argument actually make sense?"
         </p>
       </div>
     </div>
     
     <div class="section">
       <h2 class="section-title">What Kinds of Logic Gaps Get Missed?</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <p>
           General-purpose LLMs tend to miss logical fallacies that require thinking beyond the surface-level meaning of the text. Here are the most common categories:
         </p>
@@ -325,53 +325,53 @@ export function generateTechnicalFaqPage(): string {
         <ul class="example-list">
           <li>
             <div class="example-title">Hidden Confounders</div>
-            <div class="example-desc">When a study claims "X causes Y" but doesn't account for a third factor Z that might explain both. For example: "Coffee drinkers are healthier" might actually mean "People who can afford coffee and have time for it are healthier"—it's not the coffee, it's the socioeconomic status.</div>
+            <div class="example-desc" data-kawaii-content>When a study claims "X causes Y" but doesn't account for a third factor Z that might explain both. For example: "Coffee drinkers are healthier" might actually mean "People who can afford coffee and have time for it are healthier." It's not the coffee; it's the socioeconomic status.</div>
           </li>
           
           <li>
             <div class="example-title">Survivorship Bias</div>
-            <div class="example-desc">Only looking at the winners. "All successful startups had these traits" ignores the thousands of failed startups that also had those traits. The model sees the pattern in the successful cases but doesn't think to check the failures.</div>
+            <div class="example-desc" data-kawaii-content>Only looking at the winners. "All successful startups had these traits" ignores the thousands of failed startups that also had those traits. The model sees the pattern in the successful cases; it doesn't think to check the failures.</div>
           </li>
           
           <li>
             <div class="example-title">Base Rate Neglect</div>
-            <div class="example-desc">Focusing on percentages within a group without considering how common that group is overall. "87% of unicorn startups have strong teams" sounds impressive until you realize 90% of <em>all</em> startups have strong teams—so it's not actually predictive.</div>
+            <div class="example-desc" data-kawaii-content>Focusing on percentages within a group without considering how common that group is overall. "87% of unicorn startups have strong teams" sounds impressive. Then you realize 90% of <em>all</em> startups have strong teams; so it's not actually predictive.</div>
           </li>
           
           <li>
             <div class="example-title">Reverse Causation</div>
-            <div class="example-desc">Assuming A causes B when actually B causes A, or when they're correlated due to some other factor. "People who exercise regularly sleep better" might actually mean "People who sleep well have energy to exercise"—not that exercise improves sleep.</div>
+            <div class="example-desc" data-kawaii-content>Assuming A causes B when actually B causes A, or when they're correlated due to some other factor. "People who exercise regularly sleep better" might actually mean "People who sleep well have energy to exercise." It's not that exercise improves sleep.</div>
           </li>
           
           <li>
             <div class="example-title">Narrative Fallacy</div>
-            <div class="example-desc">Constructing a story after the fact that makes success seem inevitable. "They succeeded because of their playbook" ignores the role of luck, timing, and all the paths that didn't work. LLMs are especially good at recognizing narratives, but not at questioning whether they're retroactively constructed.</div>
+            <div class="example-desc" data-kawaii-content>Constructing a story after the fact that makes success seem inevitable. "They succeeded because of their playbook" ignores the role of luck, timing, and all the paths that didn't work. LLMs are especially good at recognizing narratives; they're not good at questioning whether those narratives are retroactively constructed.</div>
           </li>
         </ul>
         
         <p>
-          These aren't mistakes that show up in grammar or spelling—they're errors in the <em>reasoning chain</em>. A general LLM will read "Studies show X" and think "okay, that seems credible" without systematically checking whether the conclusion actually follows from the premises.
+          These aren't mistakes that show up in grammar or spelling. They're errors in the <em>reasoning chain</em>. A general LLM will read "Studies show X" and think "okay, that seems credible." It won't systematically check whether the conclusion actually follows from the premises.
         </p>
       </div>
     </div>
     
     <div class="section">
       <h2 class="section-title">Why These Gaps Are Hard to Catch</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <p>
           There are several reasons why general-purpose models struggle with these kinds of logical fallacies:
         </p>
         
         <p>
-          <strong>1. Training data bias:</strong> Most internet text doesn't explicitly call out logical fallacies. Articles present arguments as if they're sound, and LLMs learn to mimic that style. They get really good at writing arguments that <em>sound</em> convincing, but they don't develop a strong "skepticism module" for detecting flaws.
+          <strong>1. Training data bias:</strong> Most internet text doesn't explicitly call out logical fallacies. Articles present arguments as if they're sound; LLMs learn to mimic that style. They get really good at writing arguments that <em>sound</em> convincing. They don't develop a strong "skepticism module" for detecting flaws.
         </p>
         
         <p>
-          <strong>2. Lack of structured reasoning:</strong> General LLMs process text holistically—they understand the overall meaning but don't break arguments down into premises, conclusions, and logical steps. To catch a fallacy, you need to trace the reasoning: "What evidence supports this claim? What alternative explanations exist? What assumptions are being made?"
+          <strong>2. Lack of structured reasoning:</strong> General LLMs process text holistically. They understand the overall meaning; they don't break arguments down into premises, conclusions, and logical steps. To catch a fallacy, you need to trace the reasoning: "What evidence supports this claim? What alternative explanations exist? What assumptions are being made?"
         </p>
         
         <p>
-          <strong>3. No domain-specific knowledge:</strong> Catching statistical fallacies (like base rate neglect) requires understanding probability theory. Catching causal fallacies requires understanding study design. General models have some of this knowledge, but it's not activated reliably when reading articles.
+          <strong>3. No domain-specific knowledge:</strong> Catching statistical fallacies (like base rate neglect) requires understanding probability theory. Catching causal fallacies requires understanding study design. General models have some of this knowledge; it's not activated reliably when reading articles.
         </p>
         
         <p>
@@ -382,7 +382,7 @@ export function generateTechnicalFaqPage(): string {
     
     <div class="section">
       <h2 class="section-title">How Fine-Tuning Helps</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <p>
           This is where fine-tuning comes in. Instead of training a model on random internet text, we train it specifically on examples of logical fallacies in real articles. Think of it like the difference between someone who's read everything and someone who's specifically trained to be a fact-checker.
         </p>
@@ -394,39 +394,39 @@ export function generateTechnicalFaqPage(): string {
         <ul class="example-list">
           <li>
             <div class="example-title">Focused Training Data</div>
-            <div class="example-desc">We feed the model thousands of examples where humans have identified logical fallacies. Each example shows the model: "Here's a passage that looks reasonable, but here's why the reasoning is flawed." Over time, it learns the patterns of bad reasoning, not just good writing style.</div>
+            <div class="example-desc" data-kawaii-content>We feed the model thousands of examples where humans have identified logical fallacies. Each example shows the model: "Here's a passage that looks reasonable, but here's why the reasoning is flawed." Over time, it learns the patterns of bad reasoning; it learns more than just good writing style.</div>
           </li>
           
           <li>
             <div class="example-title">Explicit Reasoning Chains</div>
-            <div class="example-desc">The fine-tuning process forces the model to break down arguments step-by-step. Instead of just saying "this seems wrong," it learns to identify: "This claims X causes Y, but there's a confounding variable Z that explains both, and the study didn't control for it."</div>
+            <div class="example-desc" data-kawaii-content>The fine-tuning process forces the model to break down arguments step-by-step. Instead of just saying "this seems wrong," it learns to identify: "This claims X causes Y, but there's a confounding variable Z that explains both, and the study didn't control for it."</div>
           </li>
           
           <li>
             <div class="example-title">Systematic Checklist</div>
-            <div class="example-desc">A fine-tuned model develops something like a mental checklist: "When I see a causal claim, I check for reverse causation. When I see a study, I check for confounders. When I see success stories, I check for survivorship bias." General models don't have this systematic approach.</div>
+            <div class="example-desc" data-kawaii-content>A fine-tuned model develops something like a mental checklist: "When I see a causal claim, I check for reverse causation. When I see a study, I check for confounders. When I see success stories, I check for survivorship bias." General models don't have this systematic approach.</div>
           </li>
           
           <li>
             <div class="example-title">Feedback Loop</div>
-            <div class="example-desc">As users flag false positives and missed issues, we retrain the model. It gets better at distinguishing between "genuinely problematic reasoning" and "valid arguments that happen to discuss uncertainties." This is iterative improvement that general models don't get.</div>
+            <div class="example-desc" data-kawaii-content>As users flag false positives and missed issues, we retrain the model. It gets better at distinguishing between "genuinely problematic reasoning" and "valid arguments that happen to discuss uncertainties." This is iterative improvement; general models don't get this.</div>
           </li>
         </ul>
         
         <div class="highlight-box">
           <strong>The key insight:</strong>
-          A fine-tuned model is like a detective who's specifically trained to look for specific types of crimes, rather than a general police officer who knows a bit about everything but might miss subtle patterns.
+          <span data-kawaii-content>A fine-tuned model is like a detective who's specifically trained to look for specific types of crimes, rather than a general police officer who knows a bit about everything but might miss subtle patterns.</span>
         </div>
         
         <p>
-          This doesn't mean fine-tuned models are perfect—they still make mistakes. But they're <em>systematically better</em> at the specific task of detecting logical fallacies because they've been optimized for it, rather than trying to be good at everything.
+          This doesn't mean fine-tuned models are perfect. They still make mistakes. But they're <em>systematically better</em> at the specific task of detecting logical fallacies; they've been optimized for it, rather than trying to be good at everything.
         </p>
       </div>
     </div>
     
     <div class="section">
       <h2 class="section-title">General vs. Fine-Tuned: A Comparison</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <table class="comparison-table">
           <thead>
             <tr>
@@ -470,24 +470,24 @@ export function generateTechnicalFaqPage(): string {
         </table>
         
         <p>
-          It's the difference between a jack-of-all-trades and a specialist. Both have their place, but when you need someone to catch logical fallacies in articles, you want the specialist.
+          It's the difference between a jack-of-all-trades and a specialist. Both have their place. When you need someone to catch logical fallacies in articles, you want the specialist.
         </p>
       </div>
     </div>
     
     <div class="section">
       <h2 class="section-title">The Bottom Line</h2>
-      <div class="section-content">
+      <div class="section-content" data-kawaii-content>
         <p>
-          General-purpose LLMs are incredible tools for understanding and generating language. But they're not built for systematic logical reasoning. They'll miss fallacies that require thinking beyond the surface text—confounders, bias, statistical traps, and causal errors.
+          General-purpose LLMs are incredible tools for understanding and generating language. They're not built for systematic logical reasoning. They'll miss fallacies that require thinking beyond the surface text; confounders, bias, statistical traps, and causal errors.
         </p>
         
         <p>
-          Fine-tuned models that are specifically trained to catch logical fallacies perform better because they've been optimized for that exact task. They learn the patterns of bad reasoning, develop systematic checklists, and improve through user feedback. They're not perfect, but they're purpose-built for finding the gaps that general models miss.
+          Fine-tuned models that are specifically trained to catch logical fallacies perform better. They've been optimized for that exact task. They learn the patterns of bad reasoning, develop systematic checklists, and improve through user feedback. They're not perfect, but they're purpose-built for finding the gaps that general models miss.
         </p>
         
         <p>
-          That's what SanityCheck does: it uses models that have been specifically trained to catch these reasoning gaps, so you can catch the logical fallacies you'd normally miss.
+          That's what SanityCheck does: it uses models that have been specifically trained to catch these reasoning gaps. You can catch the logical fallacies you'd normally miss.
         </p>
       </div>
     </div>
@@ -498,6 +498,95 @@ export function generateTechnicalFaqPage(): string {
   </div>
   
   <script>
+    /**
+     * Apply kawaii styling to text (for Miss Info mode)
+     * Adds ~, <3, uwu, ✨, etc. while preserving the meaning
+     */
+    function makeKawaii(text) {
+      if (!text) return text;
+      
+      let result = text;
+      
+      // Replace periods with ~ sometimes (about 30% of the time)
+      result = result.replace(/\\.(\\s+|$)/g, function(match, space) {
+        if (Math.random() < 0.3) return '~' + space;
+        return match;
+      });
+      
+      // Add <3 for positive/love words occasionally
+      ['good', 'great', 'excellent', 'helpful', 'useful', 'important', 'better', 'perfect'].forEach(function(word) {
+        var regex = new RegExp('\\\\b' + word + '\\\\b', 'gi');
+        result = result.replace(regex, function(match) {
+          return Math.random() < 0.15 ? match + ' <3' : match;
+        });
+      });
+      
+      // Add "uwu" or "owo" very rarely (5% chance, once per text)
+      if (Math.random() < 0.05 && result.length > 50) {
+        result = result.replace(/([.!?])(\\s+)/, function(match, punct, space) {
+          return punct + space + (Math.random() < 0.5 ? 'uwu' : 'owo') + ' ';
+        });
+      }
+      
+      // Add sparkles ✨ occasionally (10% chance per sentence)
+      result = result.replace(/([.!?~])(\\s+)/g, function(match, punct, space) {
+        return Math.random() < 0.1 ? punct + ' ✨' + space : match;
+      });
+      
+      // Make it slightly more casual - replace formal phrases occasionally
+      result = result.replace(/it is important to note/gi, function(m) { return Math.random() < 0.3 ? 'just so you know~' : m; });
+      result = result.replace(/it should be noted/gi, function(m) { return Math.random() < 0.3 ? 'heads up~' : m; });
+      result = result.replace(/it is worth noting/gi, function(m) { return Math.random() < 0.3 ? 'worth mentioning~' : m; });
+      result = result.replace(/this suggests/gi, function(m) { return Math.random() < 0.25 ? 'this kinda suggests' : m; });
+      result = result.replace(/this indicates/gi, function(m) { return Math.random() < 0.25 ? 'this kinda indicates' : m; });
+      result = result.replace(/\\\\bhowever\\\\b/gi, function(m, o) { return o > 0 && Math.random() < 0.4 ? 'but' : m; });
+      result = result.replace(/\\\\bfurthermore\\\\b/gi, function(m) { return Math.random() < 0.3 ? 'also~' : m; });
+      result = result.replace(/\\\\btherefore\\\\b/gi, function(m) { return Math.random() < 0.3 ? 'so' : m; });
+      
+      return result;
+    }
+    
+    function applyKawaiiToElements() {
+      const elements = document.querySelectorAll('[data-kawaii-content]');
+      elements.forEach(function(el) {
+        // Store original if not already stored
+        if (!el.dataset.kawaiiOriginal) {
+          el.dataset.kawaiiOriginal = el.innerHTML;
+        }
+        
+        // Walk through all text nodes and apply kawaii
+        const walker = document.createTreeWalker(
+          el,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+          if (node.textContent.trim().length > 0) {
+            textNodes.push(node);
+          }
+        }
+        
+        // Apply kawaii to each text node
+        textNodes.forEach(function(textNode) {
+          const kawaiiText = makeKawaii(textNode.textContent);
+          textNode.textContent = kawaiiText;
+        });
+      });
+    }
+    
+    function removeKawaiiFromElements() {
+      const elements = document.querySelectorAll('[data-kawaii-content]');
+      elements.forEach(function(el) {
+        if (el.dataset.kawaiiOriginal) {
+          el.innerHTML = el.dataset.kawaiiOriginal;
+        }
+      });
+    }
+    
     // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const labelSanity = document.getElementById('label-sanity');
@@ -513,11 +602,25 @@ export function generateTechnicalFaqPage(): string {
       
       document.title = isMiss ? 'Technical FAQ — Miss Information ♡' : 'Technical FAQ — SanityCheck';
       localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+      
+      // Apply or remove kawaii styling
+      if (isMiss) {
+        applyKawaiiToElements();
+      } else {
+        removeKawaiiFromElements();
+      }
     }
     
     themeToggle.addEventListener('click', toggleTheme);
     
-    // Load saved theme preference
+    // Store originals for all kawaii elements on load
+    document.querySelectorAll('[data-kawaii-content]').forEach(function(el) {
+      if (!el.dataset.kawaiiOriginal) {
+        el.dataset.kawaiiOriginal = el.innerHTML;
+      }
+    });
+    
+    // Load saved theme preference and apply kawaii if needed
     if (localStorage.getItem('theme') === 'miss') {
       toggleTheme();
     }
