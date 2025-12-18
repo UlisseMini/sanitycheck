@@ -38,6 +38,26 @@ document.addEventListener('DOMContentLoaded', () => { void init(); });
 
 async function init(): Promise<void> {
   try {
+    // Load theme preference
+    chrome.storage.local.get(['theme'], (result) => {
+      if (result.theme === 'miss') {
+        document.body.classList.add('theme-miss');
+      } else {
+        document.body.classList.remove('theme-miss');
+      }
+    });
+    
+    // Listen for theme changes
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === 'local' && changes.theme) {
+        if (changes.theme.newValue === 'miss') {
+          document.body.classList.add('theme-miss');
+        } else {
+          document.body.classList.remove('theme-miss');
+        }
+      }
+    });
+    
     const DEBUG_ENABLED = typeof (window as unknown as { debug?: { ENABLED?: boolean } }).debug !== 'undefined';
     const debugIndicator = document.getElementById('debug-indicator');
     if (DEBUG_ENABLED && debugIndicator) {

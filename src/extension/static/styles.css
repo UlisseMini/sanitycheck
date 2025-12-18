@@ -97,7 +97,8 @@ header {
 .logo-icon {
   width: 28px;
   height: 28px;
-  fill: var(--accent);
+  object-fit: contain;
+  display: block;
 }
 
 h1 {
@@ -228,7 +229,7 @@ h1 {
   width: 100%;
   background: var(--accent);
   color: white;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+  box-shadow: 0 2px 8px var(--accent-subtle);
 }
 
 .btn-primary:hover {
