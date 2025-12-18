@@ -747,14 +747,14 @@ export function generateHomepage(): string {
     <div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
       <div class="theme-toggle-slider"></div>
     </div>
-    <span class="theme-label" id="label-miss">Miss Info</span>
+    <span class="theme-label" id="label-miss">Miss Information</span>
   </div>
 
   <section class="hero">
     <div class="hero-content">
       <h1>
         <span class="logo-sanity">Sanity<span class="accent">Check</span></span>
-        <span class="logo-miss">Miss <span class="accent">Info</span><span class="miss-heart">♡</span><span class="sparkle">✧</span></span>
+        <span class="logo-miss">Miss <span class="accent">Information</span><span class="miss-heart">♡</span><span class="sparkle">✧</span></span>
       </h1>
       <p class="tagline">
         <span class="logo-sanity">A browser extension that catches the reasoning gaps you'd normally miss.</span>

@@ -42,8 +42,10 @@ async function init(): Promise<void> {
     chrome.storage.local.get(['theme'], (result) => {
       if (result.theme === 'miss') {
         document.body.classList.add('theme-miss');
+        document.title = 'Miss Information';
       } else {
         document.body.classList.remove('theme-miss');
+        document.title = 'SanityCheck';
       }
     });
     
@@ -52,8 +54,10 @@ async function init(): Promise<void> {
       if (areaName === 'local' && changes.theme) {
         if (changes.theme.newValue === 'miss') {
           document.body.classList.add('theme-miss');
+          document.title = 'Miss Information';
         } else {
           document.body.classList.remove('theme-miss');
+          document.title = 'SanityCheck';
         }
       }
     });
@@ -398,7 +402,7 @@ function displayResults(parsed: ParsedAnalysis): void {
       <div class="no-fallacies">
         <div class="checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
         <strong>No significant issues found</strong>
-        <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(parsed.summary ?? parsed.overall_assessment ?? 'The article appears to be logically sound.')}</p>
+        <p style="color: var(--text-muted); margin-top: 8px;">${escapeHtml(addKawaiiToText(parsed.summary ?? parsed.overall_assessment ?? 'The article appears to be logically sound.'))}</p>
       </div>
     `;
     return;
@@ -412,7 +416,7 @@ function displayResults(parsed: ParsedAnalysis): void {
         <span class="issue-count">${parsed.issues.length} issue${parsed.issues.length !== 1 ? 's' : ''} found</span>
         <span class="severity-badge ${parsed.severity ?? 'none'}">${parsed.severity ?? 'unknown'}</span>
       </div>
-      ${parsed.summary ?? parsed.overall_assessment ? `<p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">${escapeHtml(parsed.summary ?? parsed.overall_assessment ?? '')}</p>` : ''}
+      ${parsed.summary ?? parsed.overall_assessment ? `<p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">${escapeHtml(addKawaiiToText(parsed.summary ?? parsed.overall_assessment ?? ''))}</p>` : ''}
       <p style="color: var(--text-muted); margin-top: 10px; font-size: 11px;">Issues are highlighted in the article. Hover to see details.</p>
     </div>
   `;
@@ -424,7 +428,7 @@ function displayResults(parsed: ParsedAnalysis): void {
           Central Logical Gap
         </div>
         <div class="central-gap-content">
-          ${escapeHtml(parsed.central_argument_analysis.central_logical_gap)}
+          ${escapeHtml(addKawaiiToText(parsed.central_argument_analysis.central_logical_gap))}
         </div>
       </div>
     `;
@@ -445,7 +449,7 @@ function displayResults(parsed: ParsedAnalysis): void {
           <span class="importance-badge ${importanceClass}">${issue.importance ?? 'issue'}</span>
         </div>
         ${issue.quote ? `<div class="fallacy-quote">"${escapeHtml(issue.quote.substring(0, 150))}${issue.quote.length > 150 ? '...' : ''}"</div>` : ''}
-        ${gap ? `<div class="fallacy-gap-simple">${escapeHtml(gap)}</div>` : ''}
+        ${gap ? `<div class="fallacy-gap-simple">${escapeHtml(addKawaiiToText(gap))}</div>` : ''}
       </div>
     `;
   });
@@ -458,6 +462,81 @@ function escapeHtml(text: string): string {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+/**
+ * Add kawaii elements to text when in Miss Information mode
+ * 20% chance each of ✨, <3, and ~ at the end of each sentence
+ */
+function addKawaiiToText(text: string): string {
+  if (!text) return text;
+  
+  // Check if in Miss Info mode
+  if (!document.body.classList.contains('theme-miss')) {
+    return text;
+  }
+  
+  // Split text by sentence endings (., !, ?) while preserving the punctuation
+  const sentenceRegex = /([^.!?]+)([.!?]+)/g;
+  const sentences: Array<{ text: string; punctuation: string }> = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  
+  while ((match = sentenceRegex.exec(text)) !== null) {
+    if (match[1] && match[2]) {
+      sentences.push({
+        text: match[1].trim(),
+        punctuation: match[2]
+      });
+      lastIndex = match.index + match[0].length;
+    }
+  }
+  
+  // Handle any remaining text after the last sentence
+  const remainingText = text.substring(lastIndex).trim();
+  if (remainingText) {
+    sentences.push({
+      text: remainingText,
+      punctuation: ''
+    });
+  }
+  
+  // If no sentences found, return original text
+  if (sentences.length === 0) {
+    return text;
+  }
+  
+  // Process each sentence
+  const processedSentences = sentences.map(sentence => {
+    if (!sentence.text) return sentence.text + sentence.punctuation;
+    
+    const additions: string[] = [];
+    
+    // 20% chance of sparkle
+    if (Math.random() < 0.2) {
+      additions.push('✨');
+    }
+    
+    // 20% chance of <3
+    if (Math.random() < 0.2) {
+      additions.push('<3');
+    }
+    
+    // 20% chance of ~
+    if (Math.random() < 0.2) {
+      additions.push('~');
+    }
+    
+    // Add kawaii elements after the sentence (before punctuation if present, or at the end)
+    if (additions.length > 0) {
+      return sentence.text + ' ' + additions.join(' ') + sentence.punctuation;
+    }
+    
+    return sentence.text + sentence.punctuation;
+  });
+  
+  // Rejoin sentences with spaces
+  return processedSentences.join(' ');
 }
 
 function toggleArticleText(): void {
