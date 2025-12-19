@@ -120,3 +120,19 @@ model DebugLog {
   @@index([ip])
   @@index([level])
 }
+
+model EarlyAccessSignup {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  firstName   String
+  email       String
+  discord     String?
+  reason      String?
+  
+  ip          String?
+  userAgent   String?
+  
+  @@index([email])
+  @@index([createdAt])
+}

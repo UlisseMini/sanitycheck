@@ -7,6 +7,7 @@ import { generateHomepage } from './backend/pages/homepage';
 import { generateFaqPage } from './backend/pages/faq';
 import { generatePrivacyPage } from './backend/pages/privacy';
 import { generateTechnicalFaqPage } from './backend/pages/technical-faq';
+import { generateEarlyAccessPage } from './backend/pages/early-access';
 
 const app = express();
 
@@ -183,6 +184,11 @@ app.get('/technical-faq', (_req: Request, res: Response) => {
 app.get('/privacy', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(generatePrivacyPage());
+});
+
+app.get('/early-access', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(generateEarlyAccessPage());
 });
 
 // =====================================================
@@ -833,6 +839,7 @@ const ADMIN_HTML = `
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('articles')">Articles</button>
         <button class="tab-btn" onclick="switchTab('comments')">Comments</button>
+        <button class="tab-btn" onclick="switchTab('early-access')">Early Access</button>
         <button class="tab-btn" onclick="switchTab('logs')">Debug Logs</button>
       </div>
       
@@ -879,6 +886,19 @@ const ADMIN_HTML = `
         </div>
         
         <div class="pagination" id="commentsPagination"></div>
+      </div>
+      
+      <!-- Early Access Tab -->
+      <div class="tab-content" id="tab-early-access">
+        <div class="section-title">
+          <span>Early Access Signups</span>
+        </div>
+        
+        <div class="signups-list" id="signupsList">
+          <div class="loading">Loading signups...</div>
+        </div>
+        
+        <div class="pagination" id="signupsPagination"></div>
       </div>
       
       <!-- Debug Logs Tab -->
@@ -1249,6 +1269,77 @@ const ADMIN_HTML = `
       return div.innerHTML;
     }
     
+    // Early Access Signups
+    let signupsPage = 0;
+    
+    async function loadEarlyAccess() {
+      const list = document.getElementById('signupsList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const res = await fetch('/admin/early-access?limit=' + limit + '&offset=' + (signupsPage * limit), {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        const data = await res.json();
+        
+        if (!data.signups || data.signups.length === 0) {
+          list.innerHTML = '<div class="empty-state"><p>No signups yet</p></div>';
+          return;
+        }
+        
+        list.innerHTML = data.signups.map(signup => \`
+          <div class="annotation-card" data-id="\${signup.id}">
+            <div class="annotation-header">
+              <span class="annotation-type">Signup</span>
+              <span class="annotation-date">\${new Date(signup.createdAt).toLocaleString()}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div style="font-weight: 600; color: #e4e4e7; margin-bottom: 4px;">\${escapeHtml(signup.firstName)}</div>
+              <div style="color: #a1a1aa; font-size: 14px;">\${escapeHtml(signup.email)}</div>
+            </div>
+            \${signup.discord ? \`
+              <div style="margin-bottom: 8px; color: #a1a1aa; font-size: 13px;">
+                <strong>Discord:</strong> \${escapeHtml(signup.discord)}
+              </div>
+            \` : ''}
+            \${signup.reason ? \`
+              <div class="annotation-text" style="margin-top: 12px; margin-bottom: 0;">
+                <strong>Reason:</strong> \${escapeHtml(signup.reason)}
+              </div>
+            \` : ''}
+            <div style="margin-top: 12px; font-size: 11px; color: #71717a;">
+              IP: \${signup.ip || 'unknown'}
+            </div>
+          </div>
+        \`).join('');
+        
+        renderSignupsPagination(data.total);
+      } catch (err) {
+        list.innerHTML = '<div class="empty-state"><p>Failed to load signups</p></div>';
+      }
+    }
+    
+    function renderSignupsPagination(total) {
+      const totalPages = Math.ceil(total / limit);
+      const pagination = document.getElementById('signupsPagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      pagination.innerHTML = \`
+        <button class="page-btn" onclick="changeSignupsPage(-1)" \${signupsPage === 0 ? 'disabled' : ''}>← Prev</button>
+        <span style="padding: 8px 16px; color: #71717a;">Page \${signupsPage + 1} of \${totalPages}</span>
+        <button class="page-btn" onclick="changeSignupsPage(1)" \${signupsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+      \`;
+    }
+    
+    function changeSignupsPage(delta) {
+      signupsPage += delta;
+      loadEarlyAccess();
+    }
+    
     // Tab switching
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1261,6 +1352,8 @@ const ADMIN_HTML = `
         loadArticles();
       } else if (tab === 'comments') {
         loadComments();
+      } else if (tab === 'early-access') {
+        loadEarlyAccess();
       } else if (tab === 'logs') {
         loadDebugLogs();
       }
@@ -1978,6 +2071,103 @@ app.delete('/admin/comments/:id', requireAdmin, async (req: Request, res: Respon
   try {
     await prisma.comment.delete({ where: { id: req.params.id } });
     res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// =====================================================
+// Early Access Signup API
+// =====================================================
+
+// Submit early access signup (public)
+app.post('/api/early-access', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { firstName, email, discord, reason } = req.body;
+    
+    if (!firstName || !email) {
+      res.status(400).json({ error: 'First name and email are required' });
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Invalid email address' });
+      return;
+    }
+    
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() 
+      || req.socket.remoteAddress || null;
+    const userAgent = req.headers['user-agent'] || null;
+    
+    const signup = await prisma.earlyAccessSignup.create({
+      data: {
+        firstName,
+        email,
+        discord: discord || null,
+        reason: reason || null,
+        ip,
+        userAgent
+      }
+    });
+    
+    console.log(`New early access signup: ${signup.id} - ${email}`);
+    
+    res.status(201).json({ 
+      success: true, 
+      id: signup.id,
+      createdAt: signup.createdAt
+    });
+  } catch (error) {
+    // Check for duplicate email
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      res.status(409).json({ error: 'This email is already registered' });
+      return;
+    }
+    next(error);
+  }
+});
+
+// Get all early access signups (admin)
+app.get('/admin/early-access', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const offset = parseInt(req.query.offset as string) || 0;
+    
+    const [signups, total] = await Promise.all([
+      prisma.earlyAccessSignup.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.earlyAccessSignup.count()
+    ]);
+    
+    res.json({ signups, total, limit, offset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get early access stats (admin)
+app.get('/admin/early-access-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const [total, recentCount] = await Promise.all([
+      prisma.earlyAccessSignup.count(),
+      prisma.earlyAccessSignup.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // last 24h
+          }
+        }
+      })
+    ]);
+    
+    res.json({
+      total,
+      last24h: recentCount
+    });
   } catch (error) {
     next(error);
   }
