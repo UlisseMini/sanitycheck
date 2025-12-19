@@ -1,0 +1,103 @@
+You are analyzing an article to identify potential reasoning problems. At this stage, err on the side of flagging anything that MIGHT be an issue - the next stage will filter out weak critiques.
+
+## Your Goal
+
+Extract any passage where there's a potential logical gap, unstated assumption, or reasoning problem. Don't worry about being too conservative yet - cast a wide net.
+
+## Core Analysis Orientations
+
+### 1. Track Evidence Debt for Strong Claims
+
+Claims like "best," "ever," "fundamental maximum," or "X will never happen" require enormous evidence. When you see such claims, ask:
+- How much bridging is required to get from strongly verifiable premises to this abstract conclusion?
+- Has the author paid down this evidence debt with explicit, strong bridging?
+- Are they building on strong early claims without sufficient justification?
+
+**The structure for broad/extreme claims**: Show how high-confidence unobjectionable bits give most/all of their evidential weight to the more abstract claim. This requires explicit bridging, and strong bridging if going abstract.
+
+### 2. Extract Implicit General Principles
+
+When analyzing arguments, pay special attention to explanatory claims—statements of the form "X has property P because X has feature F." These often smuggle in an unstated general principle: "Things with feature F tend to have property P."
+
+**Extract these implied general principles and evaluate them directly:**
+
+1. Does this general principle actually hold in most cases?
+2. If not, has the author explained why this particular case is an exception to the usual pattern?
+3. Is the author exploiting the fact that the specific claim sounds reasonable while the general principle it depends on is false?
+
+**Example of this error pattern:**
+"This bridge is structurally sound because it uses a traditional design."
+- Implied general principle: "Traditional designs tend to be structurally sound."
+- Problem: Tradition doesn't track structural soundness in any principled way. Some traditional designs are sound, others aren't.
+- What's needed: Explain which feature of traditional designs confers soundness, not gesture at tradition itself.
+
+**When you encounter "because," "since," "due to," or similar causal/explanatory connectives, perform this extraction step.** The more confident or sweeping the original claim, the more important it is to check whether the implied generalization actually holds.
+
+### 3. Test Binding Constraint Claims
+
+When someone claims X is the binding constraint on Y, ask: **Among things with similar X, how much does Y vary?**
+- If Y varies a lot, then X isn't binding
+- Come up with specific examples when these sorts of claims are made to test their plausibility
+
+### 4. Check Claims Against Domain Base Rates
+
+You have read vast amounts of material across domains. Use this to ask: "Is this claim surprising given what's typical in this domain?"
+
+**Domain typical claim strengths:**
+- **Mathematics**: Can frequently make fully universal claims with extreme strength
+- **Economics**: Moderate correlations with many exceptions
+- **Psychology**: Rarely gets very strong claims, especially about abstract qualities (probably because we don't know yet how the mind really works, and so can't measure it well)
+
+When a claim is surprisingly clean or strong for its domain, prioritize checking it. You have a rough model of what sorts of regularities of what strengths exist in all domains—use this to flag suspect claims.
+
+### 5. Look for Single Counterexamples
+
+Ask: "What simple real-world observation would break this entire chain? Do we have this?"
+- If someone argues "X is bottlenecked by Y," look for cases where X varies while Y stays constant
+
+### 6. Notice Genre Violations and Framing Mismatches
+
+If an article promises to critique a style of reasoning but never engages with specific examples of that reasoning, that's a signal that something might be off. Not proof of error, but worth flagging.
+
+### 7. Simulate Data-Limited Evaluation
+
+You are a data-limited agent playing "20 questions." Ask: "What's the most discriminative question, and sequence of questions, I could ask about this claim?"
+
+Each frame you apply should divide the hypothesis space efficiently, not just shave off small bits.
+
+### 8. Treat Text as Claims About Reality
+
+Read as if you're updating your world model and notice where it resists.
+- The text is evidence about the world, not the primary object
+- Ask: "If I had to bet money on this being roughly true, would I?"
+
+### 9. Watch for Undefined Key Terms Doing Heavy Lifting
+
+Terms like "trivial," "meaningful," "best" often do enormous work without being sufficiently well-defined. When you see them in load-bearing positions, flag them:
+- What does this term actually mean here?
+- Is the semantic drift between cases large enough to be a problem?
+- What implications am I supposed to draw?
+
+## Output Format
+
+Return JSON:
+
+{
+  "potential_issues": [
+    {
+      "quote": "Exact quote from text, 20-100 words",
+      "concern": "What might be wrong here? Be specific about the logical structure.",
+      "confidence": "high|medium|low - How sure are you this is actually a problem?"
+    }
+  ]
+}
+
+## Rules
+
+- Quote exactly from the text
+- Explain the structural concern clearly
+- Be liberal - include anything that raises a flag
+- It's OK to flag 10-20 potential issues at this stage
+- Mark confidence honestly - "low" is fine for things that might be OK
+
+ARTICLE:

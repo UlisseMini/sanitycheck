@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
 import crypto from 'crypto';
+import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import { generateHomepage } from './backend/pages/homepage';
 import { generateFaqPage } from './backend/pages/faq';
@@ -14,6 +15,35 @@ const app = express();
 function hashText(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex').substring(0, 16);
 }
+
+// Load prompt files
+const promptsDir = path.join(__dirname, '../prompts');
+
+function loadPrompt(filename: string): string {
+  const filePath = path.join(promptsDir, filename);
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch (error) {
+    console.error(`Failed to load prompt ${filename}:`, error);
+    throw new Error(`Prompt file ${filename} not found`);
+  }
+}
+
+// Cache prompts on startup
+let STAGE1_PROMPT = '';
+let STAGE2_PROMPT = '';
+let STAGE3_PROMPT = '';
+
+try {
+  STAGE1_PROMPT = loadPrompt('stage1-extract.txt');
+  STAGE2_PROMPT = loadPrompt('stage2-critique.txt');
+  STAGE3_PROMPT = loadPrompt('stage3-format.txt');
+  console.log('✓ All 3-stage prompts loaded successfully');
+} catch (_error) {
+  console.error('ERROR: Failed to load prompts. Using fallback.');
+  // If prompts fail to load, we'll handle it in the endpoint
+}
+
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
@@ -36,8 +66,8 @@ app.use(express.json({ limit: '5mb' }));
 const publicDir = path.join(__dirname, '../public');
 console.log('Public directory path:', publicDir);
 
-if (!require('fs').existsSync(publicDir)) {
-  require('fs').mkdirSync(publicDir, { recursive: true });
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
   console.log('Created public directory:', publicDir);
 }
 
@@ -45,7 +75,6 @@ if (!require('fs').existsSync(publicDir)) {
 app.use('/static', express.static(publicDir));
 
 // Log available static files at startup
-const fs = require('fs');
 if (fs.existsSync(publicDir)) {
   const files = fs.readdirSync(publicDir);
   console.log('Static files available:', files);
@@ -88,6 +117,61 @@ app.get('/health', (_req: Request, res: Response) => {
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 
+// Helper function to call Anthropic API
+async function callAnthropic(
+  prompt: string,
+  temperature: number = 0.3,
+  maxTokens: number = 8192
+): Promise<string> {
+  if (!ANTHROPIC_API_KEY) {
+    throw new Error('Anthropic API key not configured');
+  }
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: maxTokens,
+      temperature,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Anthropic API error: ${response.status} - ${errorData}`);
+  }
+
+  const data = await response.json() as {
+    content: Array<{ type: string; text: string }>;
+  };
+
+  const firstContent = data.content[0];
+  if (!firstContent) {
+    throw new Error('No content in API response');
+  }
+
+  return firstContent.text;
+}
+
+// Helper to extract JSON from markdown code blocks
+function extractJSON(text: string): unknown {
+  let jsonText = text.trim();
+
+  // Try to extract from markdown code block
+  const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonMatch && jsonMatch[1]) {
+    jsonText = jsonMatch[1];
+  }
+
+  return JSON.parse(jsonText);
+}
+
 app.post('/analyze', async (req: Request, res: Response) => {
   try {
     if (!ANTHROPIC_API_KEY) {
@@ -95,69 +179,135 @@ app.post('/analyze', async (req: Request, res: Response) => {
       return;
     }
 
-    const { prompt, maxTokens = 8192, temperature = 0.3 } = req.body;
+    // Support both old format (with prompt) and new format (with article text)
+    const { prompt, articleText, maxTokens = 8192, temperature = 0.3 } = req.body;
 
-    if (!prompt) {
-      res.status(400).json({ error: 'prompt is required' });
+    // For backwards compatibility - if 'prompt' is provided, use old single-stage behavior
+    if (prompt && !articleText) {
+      console.log(`[analyze] Using legacy single-stage mode, prompt length: ${prompt.length}`);
+      const startTime = Date.now();
+
+      const text = await callAnthropic(prompt, temperature, maxTokens);
+      const duration = Date.now() - startTime;
+
+      console.log(`[analyze] Legacy mode success in ${duration}ms`);
+      res.json({ text, model: ANTHROPIC_MODEL, duration });
       return;
     }
 
-    console.log(`[analyze] Calling Anthropic API, prompt length: ${prompt.length}`);
+    const article = articleText || prompt;
+    if (!article) {
+      res.status(400).json({ error: 'articleText or prompt is required' });
+      return;
+    }
+
+    console.log(`[analyze] Starting 3-stage pipeline, article length: ${article.length}`);
     const startTime = Date.now();
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: maxTokens,
-        temperature,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      })
+    // ============ STAGE 1: Extract potential issues ============
+    console.log('[analyze] Stage 1: Extracting potential issues...');
+    const stage1Start = Date.now();
+    const stage1Response = await callAnthropic(
+      STAGE1_PROMPT + '\n\n' + article,
+      0.3,
+      4096
+    );
+    const stage1Duration = Date.now() - stage1Start;
+    console.log(`[analyze] Stage 1 completed in ${stage1Duration}ms`);
+
+    let stage1Data;
+    try {
+      stage1Data = extractJSON(stage1Response);
+      console.log(`[analyze] Stage 1 extracted ${(stage1Data as { potential_issues?: unknown[] }).potential_issues?.length || 0} potential issues`);
+    } catch (e) {
+      console.error('[analyze] Stage 1 JSON parse error:', e);
+      throw new Error('Stage 1 failed to return valid JSON');
+    }
+
+    const stage1RawText = stage1Response;
+
+    // ============ STAGE 2: Critique the critiques ============
+    console.log('[analyze] Stage 2: Critiquing the critiques...');
+    const stage2Start = Date.now();
+    const stage2Prompt = STAGE2_PROMPT
+      .replace('{article}', article)
+      .replace('{stage1_output}', JSON.stringify(stage1Data, null, 2));
+
+    const stage2Response = await callAnthropic(stage2Prompt, 0.2, 4096);
+    const stage2Duration = Date.now() - stage2Start;
+    console.log(`[analyze] Stage 2 completed in ${stage2Duration}ms`);
+
+    let stage2Data;
+    try {
+      stage2Data = extractJSON(stage2Response);
+      const surviving = (stage2Data as { surviving_issues?: unknown[] }).surviving_issues?.length || 0;
+      const rejected = (stage2Data as { rejected_count?: number }).rejected_count || 0;
+      console.log(`[analyze] Stage 2: ${surviving} issues survived, ${rejected} rejected`);
+    } catch (e) {
+      console.error('[analyze] Stage 2 JSON parse error:', e);
+      throw new Error('Stage 2 failed to return valid JSON');
+    }
+
+    const stage2RawText = stage2Response;
+
+    // ============ STAGE 3: Format final output ============
+    console.log('[analyze] Stage 3: Formatting final output...');
+    const stage3Start = Date.now();
+    const stage3Prompt = STAGE3_PROMPT
+      .replace('{article}', article)
+      .replace('{stage2_output}', JSON.stringify(stage2Data, null, 2));
+
+    const stage3Response = await callAnthropic(stage3Prompt, 0.1, 4096);
+    const stage3Duration = Date.now() - stage3Start;
+    console.log(`[analyze] Stage 3 completed in ${stage3Duration}ms`);
+
+    let finalOutput;
+    try {
+      finalOutput = extractJSON(stage3Response);
+      const issueCount = (finalOutput as { issues?: unknown[] }).issues?.length || 0;
+      const severity = (finalOutput as { severity?: string }).severity || 'none';
+      console.log(`[analyze] Stage 3: Final output has ${issueCount} issues, severity: ${severity}`);
+    } catch (e) {
+      console.error('[analyze] Stage 3 JSON parse error:', e);
+      throw new Error('Stage 3 failed to return valid JSON');
+    }
+
+    const stage3RawText = stage3Response;
+
+    const totalDuration = Date.now() - startTime;
+    console.log(`[analyze] 3-stage pipeline completed in ${totalDuration}ms total`);
+
+    // Return final formatted output with full intermediate stages
+    res.json({
+      text: JSON.stringify(finalOutput, null, 2),
+      model: ANTHROPIC_MODEL,
+      duration: totalDuration,
+      pipeline: {
+        stage1: {
+          duration: stage1Duration,
+          potentialIssues: (stage1Data as { potential_issues?: unknown[] }).potential_issues?.length,
+          output: stage1Data,
+          rawText: stage1RawText
+        },
+        stage2: {
+          duration: stage2Duration,
+          surviving: (stage2Data as { surviving_issues?: unknown[] }).surviving_issues?.length,
+          rejected: (stage2Data as { rejected_count?: number }).rejected_count,
+          output: stage2Data,
+          rawText: stage2RawText
+        },
+        stage3: {
+          duration: stage3Duration,
+          finalIssues: (finalOutput as { issues?: unknown[] }).issues?.length,
+          output: finalOutput,
+          rawText: stage3RawText
+        }
+      }
     });
-
-    const duration = Date.now() - startTime;
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`[analyze] Anthropic API error: ${response.status}`, errorData);
-      res.status(response.status).json({ 
-        error: `Anthropic API error: ${response.status}`,
-        details: errorData
-      });
-      return;
-    }
-
-    const data = await response.json() as {
-      model: string;
-      content: Array<{ type: string; text: string }>;
-    };
-    console.log(`[analyze] Success in ${duration}ms, model: ${data.model}`);
-
-    // Extract text from response
-    const firstContent = data.content[0];
-    if (data.content && data.content.length > 0 && firstContent) {
-      const text = firstContent.text;
-      res.json({ 
-        text,
-        model: data.model,
-        duration
-      });
-    } else {
-      res.status(500).json({ error: 'No content in API response' });
-    }
   } catch (error) {
     console.error('[analyze] Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 

@@ -1,0 +1,65 @@
+You are a critical reviewer evaluating potential reasoning problems identified in stage 1. Your job is to be SKEPTICAL and filter out weak critiques.
+
+## Your Goal
+
+For each potential issue from stage 1, determine if it's a GENUINE structural flaw that the reader would recognize as valid, even if they agree with the article's conclusion.
+
+Ask for each issue:
+1. Can I steelman this? Is there a reasonable interpretation where this isn't a problem?
+2. Would someone who AGREES with the article still nod and say "yeah, that's fair"?
+3. Is this a factual dispute (where I might be wrong) vs. a structural/logical problem?
+4. Does this matter to the core argument, or is it tangential?
+5. Am I CONFIDENT this is a real flaw, or just suspicious?
+
+## Standards
+
+REJECT if:
+- There's a charitable interpretation that makes it OK
+- It's a factual claim you might be wrong about
+- It only looks wrong if you disagree with the content
+- It's a nitpick on a tangential point
+- You're not confident it's actually a problem
+
+KEEP only if:
+- The logical gap is clear and undeniable
+- It matters to the article's main argument
+- A supporter of the article would still acknowledge it's a weakness
+- You're genuinely confident it's a structural flaw
+
+## Input
+
+You'll receive the original article and the list of potential issues from stage 1.
+
+## Output Format
+
+Return JSON:
+
+{
+  "surviving_issues": [
+    {
+      "quote": "Exact quote from original article",
+      "why_this_matters": "Clear explanation of the structural flaw (<20 words ideal)",
+      "importance": "critical|significant|minor",
+      "steelman_considered": "Brief note on why charitable interpretation doesn't save it"
+    }
+  ],
+  "rejected_count": 5,
+  "rejection_summary": "Brief note on common reasons for rejection"
+}
+
+## Rules
+
+- Be harsh - most issues should be rejected
+- Quality over quantity - 0-4 surviving issues is typical
+- Only keep what you're CONFIDENT about
+- The cost of a bad objection (annoying reader, undermining trust) exceeds the cost of missing something
+
+ORIGINAL ARTICLE:
+---
+{article}
+---
+
+STAGE 1 POTENTIAL ISSUES:
+---
+{stage1_output}
+---

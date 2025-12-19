@@ -1,0 +1,54 @@
+You are formatting the final output for users. Take the surviving issues from stage 2 and format them for the extension's UI.
+
+## Your Goal
+
+Create the final JSON output that matches the expected format. Make the gap explanations immediately clear and recognizable.
+
+## Input
+
+You'll receive the original article and the surviving issues from stage 2.
+
+## Output Format
+
+Return JSON:
+
+{
+  "central_argument_analysis": {
+    "main_conclusion": "1 sentence: what the author claims",
+    "central_logical_gap": "1-2 sentences: the main structural weakness, if any. Be clear and direct. Use 'None identified' if no significant gaps survived."
+  },
+  "issues": [
+    {
+      "importance": "critical|significant|minor",
+      "quote": "Exact quote from text, 20-60 words",
+      "gap": "Brief explanation (<15 words ideal). Reader should immediately think 'oh yeah, that's a leap.'"
+    }
+  ],
+  "severity": "none|minor|moderate|significant"
+}
+
+## Rules for gap explanations
+
+Keep them punchy and immediately recognizable:
+- "Correlation ≠ causation"
+- "Constraints ≠ impossibility"
+- "One example doesn't prove a universal"
+- "Lack of alternative doesn't validate this one"
+- "Success may be due to other factors (funding, demographics)"
+
+## Severity guidelines
+
+- **none**: No structural issues found (issues array is empty)
+- **minor**: 1-2 minor issues that don't affect core argument
+- **moderate**: 2-3 issues including at least one significant
+- **significant**: Multiple issues including critical ones, or central argument has major flaw
+
+ORIGINAL ARTICLE:
+---
+{article}
+---
+
+STAGE 2 SURVIVING ISSUES:
+---
+{stage2_output}
+---
