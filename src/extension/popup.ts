@@ -2,7 +2,7 @@
  * SanityCheck - Popup Script
  */
 
-import { BACKEND_URL } from '../shared';
+import { BACKEND_URL, makeKawaii } from '../shared';
 import {
   AnalysisIssue,
   ParsedAnalysis,
@@ -465,78 +465,14 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Add kawaii elements to text when in Miss Information mode
- * 20% chance each of ✨, <3, and ~ at the end of each sentence
+ * Apply kawaii styling only when in Miss Information mode
  */
 function addKawaiiToText(text: string): string {
   if (!text) return text;
-  
-  // Check if in Miss Info mode
   if (!document.body.classList.contains('theme-miss')) {
     return text;
   }
-  
-  // Split text by sentence endings (., !, ?) while preserving the punctuation
-  const sentenceRegex = /([^.!?]+)([.!?]+)/g;
-  const sentences: Array<{ text: string; punctuation: string }> = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  
-  while ((match = sentenceRegex.exec(text)) !== null) {
-    if (match[1] && match[2]) {
-      sentences.push({
-        text: match[1].trim(),
-        punctuation: match[2]
-      });
-      lastIndex = match.index + match[0].length;
-    }
-  }
-  
-  // Handle any remaining text after the last sentence
-  const remainingText = text.substring(lastIndex).trim();
-  if (remainingText) {
-    sentences.push({
-      text: remainingText,
-      punctuation: ''
-    });
-  }
-  
-  // If no sentences found, return original text
-  if (sentences.length === 0) {
-    return text;
-  }
-  
-  // Process each sentence
-  const processedSentences = sentences.map(sentence => {
-    if (!sentence.text) return sentence.text + sentence.punctuation;
-    
-    const additions: string[] = [];
-    
-    // 20% chance of sparkle
-    if (Math.random() < 0.2) {
-      additions.push('✨');
-    }
-    
-    // 20% chance of <3
-    if (Math.random() < 0.2) {
-      additions.push('<3');
-    }
-    
-    // 20% chance of ~
-    if (Math.random() < 0.2) {
-      additions.push('~');
-    }
-    
-    // Add kawaii elements after the sentence (before punctuation if present, or at the end)
-    if (additions.length > 0) {
-      return sentence.text + ' ' + additions.join(' ') + sentence.punctuation;
-    }
-    
-    return sentence.text + sentence.punctuation;
-  });
-  
-  // Rejoin sentences with spaces
-  return processedSentences.join(' ');
+  return makeKawaii(text);
 }
 
 function toggleArticleText(): void {
