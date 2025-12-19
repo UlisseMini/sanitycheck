@@ -15,24 +15,25 @@ export function generateEarlyAccessPage(): string {
   <link rel="icon" type="image/png" sizes="48x48" href="/static/icon48.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Comfortaa:wght@700&family=Quicksand:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     ${themeCssVariables}
     
     body {
-      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f8f9fa;
-      color: #202124;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     
     .container {
-      max-width: 640px;
+      max-width: 720px;
       margin: 0 auto;
-      padding: 48px 24px;
+      padding: 64px 24px 80px;
     }
     
     .header {
@@ -41,25 +42,36 @@ export function generateEarlyAccessPage(): string {
     }
     
     .header h1 {
+      font-family: 'Poppins', 'Inter', sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+      transition: color 0.3s ease;
+    }
+    
+    /* Miss Information font styling */
+    body.theme-miss .header h1 {
+      font-family: 'Comfortaa', 'Quicksand', cursive;
       font-size: 32px;
-      font-weight: 400;
-      color: #202124;
-      margin-bottom: 8px;
-      letter-spacing: 0;
+      letter-spacing: 1px;
     }
     
     .header p {
-      font-size: 14px;
-      color: #5f6368;
-      line-height: 1.5;
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
     }
     
     .form-container {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
-      padding: 24px;
-      margin-bottom: 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      padding: 28px;
+      margin-top: 24px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
     }
     
     .form-section {
@@ -72,48 +84,49 @@ export function generateEarlyAccessPage(): string {
     
     .question-label {
       font-size: 14px;
-      font-weight: 500;
-      color: #202124;
+      font-weight: 600;
+      color: var(--text-primary);
       margin-bottom: 8px;
       display: block;
+      letter-spacing: 0.1px;
     }
     
     .required-indicator {
-      color: #d93025;
+      color: var(--accent);
       margin-left: 4px;
     }
     
     .form-input {
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 14px;
       font-size: 14px;
-      font-family: 'Google Sans', 'Roboto', sans-serif;
-      border: 1px solid #dadce0;
-      border-radius: 4px;
-      background: white;
-      color: #202124;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     
     .form-input:focus {
       outline: none;
-      border-color: #1a73e8;
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(80,120,255,0.18);
     }
     
     .form-input::placeholder {
-      color: #80868b;
+      color: var(--text-muted);
     }
     
     textarea.form-input {
-      min-height: 100px;
+      min-height: 110px;
       resize: vertical;
-      font-family: 'Google Sans', 'Roboto', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     
     .form-help-text {
       font-size: 12px;
-      color: #5f6368;
+      color: var(--text-muted);
       margin-top: 4px;
     }
     
@@ -125,55 +138,57 @@ export function generateEarlyAccessPage(): string {
     }
     
     .submit-btn {
-      background: #1a73e8;
+      background: var(--accent);
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 10px;
       padding: 10px 24px;
       font-size: 14px;
       font-weight: 500;
-      font-family: 'Google Sans', 'Roboto', sans-serif;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
-      transition: background-color 0.2s, box-shadow 0.2s;
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+      transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.16);
     }
     
     .submit-btn:hover {
-      background: #1557b0;
-      box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.2);
     }
     
     .submit-btn:active {
-      background: #1557b0;
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.16);
     }
     
     .submit-btn:disabled {
-      background: #dadce0;
-      color: #80868b;
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
       cursor: not-allowed;
       box-shadow: none;
     }
     
     .message {
       padding: 16px;
-      border-radius: 4px;
-      margin-bottom: 24px;
+      border-radius: 8px;
+      margin-bottom: 20px;
       font-size: 14px;
       display: none;
+      border: 1px solid transparent;
     }
     
     .message.success {
-      background: #e8f5e9;
-      color: #1e7e34;
-      border: 1px solid #c3e6cb;
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.2);
       display: block;
     }
     
     .message.error {
-      background: #fce8e6;
-      color: #c5221f;
-      border: 1px solid #f9dedc;
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
       display: block;
     }
     
@@ -181,17 +196,81 @@ export function generateEarlyAccessPage(): string {
       text-align: center;
       margin-top: 48px;
       padding-top: 24px;
-      border-top: 1px solid #dadce0;
+      border-top: 1px solid var(--border);
     }
     
     .footer a {
-      color: #1a73e8;
+      color: var(--accent);
       text-decoration: none;
       font-size: 14px;
     }
     
     .footer a:hover {
       text-decoration: underline;
+    }
+
+    .theme-toggle-container {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      user-select: none;
+    }
+    
+    .theme-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+    
+    .theme-label.active {
+      color: var(--accent);
+    }
+    
+    .theme-toggle {
+      position: relative;
+      width: 56px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+    
+    .theme-toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.68, -0.15, 0.32, 1.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .theme-toggle.active .theme-toggle-slider {
+      transform: translateX(28px);
+    }
+    
+    body.theme-miss .theme-toggle-slider::after {
+      content: '✨';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
     }
     
     @media (max-width: 600px) {
@@ -210,6 +289,14 @@ export function generateEarlyAccessPage(): string {
   </style>
 </head>
 <body>
+  <div class="theme-toggle-container">
+    <span class="theme-label active" id="label-sanity">Sanity</span>
+    <div class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <div class="theme-toggle-slider"></div>
+    </div>
+    <span class="theme-label" id="label-miss">Miss Info</span>
+  </div>
+
   <div class="container">
     <div class="header">
       <h1>Sign up for Early Access</h1>
@@ -289,6 +376,36 @@ export function generateEarlyAccessPage(): string {
     const form = document.getElementById('earlyAccessForm');
     const messageDiv = document.getElementById('message');
     const submitBtn = document.getElementById('submitBtn');
+
+    // Theme toggle (match homepage saved choice)
+    const body = document.body;
+    const toggle = document.getElementById('theme-toggle');
+    const labelSanity = document.getElementById('label-sanity');
+    const labelMiss = document.getElementById('label-miss');
+    
+    function applyTheme(isMiss) {
+      body.classList.toggle('theme-miss', isMiss);
+      toggle.classList.toggle('active', isMiss);
+      labelSanity.classList.toggle('active', !isMiss);
+      labelMiss.classList.toggle('active', isMiss);
+      document.title = isMiss 
+        ? 'Miss Information ♡ Early Access' 
+        : 'SanityCheck — Early Access';
+    }
+    
+    function toggleTheme() {
+      const isMiss = !body.classList.contains('theme-miss');
+      applyTheme(isMiss);
+      localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+    }
+    
+    toggle.addEventListener('click', toggleTheme);
+    
+    (function loadTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'miss') applyTheme(true);
+      else applyTheme(false);
+    })();
     
     function showMessage(text, isError = false) {
       messageDiv.textContent = text;
