@@ -23,18 +23,46 @@ const extensionOutDir = path.join(buildDir, 'extension');
 
 async function buildBackend() {
   console.log('📦 Building backend...');
-  
+
   // Ensure output directory exists
   if (!fs.existsSync(backendOutDir)) {
     fs.mkdirSync(backendOutDir, { recursive: true });
   }
-  
+
   try {
     execSync('npx tsc', { cwd: rootDir, stdio: 'inherit' });
     console.log('  ✓ Backend built to build/backend/');
   } catch (error) {
     console.error('  ✗ Backend build failed');
     throw error;
+  }
+}
+
+async function buildSharedAssets() {
+  console.log('📦 Building shared assets...');
+
+  // Ensure public directory exists
+  const publicDir = path.join(buildDir, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+
+  // Build kawaii.js as IIFE for browser use
+  const kawaiiSrc = path.join(srcDir, 'shared', 'kawaii.ts');
+  if (fs.existsSync(kawaiiSrc)) {
+    await esbuild.build({
+      entryPoints: [kawaiiSrc],
+      outfile: path.join(publicDir, 'kawaii.js'),
+      bundle: true,
+      format: 'iife',
+      globalName: 'KawaiiModule',
+      target: 'es2020',
+      minify: false,
+      footer: {
+        js: '// Expose makeKawaii globally for inline scripts\nif (typeof window !== "undefined") { window.makeKawaii = KawaiiModule.makeKawaii; }'
+      }
+    });
+    console.log('  ✓ kawaii.js built to public/');
   }
 }
 
@@ -224,10 +252,13 @@ async function main() {
     }
     fs.mkdirSync(buildDir, { recursive: true });
     
+    // Always build shared assets (needed by both backend and extension)
+    await buildSharedAssets();
+
     if (!skipBackend) {
       await buildBackend();
     }
-    
+
     if (!skipExtension) {
       await buildExtension();
       await bundleExtensionZip();

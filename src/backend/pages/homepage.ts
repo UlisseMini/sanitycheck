@@ -1051,6 +1051,7 @@ export function generateHomepage(): string {
     <p>Built by humans, with AI assistance · <a href="/faq">FAQ</a> · <a href="/technical-faq">Technical FAQ</a> · <a href="/admin">Admin</a> · <a href="https://github.com/UlisseMini/sanitycheck">GitHub</a></p>
   </footer>
   
+  <script src="/static/kawaii.js"></script>
   <script>
     // Article examples data
     const articles = [
@@ -1188,51 +1189,7 @@ export function generateHomepage(): string {
     function prevArticle() {
       goToArticle((currentArticleIndex - 1 + articles.length) % articles.length);
     }
-    
-    // Kawaii styling function (for Miss Info mode)
-    function makeKawaii(text) {
-      if (!text) return text;
-      let result = text;
-      
-      // Replace periods with ~ sometimes (about 30% of the time)
-      result = result.replace(/\\.(\\s+|$)/g, function(match, space) {
-        if (Math.random() < 0.3) return '~' + space;
-        return match;
-      });
-      
-      // Add <3 for positive/love words occasionally
-      ['good', 'great', 'excellent', 'helpful', 'useful', 'important'].forEach(function(word) {
-        var regex = new RegExp('\\\\b' + word + '\\\\b', 'gi');
-        result = result.replace(regex, function(match) {
-          return Math.random() < 0.15 ? match + ' <3' : match;
-        });
-      });
-      
-      // Add "uwu" or "owo" very rarely (5% chance, once per text)
-      if (Math.random() < 0.05 && result.length > 50) {
-        result = result.replace(/([.!?])(\\s+)/, function(match, punct, space) {
-          return punct + space + (Math.random() < 0.5 ? 'uwu' : 'owo') + ' ';
-        });
-      }
-      
-      // Add sparkles ✨ occasionally (10% chance per sentence)
-      result = result.replace(/([.!?])(\\s+)/g, function(match, punct, space) {
-        return Math.random() < 0.1 ? punct + ' ✨' + space : match;
-      });
-      
-      // Make it slightly more casual - replace formal phrases occasionally
-      result = result.replace(/it is important to note/gi, function(m) { return Math.random() < 0.3 ? 'just so you know~' : m; });
-      result = result.replace(/it should be noted/gi, function(m) { return Math.random() < 0.3 ? 'heads up~' : m; });
-      result = result.replace(/it is worth noting/gi, function(m) { return Math.random() < 0.3 ? 'worth mentioning~' : m; });
-      result = result.replace(/this suggests/gi, function(m) { return Math.random() < 0.25 ? 'this kinda suggests' : m; });
-      result = result.replace(/this indicates/gi, function(m) { return Math.random() < 0.25 ? 'this kinda indicates' : m; });
-      result = result.replace(/\\bhowever\\b/gi, function(m, o) { return o > 0 && Math.random() < 0.4 ? 'but' : m; });
-      result = result.replace(/\\bfurthermore\\b/gi, function(m) { return Math.random() < 0.3 ? 'also~' : m; });
-      result = result.replace(/\\btherefore\\b/gi, function(m) { return Math.random() < 0.3 ? 'so' : m; });
-      
-      return result;
-    }
-    
+
     // Show tooltip for a highlight
     function showTooltipForHighlight(highlight, cursorX, cursorY) {
       const type = highlight.dataset.type || 'Issue';
