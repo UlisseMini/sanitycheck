@@ -152,6 +152,50 @@ router.delete('/comments/:id', requireAdmin, async (req: Request, res: Response,
   }
 });
 
+// Get all early access signups (admin)
+router.get('/early-access', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    const [signups, total] = await Promise.all([
+      prisma.earlyAccessSignup.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.earlyAccessSignup.count()
+    ]);
+
+    res.json({ signups, total, limit, offset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get early access stats (admin)
+router.get('/early-access-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const [total, recentCount] = await Promise.all([
+      prisma.earlyAccessSignup.count(),
+      prisma.earlyAccessSignup.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // last 24h
+          }
+        }
+      })
+    ]);
+
+    res.json({
+      total,
+      last24h: recentCount
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get feedback stats
 router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {

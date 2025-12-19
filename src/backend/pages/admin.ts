@@ -609,7 +609,7 @@ export function generateAdminPage(): string {
       flex: 1;
     }
 
-    .articles-list, .comments-list {
+    .articles-list, .comments-list, .signups-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -645,6 +645,7 @@ export function generateAdminPage(): string {
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('articles')">Articles</button>
         <button class="tab-btn" onclick="switchTab('comments')">Comments</button>
+        <button class="tab-btn" onclick="switchTab('early-access')">Early Access</button>
         <button class="tab-btn" onclick="switchTab('logs')">Debug Logs</button>
       </div>
 
@@ -691,6 +692,19 @@ export function generateAdminPage(): string {
         </div>
 
         <div class="pagination" id="commentsPagination"></div>
+      </div>
+
+      <!-- Early Access Tab -->
+      <div class="tab-content" id="tab-early-access">
+        <div class="section-title">
+          <span>Early Access Signups</span>
+        </div>
+
+        <div class="signups-list" id="signupsList">
+          <div class="loading">Loading signups...</div>
+        </div>
+
+        <div class="pagination" id="signupsPagination"></div>
       </div>
 
       <!-- Debug Logs Tab -->
@@ -1061,6 +1075,77 @@ export function generateAdminPage(): string {
       return div.innerHTML;
     }
 
+    // Early Access Signups
+    let signupsPage = 0;
+
+    async function loadEarlyAccess() {
+      const list = document.getElementById('signupsList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        const res = await fetch('/admin/early-access?limit=' + limit + '&offset=' + (signupsPage * limit), {
+          headers: { 'Authorization': 'Bearer ' + adminKey }
+        });
+        const data = await res.json();
+
+        if (!data.signups || data.signups.length === 0) {
+          list.innerHTML = '<div class="empty-state"><p>No signups yet</p></div>';
+          return;
+        }
+
+        list.innerHTML = data.signups.map(signup => \`
+          <div class="annotation-card" data-id="\${signup.id}">
+            <div class="annotation-header">
+              <span class="annotation-type">Signup</span>
+              <span class="annotation-date">\${new Date(signup.createdAt).toLocaleString()}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div style="font-weight: 600; color: #e4e4e7; margin-bottom: 4px;">\${escapeHtml(signup.firstName)}</div>
+              <div style="color: #a1a1aa; font-size: 14px;">\${escapeHtml(signup.email)}</div>
+            </div>
+            \${signup.discord ? \`
+              <div style="margin-bottom: 8px; color: #a1a1aa; font-size: 13px;">
+                <strong>Discord:</strong> \${escapeHtml(signup.discord)}
+              </div>
+            \` : ''}
+            \${signup.reason ? \`
+              <div class="annotation-text" style="margin-top: 12px; margin-bottom: 0;">
+                <strong>Reason:</strong> \${escapeHtml(signup.reason)}
+              </div>
+            \` : ''}
+            <div style="margin-top: 12px; font-size: 11px; color: #71717a;">
+              IP: \${signup.ip || 'unknown'}
+            </div>
+          </div>
+        \`).join('');
+
+        renderSignupsPagination(data.total);
+      } catch (err) {
+        list.innerHTML = '<div class="empty-state"><p>Failed to load signups</p></div>';
+      }
+    }
+
+    function renderSignupsPagination(total) {
+      const totalPages = Math.ceil(total / limit);
+      const pagination = document.getElementById('signupsPagination');
+
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+
+      pagination.innerHTML = \`
+        <button class="page-btn" onclick="changeSignupsPage(-1)" \${signupsPage === 0 ? 'disabled' : ''}>← Prev</button>
+        <span style="padding: 8px 16px; color: #71717a;">Page \${signupsPage + 1} of \${totalPages}</span>
+        <button class="page-btn" onclick="changeSignupsPage(1)" \${signupsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
+      \`;
+    }
+
+    function changeSignupsPage(delta) {
+      signupsPage += delta;
+      loadEarlyAccess();
+    }
+
     // Tab switching
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1073,6 +1158,8 @@ export function generateAdminPage(): string {
         loadArticles();
       } else if (tab === 'comments') {
         loadComments();
+      } else if (tab === 'early-access') {
+        loadEarlyAccess();
       } else if (tab === 'logs') {
         loadDebugLogs();
       }

@@ -8,3 +8,4 @@ export { default as annotationsRoutes } from './annotations';
 export { default as statsRoutes } from './stats';
 export { default as debugRoutes } from './debug';
 export { default as adminRoutes } from './admin';
+export { default as earlyAccessRoutes } from './early-access';

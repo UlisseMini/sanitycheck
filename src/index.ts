@@ -10,6 +10,7 @@ import { generateHomepage } from './backend/pages/homepage';
 import { generateFaqPage } from './backend/pages/faq';
 import { generatePrivacyPage } from './backend/pages/privacy';
 import { generateTechnicalFaqPage } from './backend/pages/technical-faq';
+import { generateEarlyAccessPage } from './backend/pages/early-access';
 import { prisma, ADMIN_KEY } from './backend/shared';
 import {
   analyzeRoutes,
@@ -19,6 +20,7 @@ import {
   statsRoutes,
   debugRoutes,
   adminRoutes,
+  earlyAccessRoutes,
 } from './backend/routes';
 
 // Validate admin key at startup
@@ -96,6 +98,11 @@ app.get('/privacy', (_req: Request, res: Response) => {
   res.send(generatePrivacyPage());
 });
 
+app.get('/early-access', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(generateEarlyAccessPage());
+});
+
 // API routes
 app.use('/analyze', analyzeRoutes);
 app.use('/articles', articlesRoutes);
@@ -104,6 +111,7 @@ app.use('/annotations', annotationsRoutes);
 app.use('/stats', statsRoutes);
 app.use('/debug', debugRoutes);
 app.use('/admin', adminRoutes);
+app.use('/api', earlyAccessRoutes);
 
 // Error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
