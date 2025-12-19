@@ -32,9 +32,14 @@ if (ADMIN_KEY === 'changeme') {
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-// Ensure public directory exists
-const publicDir = path.join(__dirname, '../public');
-console.log('Public directory path:', publicDir);
+// Determine public directory - works for both dev (ts-node) and production (compiled)
+// In dev: __dirname is src/, in prod: __dirname is build/backend/
+// We always want build/public/ for static files
+const isDevMode = __dirname.endsWith('/src') || __dirname.endsWith('\\src');
+const publicDir = isDevMode
+  ? path.join(__dirname, '../build/public')
+  : path.join(__dirname, '../public');
+console.log('Public directory path:', publicDir, isDevMode ? '(dev mode)' : '(production)');
 
 if (!require('fs').existsSync(publicDir)) {
   require('fs').mkdirSync(publicDir, { recursive: true });
