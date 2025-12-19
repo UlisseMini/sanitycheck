@@ -8,9 +8,8 @@ node_modules/
 *.log
 *.log.old
 
-# Test files and results
-tests/
-articles/
+# Ignored data and scratch files
+ignore/
 
 # Build artifacts
 build/
