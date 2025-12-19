@@ -18,14 +18,6 @@ sanitycheck/
 └── docker-compose.yml   # Local Postgres for development
 ```
 
-## Features
-
-- **AI Analysis**: Uses Claude via Anthropic API to analyze article logic
-- **Inline Highlighting**: Highlights problematic passages using CSS Custom Highlight API
-- **Severity Ranking**: Issues ranked as critical/significant/minor
-- **Crowdsourced Annotations**: Users can submit their own annotations
-- **Admin Dashboard**: View and manage all annotations
-
 ## Quick Start
 
 ### Backend (Local Development)
@@ -58,6 +50,18 @@ The app works without `ANTHROPIC_API_KEY` - only the `/analyze` endpoint require
 4. Click "Load unpacked" and select the `build/extension/` folder
 5. Click the extension icon on any article
 
+## Development command cheatsheet
+
+```bash
+npm run dev          # Build + start server + watch for changes
+npm run dev:db       # Start local Postgres (Docker)
+npm run dev:db:stop  # Stop local Postgres
+npm run build        # Full production build
+npm run typecheck    # TypeScript type checking
+npm test             # Run tests (use these!)
+npm run lint         # ESLint
+```
+
 ## Deployment
 
 ### Railway (Recommended)
@@ -75,62 +79,3 @@ The backend is designed for Railway deployment:
    - Start the server
 
 **Note**: Ensure "Root Directory" is blank (deploys from repo root).
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (auto-set by Railway) |
-| `ADMIN_KEY` | Password for admin dashboard |
-| `PORT` | Server port (default: 3001, Railway sets automatically) |
-
-## API Endpoints
-
-### Public
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Homepage with extension download |
-| `/health` | GET | Health check |
-| `/static/logic-checker-extension.zip` | GET | Download extension |
-| `/annotations` | GET | List annotations (paginated) |
-| `/annotations` | POST | Submit new annotation |
-| `/annotations/by-url?url=...` | GET | Get annotations for URL |
-| `/stats` | GET | Annotation statistics |
-
-### Admin (requires `Authorization: Bearer <ADMIN_KEY>`)
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/admin` | GET | Admin dashboard |
-| `/admin/verify` | GET | Verify admin key |
-| `/admin/annotations/:id` | DELETE | Delete annotation |
-| `/export` | GET | Export annotations as JSONL |
-
-## Extension Features
-
-- **Article Detection**: Heuristics to detect article pages
-- **CSS Custom Highlight API**: Modern highlighting without DOM modification (Chrome 105+, Safari 17.4+)
-- **Fallback Span Wrapping**: For browsers without Highlight API support
-- **Result Caching**: Analysis results persist across popup opens
-- **User Annotations**: Right-click → "Annotate as logical issue"
-
-## Development
-
-```bash
-npm run dev          # Build + start server + watch for changes
-npm run dev:db       # Start local Postgres (Docker)
-npm run dev:db:stop  # Stop local Postgres
-npm run build        # Full production build
-npm run typecheck    # TypeScript type checking
-npm test             # Run tests
-npm run lint         # ESLint
-```
-
-## Tech Stack
-
-- **Extension**: TypeScript, CSS Custom Highlight API
-- **Backend**: Express.js, TypeScript, Prisma
-- **Database**: PostgreSQL
-- **AI**: Claude (Anthropic API)
-- **Hosting**: Railway
