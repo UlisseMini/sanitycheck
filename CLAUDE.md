@@ -17,12 +17,14 @@ scripts/build.js        # Build script
 ## Commands
 
 ```bash
-npm run dev        # Start dev server (ts-node, auto-reload)
+npm run dev        # Build + start server + watch for changes (rebuilds everything on change)
 npm run build      # Full build (backend + extension + zip)
 npm run typecheck  # TypeScript type checking
 npm test           # Run tests (vitest)
 npm run lint       # ESLint
 ```
+
+`npm run dev` is sufficient for all development - it watches `src/` and rebuilds everything on any change.
 
 ## Build Output
 

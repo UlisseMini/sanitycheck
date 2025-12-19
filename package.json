@@ -4,7 +4,7 @@
   "description": "AI-powered browser extension that spots logical gaps in articles",
   "main": "build/backend/index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
     "build:backend": "node scripts/build.js --backend-only",
     "build:extension": "node scripts/build.js --extension-only",
@@ -48,13 +48,12 @@
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
     "archiver": "^7.0.1",
+    "chokidar": "^5.0.0",
     "esbuild": "^0.27.1",
     "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "jsdom": "^27.0.1",
     "lint-staged": "^16.2.7",
-    "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.49.0",
     "vitest": "^3.2.4"
