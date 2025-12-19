@@ -6,34 +6,27 @@ An AI-powered browser extension that spots logical gaps and reasoning issues in 
 
 ```
 sanitycheck/
-├── extension/           # Chrome extension files
-│   ├── manifest.json
-│   ├── popup.html/js
-│   ├── content.js
-│   └── ...
-├── src/                 # Backend API (Express + TypeScript)
-│   └── index.ts
-├── prisma/              # Database schema
-├── scripts/             # Build scripts
-└── debug-server/        # Local debugging server
+├── src/
+│   ├── backend/         # Express route modules and pages
+│   ├── extension/       # Chrome extension source (TypeScript)
+│   ├── shared/          # Code shared between backend and extension
+│   └── index.ts         # Server entry point
+├── extension/           # Static extension files (HTML, manifest)
+├── prisma/              # Database schema and migrations
+├── scripts/             # Build and dev scripts
+├── build/               # Compiled output (gitignored)
+└── docker-compose.yml   # Local Postgres for development
 ```
 
 ## Features
 
-- **AI Analysis**: Uses Claude 4.5 Sonnet via Replicate to analyze article logic
+- **AI Analysis**: Uses Claude via Anthropic API to analyze article logic
 - **Inline Highlighting**: Highlights problematic passages using CSS Custom Highlight API
 - **Severity Ranking**: Issues ranked as critical/significant/minor
 - **Crowdsourced Annotations**: Users can submit their own annotations
 - **Admin Dashboard**: View and manage all annotations
 
 ## Quick Start
-
-### Extension (Local Development)
-
-1. Navigate to `chrome://extensions` in Chrome/Edge
-2. Enable "Developer mode"
-3. Click "Load unpacked" and select the `extension/` folder
-4. Click the extension icon on any article
 
 ### Backend (Local Development)
 
@@ -43,14 +36,27 @@ npm install
 
 # Set up environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL
+# Edit .env - defaults work for local Postgres via Docker
+
+# Start local Postgres
+npm run dev:db
 
 # Run migrations
-npx prisma migrate dev
+npx prisma migrate deploy
 
-# Start development server
+# Start development server (watches for changes)
 npm run dev
 ```
+
+The app works without `ANTHROPIC_API_KEY` - only the `/analyze` endpoint requires it.
+
+### Extension (Local Development)
+
+1. Run `npm run build` to build the extension
+2. Navigate to `chrome://extensions` in Chrome/Edge
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the `build/extension/` folder
+5. Click the extension icon on any article
 
 ## Deployment
 
@@ -112,20 +118,19 @@ The backend is designed for Railway deployment:
 ## Development
 
 ```bash
-# Backend development
-npm run dev
-
-# Bundle extension manually
-npm run bundle-extension
-
-# Build for production
-npm run build
+npm run dev          # Build + start server + watch for changes
+npm run dev:db       # Start local Postgres (Docker)
+npm run dev:db:stop  # Stop local Postgres
+npm run build        # Full production build
+npm run typecheck    # TypeScript type checking
+npm test             # Run tests
+npm run lint         # ESLint
 ```
 
 ## Tech Stack
 
-- **Extension**: Vanilla JS, CSS Custom Highlight API
+- **Extension**: TypeScript, CSS Custom Highlight API
 - **Backend**: Express.js, TypeScript, Prisma
 - **Database**: PostgreSQL
-- **AI**: Claude 4.5 Sonnet via Replicate API
+- **AI**: Claude (Anthropic API)
 - **Hosting**: Railway

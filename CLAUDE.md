@@ -1,18 +1,35 @@
 # SanityCheck
 
-AI-powered browser extension that detects logical reasoning gaps in articles using Claude.
+Browser extension that uses Claude with special prompting and pipelining to find logical gaps in articles. Users click on an article, we extract the text, analyze it, and highlight problematic passages inline.
+
+## Architecture
+
+```
+Extension (browser)  →  Backend API (Express)  →  Claude API (Anthropic)
+                              ↓
+                         PostgreSQL
+```
 
 ## Commands
 
 ```bash
-npm run dev        # Build + start server + watch for changes (rebuilds on any src/ change)
-npm run build      # Full build (backend + extension + zip)
-npm run typecheck  # TypeScript type checking
-npm test           # Run tests (vitest)
-npm run lint       # ESLint
+npm run dev          # Build + start server + watch for changes
+npm run dev:db       # Start local Postgres via Docker
+npm run build        # Full build (backend + extension + zip)
+npm run typecheck    # TypeScript type checking
+npm test             # Run tests (vitest)
+npm run lint         # ESLint
 ```
 
-`npm run dev` is sufficient for all development.
+## First-time Setup
+
+```bash
+npm install
+cp .env.example .env    # Defaults work for local dev
+npm run dev:db          # Start Postgres
+npx prisma migrate deploy
+npm run dev
+```
 
 ## Persistence
 
