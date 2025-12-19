@@ -1,6 +1,8 @@
 // ABOUTME: Admin dashboard HTML generator.
 // ABOUTME: Renders the admin login and dashboard UI.
 
+import { themeCssVariables } from '../../shared';
+
 export function generateAdminPage(): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -10,15 +12,84 @@ export function generateAdminPage(): string {
   <title>SanityCheck Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&family=Comfortaa:wght@700&family=Quicksand:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* ===== Theme Variables (from shared/colors.ts) ===== */
+    ${themeCssVariables}
+
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
-      color: #e4e4e7;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* ===== Theme Toggle ===== */
+    .theme-toggle-container {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .theme-label.active {
+      color: var(--accent);
+    }
+
+    .theme-toggle {
+      position: relative;
+      width: 56px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+
+    .theme-toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.68, -0.15, 0.32, 1.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .theme-toggle.active .theme-toggle-slider {
+      transform: translateX(28px);
+    }
+
+    /* Miss Information specific sparkle effect */
+    body.theme-miss .theme-toggle-slider::after {
+      content: '✨';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
     }
 
     .login-container {
@@ -30,9 +101,9 @@ export function generateAdminPage(): string {
     }
 
     .login-box {
-      background: rgba(30, 30, 40, 0.8);
+      background: var(--bg-secondary);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 40px;
       width: 100%;
@@ -45,14 +116,12 @@ export function generateAdminPage(): string {
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
-      background: linear-gradient(135deg, #f97316, #fb923c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
     }
 
     .login-subtitle {
       text-align: center;
-      color: #71717a;
+      color: var(--text-muted);
       margin-bottom: 32px;
       font-size: 14px;
     }
@@ -65,7 +134,7 @@ export function generateAdminPage(): string {
       display: block;
       font-size: 12px;
       font-weight: 600;
-      color: #a1a1aa;
+      color: var(--text-secondary);
       margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -74,10 +143,10 @@ export function generateAdminPage(): string {
     .form-input {
       width: 100%;
       padding: 12px 16px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      color: #fff;
+      color: var(--text-primary);
       font-size: 14px;
       font-family: 'JetBrains Mono', monospace;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -85,30 +154,35 @@ export function generateAdminPage(): string {
 
     .form-input:focus {
       outline: none;
-      border-color: #f97316;
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-subtle);
     }
 
     .btn {
       width: 100%;
       padding: 14px 20px;
-      background: linear-gradient(135deg, #f97316, #ea580c);
+      background: var(--accent);
       border: none;
       border-radius: 8px;
       color: white;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
     }
 
     .btn:hover {
+      background: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+      box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+    }
+
+    body.theme-miss .btn:hover {
+      box-shadow: 0 10px 20px rgba(192, 132, 252, 0.3);
     }
 
     .error-msg {
-      color: #ef4444;
+      color: var(--error);
       font-size: 13px;
       text-align: center;
       margin-top: 16px;
@@ -121,9 +195,9 @@ export function generateAdminPage(): string {
     .login-container.hidden { display: none; }
 
     .header {
-      background: rgba(30, 30, 40, 0.9);
+      background: var(--bg-secondary);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border);
       padding: 16px 24px;
       position: sticky;
       top: 0;
@@ -141,15 +215,13 @@ export function generateAdminPage(): string {
     .header-title {
       font-size: 20px;
       font-weight: 700;
-      background: linear-gradient(135deg, #f97316, #fb923c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
     }
 
     .logout-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #e4e4e7;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 13px;
@@ -158,7 +230,7 @@ export function generateAdminPage(): string {
     }
 
     .logout-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--bg-hover);
     }
 
     .container {
@@ -175,8 +247,8 @@ export function generateAdminPage(): string {
     }
 
     .stat-card {
-      background: rgba(30, 30, 40, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
     }
@@ -184,13 +256,13 @@ export function generateAdminPage(): string {
     .stat-value {
       font-size: 36px;
       font-weight: 700;
-      color: #f97316;
+      color: var(--accent);
       font-family: 'JetBrains Mono', monospace;
     }
 
     .stat-label {
       font-size: 13px;
-      color: #71717a;
+      color: var(--text-muted);
       margin-top: 4px;
     }
 
@@ -204,9 +276,9 @@ export function generateAdminPage(): string {
     }
 
     .export-btn {
-      background: rgba(34, 197, 94, 0.2);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #22c55e;
+      background: var(--success-subtle);
+      border: 1px solid var(--success);
+      color: var(--success);
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 13px;
@@ -216,7 +288,8 @@ export function generateAdminPage(): string {
     }
 
     .export-btn:hover {
-      background: rgba(34, 197, 94, 0.3);
+      background: var(--success-subtle);
+      opacity: 0.8;
     }
 
     .annotations-list {
@@ -226,15 +299,15 @@ export function generateAdminPage(): string {
     }
 
     .annotation-card {
-      background: rgba(30, 30, 40, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
       transition: border-color 0.2s;
     }
 
     .annotation-card:hover {
-      border-color: rgba(249, 115, 22, 0.3);
+      border-color: var(--accent);
     }
 
     .annotation-header {
@@ -245,8 +318,8 @@ export function generateAdminPage(): string {
     }
 
     .annotation-type {
-      background: rgba(249, 115, 22, 0.2);
-      color: #fb923c;
+      background: var(--accent-subtle);
+      color: var(--accent);
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 12px;
@@ -254,19 +327,19 @@ export function generateAdminPage(): string {
     }
 
     .annotation-date {
-      color: #71717a;
+      color: var(--text-muted);
       font-size: 12px;
       font-family: 'JetBrains Mono', monospace;
     }
 
     .annotation-quote {
-      background: rgba(0, 0, 0, 0.3);
-      border-left: 3px solid #f97316;
+      background: var(--bg-tertiary);
+      border-left: 3px solid var(--accent);
       padding: 12px 16px;
       margin-bottom: 12px;
       border-radius: 4px;
       font-style: italic;
-      color: #a1a1aa;
+      color: var(--text-secondary);
       font-size: 14px;
       line-height: 1.6;
     }
@@ -274,19 +347,19 @@ export function generateAdminPage(): string {
     .annotation-text {
       font-size: 14px;
       line-height: 1.6;
-      color: #e4e4e7;
+      color: var(--text-primary);
       margin-bottom: 12px;
     }
 
     .annotation-url {
       font-size: 12px;
-      color: #71717a;
+      color: var(--text-muted);
       font-family: 'JetBrains Mono', monospace;
       word-break: break-all;
     }
 
     .annotation-url a {
-      color: #60a5fa;
+      color: var(--accent);
       text-decoration: none;
     }
 
@@ -295,9 +368,9 @@ export function generateAdminPage(): string {
     }
 
     .delete-btn {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #ef4444;
+      background: var(--error-subtle);
+      border: 1px solid var(--error);
+      color: var(--error);
       padding: 6px 12px;
       border-radius: 4px;
       font-size: 12px;
@@ -306,13 +379,14 @@ export function generateAdminPage(): string {
     }
 
     .delete-btn:hover {
-      background: rgba(239, 68, 68, 0.3);
+      background: var(--error-subtle);
+      opacity: 0.8;
     }
 
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: #71717a;
+      color: var(--text-muted);
     }
 
     .empty-state-icon {
@@ -328,9 +402,9 @@ export function generateAdminPage(): string {
     }
 
     .page-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #e4e4e7;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
       padding: 8px 16px;
       border-radius: 6px;
       cursor: pointer;
@@ -338,7 +412,7 @@ export function generateAdminPage(): string {
     }
 
     .page-btn:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--bg-hover);
     }
 
     .page-btn:disabled {
@@ -349,7 +423,7 @@ export function generateAdminPage(): string {
     .loading {
       text-align: center;
       padding: 40px;
-      color: #71717a;
+      color: var(--text-muted);
     }
 
     /* Tabs */
@@ -357,7 +431,7 @@ export function generateAdminPage(): string {
       display: flex;
       gap: 4px;
       margin-bottom: 24px;
-      background: rgba(30, 30, 40, 0.6);
+      background: var(--bg-secondary);
       padding: 4px;
       border-radius: 10px;
       width: fit-content;
@@ -366,7 +440,7 @@ export function generateAdminPage(): string {
     .tab-btn {
       background: transparent;
       border: none;
-      color: #71717a;
+      color: var(--text-muted);
       padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
@@ -376,12 +450,12 @@ export function generateAdminPage(): string {
     }
 
     .tab-btn:hover {
-      color: #e4e4e7;
+      color: var(--text-primary);
     }
 
     .tab-btn.active {
-      background: rgba(249, 115, 22, 0.2);
-      color: #fb923c;
+      background: var(--accent-subtle);
+      color: var(--accent);
     }
 
     .tab-content {
@@ -409,24 +483,24 @@ export function generateAdminPage(): string {
 
     .filter-label {
       font-size: 12px;
-      color: #71717a;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .filter-select, .filter-input {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
       border-radius: 6px;
       padding: 8px 12px;
-      color: #e4e4e7;
+      color: var(--text-primary);
       font-size: 13px;
       min-width: 120px;
     }
 
     .filter-select:focus, .filter-input:focus {
       outline: none;
-      border-color: #f97316;
+      border-color: var(--accent);
     }
 
     .time-shortcuts {
@@ -435,9 +509,9 @@ export function generateAdminPage(): string {
     }
 
     .time-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #a1a1aa;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
       padding: 6px 12px;
       border-radius: 4px;
       font-size: 12px;
@@ -446,14 +520,14 @@ export function generateAdminPage(): string {
     }
 
     .time-btn:hover, .time-btn.active {
-      background: rgba(249, 115, 22, 0.2);
-      border-color: rgba(249, 115, 22, 0.3);
-      color: #fb923c;
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     .log-entry {
-      background: rgba(30, 30, 40, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 14px 18px;
       margin-bottom: 8px;
@@ -462,19 +536,19 @@ export function generateAdminPage(): string {
     }
 
     .log-entry.level-error {
-      border-left: 3px solid #ef4444;
+      border-left: 3px solid var(--error);
     }
 
     .log-entry.level-warn {
-      border-left: 3px solid #eab308;
+      border-left: 3px solid var(--warning);
     }
 
     .log-entry.level-log {
-      border-left: 3px solid #22c55e;
+      border-left: 3px solid var(--success);
     }
 
     .log-entry.level-debug {
-      border-left: 3px solid #6b7280;
+      border-left: 3px solid var(--text-muted);
     }
 
     .log-header {
@@ -487,7 +561,7 @@ export function generateAdminPage(): string {
     .log-meta {
       display: flex;
       gap: 12px;
-      color: #71717a;
+      color: var(--text-muted);
       font-size: 11px;
     }
 
@@ -499,44 +573,48 @@ export function generateAdminPage(): string {
       text-transform: uppercase;
     }
 
-    .log-level.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .log-level.warn { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-    .log-level.log { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-    .log-level.debug { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+    .log-level.error { background: var(--error-subtle); color: var(--error); }
+    .log-level.warn { background: var(--warning-subtle); color: var(--warning); }
+    .log-level.log { background: var(--success-subtle); color: var(--success); }
+    .log-level.debug { background: var(--bg-tertiary); color: var(--text-muted); }
 
     .log-message {
-      color: #e4e4e7;
+      color: var(--text-primary);
       margin-bottom: 6px;
       word-break: break-word;
     }
 
     .log-data {
-      background: rgba(0, 0, 0, 0.3);
+      background: var(--bg-tertiary);
       padding: 10px;
       border-radius: 4px;
       overflow-x: auto;
-      color: #a1a1aa;
+      color: var(--text-secondary);
       white-space: pre-wrap;
       max-height: 200px;
       overflow-y: auto;
     }
 
     .log-source {
-      color: #60a5fa;
+      color: var(--accent);
     }
 
     .log-ip {
-      color: #c084fc;
+      color: var(--accent);
+    }
+
+    body.theme-miss .log-ip {
+      color: var(--accent-hover);
     }
 
     .log-version {
-      color: #22c55e;
+      color: var(--success);
     }
 
     .clear-logs-btn {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #ef4444;
+      background: var(--error-subtle);
+      border: 1px solid var(--error);
+      color: var(--error);
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 13px;
@@ -545,13 +623,14 @@ export function generateAdminPage(): string {
     }
 
     .clear-logs-btn:hover {
-      background: rgba(239, 68, 68, 0.3);
+      background: var(--error-subtle);
+      opacity: 0.8;
     }
 
     .refresh-btn {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: #60a5fa;
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 13px;
@@ -559,7 +638,8 @@ export function generateAdminPage(): string {
     }
 
     .refresh-btn:hover {
-      background: rgba(59, 130, 246, 0.3);
+      background: var(--accent-subtle);
+      opacity: 0.8;
     }
 
     /* Article Modal */
@@ -578,8 +658,8 @@ export function generateAdminPage(): string {
     }
 
     .article-modal-content {
-      background: #1a1a2e;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 16px;
       max-width: 900px;
       width: 100%;
@@ -594,12 +674,12 @@ export function generateAdminPage(): string {
       justify-content: space-between;
       align-items: center;
       padding: 20px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border);
     }
 
     .article-modal-header h2 {
       font-size: 18px;
-      color: #f97316;
+      color: var(--accent);
       margin: 0;
     }
 
@@ -631,6 +711,14 @@ export function generateAdminPage(): string {
         <p class="error-msg" id="errorMsg">Invalid admin key</p>
       </form>
     </div>
+  </div>
+
+  <div class="theme-toggle-container">
+    <span class="theme-label active" id="label-sanity">Sanity</span>
+    <div class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <div class="theme-toggle-slider"></div>
+    </div>
+    <span class="theme-label" id="label-miss">Miss Info</span>
   </div>
 
   <div class="dashboard" id="dashboard">
@@ -746,7 +834,7 @@ export function generateAdminPage(): string {
 
         <div class="section-title">
           <span>Debug Logs</span>
-          <span id="logCount" style="color: #71717a; font-size: 13px;">-</span>
+          <span id="logCount" style="color: var(--text-muted); font-size: 13px;">-</span>
         </div>
 
         <div id="debugLogsList">
@@ -763,6 +851,40 @@ export function generateAdminPage(): string {
     let currentPage = 0;
     const limit = 20;
     const STORAGE_KEY = 'logicCheckerAdminKey';
+
+    // ===== Theme Toggle =====
+    function toggleTheme() {
+      const body = document.body;
+      const toggle = document.getElementById('theme-toggle');
+      const labelSanity = document.getElementById('label-sanity');
+      const labelMiss = document.getElementById('label-miss');
+
+      body.classList.toggle('theme-miss');
+      toggle.classList.toggle('active');
+
+      const isMiss = body.classList.contains('theme-miss');
+      labelSanity.classList.toggle('active', !isMiss);
+      labelMiss.classList.toggle('active', isMiss);
+
+      // Update page title
+      document.title = isMiss
+        ? 'Miss Information ♡ Admin'
+        : 'SanityCheck Admin';
+
+      // Save preference (use same key as homepage for consistency)
+      localStorage.setItem('theme', isMiss ? 'miss' : 'sanity');
+    }
+
+    // Load saved theme preference
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'miss') {
+        toggleTheme();
+      }
+    })();
+
+    // Theme toggle event listener
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
     // Check for stored admin key on page load
     window.addEventListener('DOMContentLoaded', () => {
@@ -865,8 +987,8 @@ export function generateAdminPage(): string {
             <div style="font-weight: 600; margin-bottom: 8px;">\${escapeHtml(article.title || 'Untitled')}</div>
             <div class="annotation-quote">\${escapeHtml(article.textPreview)}</div>
             \${article.latestAnalysis ? \`
-              <div style="margin-top: 8px; font-size: 12px; color: #71717a;">
-                Latest: <span style="color: \${article.latestAnalysis.severity === 'significant' ? '#ef4444' : article.latestAnalysis.severity === 'moderate' ? '#eab308' : '#22c55e'}">\${article.latestAnalysis.severity || 'none'}</span>
+              <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                Latest: <span style="color: \${article.latestAnalysis.severity === 'significant' ? 'var(--severity-significant)' : article.latestAnalysis.severity === 'moderate' ? 'var(--severity-significant)' : 'var(--success)'}">\${article.latestAnalysis.severity || 'none'}</span>
                 · \${article.latestAnalysis.highlightCount} highlights
               </div>
             \` : ''}
@@ -897,7 +1019,7 @@ export function generateAdminPage(): string {
 
       pagination.innerHTML = \`
         <button class="page-btn" onclick="changeArticlesPage(-1)" \${articlesPage === 0 ? 'disabled' : ''}>← Prev</button>
-        <span style="padding: 8px 16px; color: #71717a;">Page \${articlesPage + 1} of \${totalPages}</span>
+        <span style="padding: 8px 16px; color: var(--text-muted);">Page \${articlesPage + 1} of \${totalPages}</span>
         <button class="page-btn" onclick="changeArticlesPage(1)" \${articlesPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
       \`;
     }
@@ -942,42 +1064,42 @@ export function generateAdminPage(): string {
           <div class="article-modal-content">
             <div class="article-modal-header">
               <h2>\${escapeHtml(article.title || 'Article Details')}</h2>
-              <button onclick="this.closest('.article-modal').remove()" style="background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;">×</button>
+              <button onclick="this.closest('.article-modal').remove()" style="background: none; border: none; color: var(--text-primary); font-size: 24px; cursor: pointer;">×</button>
             </div>
             <div class="article-modal-body">
               <div style="margin-bottom: 16px;">
-                <a href="\${article.url}" target="_blank" style="color: #60a5fa;">\${article.url}</a>
-                <span style="color: #71717a; margin-left: 12px;">\${new Date(article.createdAt).toLocaleString()}</span>
+                <a href="\${article.url}" target="_blank" style="color: var(--accent);">\${article.url}</a>
+                <span style="color: var(--text-muted); margin-left: 12px;">\${new Date(article.createdAt).toLocaleString()}</span>
               </div>
 
-              <h3 style="margin: 20px 0 12px; color: #f97316;">Article Text</h3>
-              <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.6;">\${escapeHtml(article.textContent)}</div>
+              <h3 style="margin: 20px 0 12px; color: var(--accent);">Article Text</h3>
+              <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.6; color: var(--text-primary);">\${escapeHtml(article.textContent)}</div>
 
-              <h3 style="margin: 20px 0 12px; color: #f97316;">Analyses (\${article.analyses.length})</h3>
+              <h3 style="margin: 20px 0 12px; color: var(--accent);">Analyses (\${article.analyses.length})</h3>
               \${article.analyses.map(a => \`
-                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
                   <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="color: #a1a1aa;">\${a.modelVersion || 'unknown model'}</span>
-                    <span style="color: \${a.severity === 'significant' ? '#ef4444' : a.severity === 'moderate' ? '#eab308' : '#22c55e'}">\${a.severity || 'none'}</span>
+                    <span style="color: var(--text-secondary);">\${a.modelVersion || 'unknown model'}</span>
+                    <span style="color: \${a.severity === 'significant' ? 'var(--severity-significant)' : a.severity === 'moderate' ? 'var(--severity-significant)' : 'var(--success)'}">\${a.severity || 'none'}</span>
                   </div>
-                  <div style="font-size: 12px; color: #71717a; margin-bottom: 8px;">\${a.highlights.length} highlights</div>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">\${a.highlights.length} highlights</div>
                   \${a.highlights.map(h => \`
-                    <div style="background: rgba(249,115,22,0.1); border-left: 3px solid \${h.importance === 'critical' ? '#ef4444' : h.importance === 'significant' ? '#eab308' : '#6b7280'}; padding: 8px 12px; margin: 8px 0; border-radius: 4px;">
-                      <div style="font-style: italic; color: #a1a1aa; margin-bottom: 4px;">"\${escapeHtml(h.quote.substring(0, 100))}\${h.quote.length > 100 ? '...' : ''}"</div>
-                      <div style="color: #e4e4e7;">\${escapeHtml(h.gap)}</div>
+                    <div style="background: var(--accent-subtle); border-left: 3px solid \${h.importance === 'critical' ? 'var(--severity-critical)' : h.importance === 'significant' ? 'var(--severity-significant)' : 'var(--text-muted)'}; padding: 8px 12px; margin: 8px 0; border-radius: 4px;">
+                      <div style="font-style: italic; color: var(--text-secondary); margin-bottom: 4px;">"\${escapeHtml(h.quote.substring(0, 100))}\${h.quote.length > 100 ? '...' : ''}"</div>
+                      <div style="color: var(--text-primary);">\${escapeHtml(h.gap)}</div>
                     </div>
                   \`).join('')}
                 </div>
-              \`).join('') || '<div style="color: #71717a;">No analyses yet</div>'}
+              \`).join('') || '<div style="color: var(--text-muted);">No analyses yet</div>'}
 
-              <h3 style="margin: 20px 0 12px; color: #f97316;">Comments (\${article.comments.length})</h3>
+              <h3 style="margin: 20px 0 12px; color: var(--accent);">Comments (\${article.comments.length})</h3>
               \${article.comments.map(c => \`
-                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                  <div style="font-style: italic; color: #a1a1aa; margin-bottom: 8px;">"\${escapeHtml(c.selectedText.substring(0, 100))}\${c.selectedText.length > 100 ? '...' : ''}"</div>
-                  <div style="color: #e4e4e7;">\${escapeHtml(c.commentText)}</div>
-                  <div style="font-size: 11px; color: #71717a; margin-top: 8px;">\${new Date(c.createdAt).toLocaleString()} · \${c.ip || 'unknown IP'}</div>
+                <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                  <div style="font-style: italic; color: var(--text-secondary); margin-bottom: 8px;">"\${escapeHtml(c.selectedText.substring(0, 100))}\${c.selectedText.length > 100 ? '...' : ''}"</div>
+                  <div style="color: var(--text-primary);">\${escapeHtml(c.commentText)}</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">\${new Date(c.createdAt).toLocaleString()} · \${c.ip || 'unknown IP'}</div>
                 </div>
-              \`).join('') || '<div style="color: #71717a;">No comments yet</div>'}
+              \`).join('') || '<div style="color: var(--text-muted);">No comments yet</div>'}
             </div>
           </div>
         \`;
@@ -1039,7 +1161,7 @@ export function generateAdminPage(): string {
 
       pagination.innerHTML = \`
         <button class="page-btn" onclick="changeCommentsPage(-1)" \${commentsPage === 0 ? 'disabled' : ''}>← Prev</button>
-        <span style="padding: 8px 16px; color: #71717a;">Page \${commentsPage + 1} of \${totalPages}</span>
+        <span style="padding: 8px 16px; color: var(--text-muted);">Page \${commentsPage + 1} of \${totalPages}</span>
         <button class="page-btn" onclick="changeCommentsPage(1)" \${commentsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
       \`;
     }
@@ -1100,11 +1222,11 @@ export function generateAdminPage(): string {
               <span class="annotation-date">\${new Date(signup.createdAt).toLocaleString()}</span>
             </div>
             <div style="margin-bottom: 12px;">
-              <div style="font-weight: 600; color: #e4e4e7; margin-bottom: 4px;">\${escapeHtml(signup.firstName)}</div>
-              <div style="color: #a1a1aa; font-size: 14px;">\${escapeHtml(signup.email)}</div>
+              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">\${escapeHtml(signup.firstName)}</div>
+              <div style="color: var(--text-secondary); font-size: 14px;">\${escapeHtml(signup.email)}</div>
             </div>
             \${signup.discord ? \`
-              <div style="margin-bottom: 8px; color: #a1a1aa; font-size: 13px;">
+              <div style="margin-bottom: 8px; color: var(--text-secondary); font-size: 13px;">
                 <strong>Discord:</strong> \${escapeHtml(signup.discord)}
               </div>
             \` : ''}
@@ -1113,7 +1235,7 @@ export function generateAdminPage(): string {
                 <strong>Reason:</strong> \${escapeHtml(signup.reason)}
               </div>
             \` : ''}
-            <div style="margin-top: 12px; font-size: 11px; color: #71717a;">
+            <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
               IP: \${signup.ip || 'unknown'}
             </div>
           </div>
@@ -1136,7 +1258,7 @@ export function generateAdminPage(): string {
 
       pagination.innerHTML = \`
         <button class="page-btn" onclick="changeSignupsPage(-1)" \${signupsPage === 0 ? 'disabled' : ''}>← Prev</button>
-        <span style="padding: 8px 16px; color: #71717a;">Page \${signupsPage + 1} of \${totalPages}</span>
+        <span style="padding: 8px 16px; color: var(--text-muted);">Page \${signupsPage + 1} of \${totalPages}</span>
         <button class="page-btn" onclick="changeSignupsPage(1)" \${signupsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
       \`;
     }
@@ -1254,7 +1376,7 @@ export function generateAdminPage(): string {
 
       pagination.innerHTML = \`
         <button class="page-btn" onclick="changeLogsPage(-1)" \${logsPage === 0 ? 'disabled' : ''}>← Prev</button>
-        <span style="padding: 8px 16px; color: #71717a;">Page \${logsPage + 1} of \${totalPages}</span>
+        <span style="padding: 8px 16px; color: var(--text-muted);">Page \${logsPage + 1} of \${totalPages}</span>
         <button class="page-btn" onclick="changeLogsPage(1)" \${logsPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>
       \`;
     }
