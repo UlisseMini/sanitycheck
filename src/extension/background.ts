@@ -1,6 +1,7 @@
 // ABOUTME: Background service worker for SanityCheck.
 // ABOUTME: Handles API calls, analysis state, and content script messaging.
 
+import './dev-reload'
 import { BACKEND_URL } from './config'
 import { api, AnalyzeData } from './api'
 import {

@@ -11,6 +11,7 @@
   ],
   "host_permissions": [
     "http://localhost:3000/*",
+    "ws://localhost:8890/*",
     "https://*.railway.app/*"
   ],
   "action": {
