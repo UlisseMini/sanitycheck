@@ -61,32 +61,6 @@ header {
   margin-bottom: 4px;
 }
 
-.settings-btn {
-  position: absolute;
-  right: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  opacity: 0.5;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-btn:hover {
-  opacity: 1;
-  background: var(--bg-tertiary);
-}
-
-.settings-btn svg {
-  width: 18px;
-  height: 18px;
-  stroke: var(--text-secondary);
-}
-
 .logo {
   display: flex;
   align-items: center;

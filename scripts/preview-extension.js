@@ -108,7 +108,6 @@ app.listen(PORT, () => {
   console.log(`\n📄 Available pages:`);
   console.log(`   • Popup:      http://localhost:${PORT}/popup.html`);
   console.log(`   • Welcome:    http://localhost:${PORT}/welcome.html`);
-  console.log(`   • Settings:   http://localhost:${PORT}/settings.html`);
   console.log('\n💡 Changes will auto-reload in the browser');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
   

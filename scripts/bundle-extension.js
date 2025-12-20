@@ -13,8 +13,6 @@ const STATIC_FILES = [
   'manifest.json',
   'popup.html',
   'popup.js',
-  'settings.html',
-  'settings.js',
   'welcome.html',
   'styles.css',
   'content-styles.css',
