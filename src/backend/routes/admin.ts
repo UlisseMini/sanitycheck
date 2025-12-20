@@ -2,18 +2,13 @@
 // ABOUTME: Provides article, comment, and stats management endpoints.
 
 import { Elysia, t } from 'elysia'
-import { prisma, ADMIN_KEY } from '../shared'
+import { prisma, requireAdmin } from '../shared'
 
 export const adminRoutes = new Elysia({ prefix: '/admin' })
+  .use(requireAdmin)
+
   // Verify admin key
-  .get('/verify', ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/verify', () => {
     return { success: true }
   }, {
     query: t.Object({
@@ -22,13 +17,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Delete annotation (admin only)
-  .delete('/annotations/:id', async ({ params, query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .delete('/annotations/:id', async ({ params }) => {
     await prisma.annotation.delete({
       where: { id: params.id }
     })
@@ -40,13 +29,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get all articles (admin)
-  .get('/articles', async ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/articles', async ({ query }) => {
     const limit = Math.min(parseInt(query.limit || '50'), 200)
     const offset = parseInt(query.offset || '0')
 
@@ -98,13 +81,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get single article with all data (admin)
-  .get('/articles/:id', async ({ params, query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/articles/:id', async ({ params, set }) => {
     const article = await prisma.article.findUnique({
       where: { id: params.id },
       include: {
@@ -131,13 +108,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Delete article (admin)
-  .delete('/articles/:id', async ({ params, query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .delete('/articles/:id', async ({ params }) => {
     await prisma.article.delete({ where: { id: params.id } })
     return { success: true }
   }, {
@@ -147,13 +118,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get all comments (admin)
-  .get('/comments', async ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/comments', async ({ query }) => {
     const limit = Math.min(parseInt(query.limit || '50'), 200)
     const offset = parseInt(query.offset || '0')
 
@@ -179,13 +144,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Delete comment (admin)
-  .delete('/comments/:id', async ({ params, query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .delete('/comments/:id', async ({ params }) => {
     await prisma.comment.delete({ where: { id: params.id } })
     return { success: true }
   }, {
@@ -195,13 +154,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get all early access signups (admin)
-  .get('/early-access', async ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/early-access', async ({ query }) => {
     const limit = Math.min(parseInt(query.limit || '50'), 200)
     const offset = parseInt(query.offset || '0')
 
@@ -224,13 +177,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get early access stats (admin)
-  .get('/early-access-stats', async ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/early-access-stats', async () => {
     const [total, recentCount] = await Promise.all([
       prisma.earlyAccessSignup.count(),
       prisma.earlyAccessSignup.count({
@@ -253,13 +200,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
 
   // Get feedback stats
-  .get('/feedback-stats', async ({ query, headers, set }) => {
-    const key = headers.authorization?.replace('Bearer ', '') || query.key
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .get('/feedback-stats', async () => {
     const [articleCount, analysisCount, commentCount, highlightCount, recentArticles] = await Promise.all([
       prisma.article.count(),
       prisma.analysis.count(),

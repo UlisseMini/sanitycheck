@@ -2,7 +2,7 @@
 // ABOUTME: Receives and queries extension debug logs.
 
 import { Elysia, t } from 'elysia'
-import { prisma, ADMIN_KEY, getClientIp } from '../shared'
+import { prisma, requireAdmin, getClientIp } from '../shared'
 
 const DebugLogRequest = t.Object({
   level: t.Optional(t.String()),
@@ -43,14 +43,8 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
   })
 
   // Get debug logs (admin only)
-  .get('/logs', async ({ query, set }) => {
-    const key = query.key
-
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .use(requireAdmin)
+  .get('/logs', async ({ query }) => {
     const limit = Math.min(parseInt(query.limit || '100'), 1000)
     const offset = parseInt(query.offset || '0')
     const ip = query.ip
@@ -122,13 +116,6 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
 
   // Clear old debug logs (admin only)
   .delete('/logs', async ({ query, set }) => {
-    const key = query.key
-
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
     const olderThan = query.olderThan || '7d'
 
     const match = olderThan.match(/^(\d+)(m|h|d)$/)

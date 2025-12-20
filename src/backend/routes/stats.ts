@@ -2,7 +2,7 @@
 // ABOUTME: Provides annotation statistics and data export.
 
 import { Elysia, t } from 'elysia'
-import { prisma, ADMIN_KEY } from '../shared'
+import { prisma, requireAdmin } from '../shared'
 
 const StatsResponse = t.Object({
   total: t.Number(),
@@ -44,14 +44,8 @@ export const statsRoutes = new Elysia({ prefix: '/stats' })
   })
 
   // Export annotations as JSONL (requires admin)
-  .get('/export', async ({ query, set }) => {
-    const key = query.key
-
-    if (key !== ADMIN_KEY) {
-      set.status = 401
-      return { error: 'Unauthorized' }
-    }
-
+  .use(requireAdmin)
+  .get('/export', async () => {
     const annotations = await prisma.annotation.findMany({
       orderBy: { createdAt: 'asc' },
       select: {

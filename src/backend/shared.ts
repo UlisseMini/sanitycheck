@@ -3,6 +3,7 @@
 
 import crypto from 'crypto'
 import { PrismaClient } from '@prisma/client'
+import { Elysia } from 'elysia'
 
 export const prisma = new PrismaClient()
 
@@ -24,3 +25,19 @@ export function getClientIp(headers: Headers): string | null {
   }
   return null
 }
+
+/**
+ * Elysia plugin for admin authentication.
+ * Accepts admin key via Authorization header or query parameter.
+ */
+export const requireAdmin = new Elysia()
+  .onBeforeHandle(({ headers, query, set }) => {
+    const key = headers.authorization?.replace('Bearer ', '') || (query as { key?: string }).key
+
+    if (key !== ADMIN_KEY) {
+      set.status = 401
+      return { error: 'Unauthorized' }
+    }
+
+    return
+  })
