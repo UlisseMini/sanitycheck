@@ -1,33 +1,28 @@
 /**
  * Extension messaging types and wrappers
- * 
+ *
  * Single source of truth for all messages between popup, background, and content scripts.
  * These wrappers provide compile-time type safety for all extension messaging.
  */
 
+// Re-export types from backend (single source of truth)
+export type {
+  AnalysisIssue,
+  CentralArgumentAnalysis,
+  AnalysisResponse,
+  Importance,
+  Severity
+} from '../backend/routes/analyze'
+
+import type { AnalysisIssue, CentralArgumentAnalysis, Severity } from '../backend/routes/analyze'
+
 // =====================================================
-// Shared Types (extension-only)
+// Extension-specific types
 // =====================================================
-
-export type Importance = 'critical' | 'significant' | 'minor';
-
-export interface AnalysisIssue {
-  quote?: string;
-  importance?: string;
-  type?: string;
-  gap?: string;
-  why_it_doesnt_follow?: string;
-  explanation?: string;
-}
-
-export interface CentralArgumentAnalysis {
-  main_conclusion?: string;
-  central_logical_gap?: string;
-}
 
 export interface ParsedAnalysis {
   issues?: AnalysisIssue[];
-  severity?: string;
+  severity?: Severity;
   summary?: string;
   overall_assessment?: string;
   central_argument_analysis?: CentralArgumentAnalysis;

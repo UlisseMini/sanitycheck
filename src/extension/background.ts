@@ -125,10 +125,7 @@ async function startAnalysis(tabId: number, article: Article) {
       status: 'complete',
       parsed: {
         ...data,
-        central_argument_analysis: {
-          ...data.central_argument_analysis,
-          central_logical_gap: data.central_argument_analysis.central_logical_gap ?? undefined
-        }
+        central_argument_analysis: data.central_argument_analysis
       }
     })
 

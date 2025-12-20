@@ -445,7 +445,7 @@ function displayResults(parsed: ParsedAnalysis): void {
   
   sortedIssues.forEach((issue, index) => {
     const importanceClass = issue.importance ?? 'minor';
-    const gap = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
+    const gap = issue.gap;
     
     html += `
       <div class="fallacy-item ${importanceClass}" data-issue-index="${index}">

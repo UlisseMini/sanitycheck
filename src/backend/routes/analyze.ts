@@ -1,25 +1,25 @@
 // ABOUTME: Analysis endpoint with typed request/response.
 // ABOUTME: Type safety flows to extension via App type export.
 
-import { Elysia, t } from 'elysia'
+import { Elysia, t, type Static } from 'elysia'
 import { loadPipeline } from '../../pipelines/index'
 import { formatForExtension } from '../../pipelines/format'
 
-// Schema definitions - these become the source of truth for types
-const AnalysisIssue = t.Object({
+// Schema definitions - single source of truth for types
+const AnalysisIssueSchema = t.Object({
   importance: t.Union([t.Literal('critical'), t.Literal('significant'), t.Literal('minor')]),
   quote: t.String(),
   gap: t.String()
 })
 
-const CentralArgumentAnalysis = t.Object({
+const CentralArgumentAnalysisSchema = t.Object({
   main_conclusion: t.String(),
   central_logical_gap: t.Nullable(t.String())
 })
 
-const AnalysisResponse = t.Object({
-  central_argument_analysis: CentralArgumentAnalysis,
-  issues: t.Array(AnalysisIssue),
+const AnalysisResponseSchema = t.Object({
+  central_argument_analysis: CentralArgumentAnalysisSchema,
+  issues: t.Array(AnalysisIssueSchema),
   severity: t.Union([
     t.Literal('none'),
     t.Literal('minor'),
@@ -29,6 +29,13 @@ const AnalysisResponse = t.Object({
   pipeline: t.String(),
   duration: t.Number()
 })
+
+// Export TypeScript types derived from schemas
+export type AnalysisIssue = Static<typeof AnalysisIssueSchema>
+export type CentralArgumentAnalysis = Static<typeof CentralArgumentAnalysisSchema>
+export type AnalysisResponse = Static<typeof AnalysisResponseSchema>
+export type Importance = AnalysisIssue['importance']
+export type Severity = AnalysisResponse['severity']
 
 const AnalyzeRequest = t.Object({
   text: t.String(),
@@ -63,5 +70,5 @@ export const analyzeRoutes = new Elysia({ prefix: '/analyze' })
     }
   }, {
     body: AnalyzeRequest,
-    response: AnalysisResponse
+    response: AnalysisResponseSchema
   })

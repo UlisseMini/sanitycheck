@@ -2,20 +2,15 @@
 // ABOUTME: Uses Haiku with structured output (tool use) to convert analysis text to the expected schema.
 
 import Anthropic from '@anthropic-ai/sdk';
+import type { AnalysisIssue, CentralArgumentAnalysis, Severity } from '../backend/routes/analyze'
 
-export interface AnalysisIssue {
-  importance: 'critical' | 'significant' | 'minor';
-  quote: string;
-  gap: string;
-}
+// Re-export for convenience
+export type { AnalysisIssue }
 
 export interface StructuredAnalysis {
-  central_argument_analysis: {
-    main_conclusion: string;
-    central_logical_gap: string | null;
-  };
+  central_argument_analysis: CentralArgumentAnalysis;
   issues: AnalysisIssue[];
-  severity: 'none' | 'minor' | 'moderate' | 'significant';
+  severity: Severity;
 }
 
 const FORMAT_TOOL: Anthropic.Tool = {

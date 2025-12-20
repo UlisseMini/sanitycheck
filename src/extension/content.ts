@@ -489,9 +489,9 @@ declare global {
       const importance = issue.importance ?? 'minor';
       highlight.className = `logic-checker-highlight ${importance}`;
       highlight.dataset['issueIndex'] = String(index);
-      highlight.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      highlight.dataset['issueType'] = issue.importance;
       highlight.dataset['importance'] = importance;
-      highlight.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
+      highlight.dataset['issueExplanation'] = issue.gap;
 
       range.surroundContents(highlight);
 
@@ -526,9 +526,9 @@ declare global {
       const importance = issue.importance ?? 'minor';
       wrapper.className = `logic-checker-highlight ${importance}`;
       wrapper.dataset['issueIndex'] = String(index);
-      wrapper.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      wrapper.dataset['issueType'] = issue.importance;
       wrapper.dataset['importance'] = importance;
-      wrapper.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
+      wrapper.dataset['issueExplanation'] = issue.gap;
       wrapper.textContent = highlighted;
       
       const parent = matchInfo.startNode.parentNode;
