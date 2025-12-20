@@ -1,57 +1,58 @@
 // ABOUTME: Early access signup routes.
 // ABOUTME: Handles public signup endpoint for early access registration.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma, getClientIp } from '../shared';
+import { Elysia, t } from 'elysia'
+import { prisma, getClientIp } from '../shared'
 
-const router = Router();
+const EarlyAccessRequest = t.Object({
+  firstName: t.String(),
+  email: t.String(),
+  discord: t.Optional(t.String()),
+  reason: t.Optional(t.String())
+})
 
-// Submit early access signup (public)
-router.post('/early-access', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { firstName, email, discord, reason } = req.body;
-
-    if (!firstName || !email) {
-      res.status(400).json({ error: 'First name and email are required' });
-      return;
-    }
+export const earlyAccessRoutes = new Elysia({ prefix: '/api' })
+  // Submit early access signup (public)
+  .post('/early-access', async ({ body, request, set }) => {
+    const { firstName, email, discord, reason } = body
 
     // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      res.status(400).json({ error: 'Invalid email address' });
-      return;
+      set.status = 400
+      return { error: 'Invalid email address' }
     }
 
-    const ip = getClientIp(req);
-    const userAgent = req.headers['user-agent'] || null;
+    const ip = getClientIp(request.headers)
+    const userAgent = request.headers.get('user-agent')
 
-    const signup = await prisma.earlyAccessSignup.create({
-      data: {
-        firstName,
-        email,
-        discord: discord || null,
-        reason: reason || null,
-        ip,
-        userAgent
+    try {
+      const signup = await prisma.earlyAccessSignup.create({
+        data: {
+          firstName,
+          email,
+          discord: discord || null,
+          reason: reason || null,
+          ip,
+          userAgent
+        }
+      })
+
+      console.log(`New early access signup: ${signup.id} - ${email}`)
+
+      return {
+        success: true as const,
+        id: signup.id,
+        createdAt: signup.createdAt
       }
-    });
-
-    console.log(`New early access signup: ${signup.id} - ${email}`);
-
-    res.status(201).json({
-      success: true,
-      id: signup.id,
-      createdAt: signup.createdAt
-    });
-  } catch (error) {
-    // Check for duplicate email
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-      res.status(409).json({ error: 'This email is already registered' });
-      return;
+    } catch (error) {
+      // Check for duplicate email
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+        set.status = 409
+        return { error: 'This email is already registered' }
+      }
+      throw error
     }
-    next(error);
-  }
-});
-
-export default router;
+  }, {
+    body: EarlyAccessRequest
+  })

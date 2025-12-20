@@ -8,3 +8,4 @@ if (typeof __BACKEND_URL__ === 'undefined') {
 }
 
 export const BACKEND_URL = __BACKEND_URL__;
+export const DEBUG_MODE = BACKEND_URL.includes('localhost');

@@ -1,74 +1,79 @@
 // ABOUTME: Article and analysis CRUD routes.
 // ABOUTME: Handles article creation and storing analysis results.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma, hashText, getClientIp } from '../shared';
+import { Elysia, t } from 'elysia'
+import { prisma, hashText, getClientIp } from '../shared'
 
-const router = Router();
+const CreateArticleRequest = t.Object({
+  url: t.String(),
+  title: t.Optional(t.String()),
+  textContent: t.String()
+})
 
-interface HighlightInput {
-  quote: string;
-  importance?: string;
-  gap?: string;
-}
+const CreateArticleResponse = t.Object({
+  articleId: t.String(),
+  isNew: t.Boolean()
+})
 
-// Create article
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { url, title, textContent } = req.body;
+const HighlightInput = t.Object({
+  quote: t.String(),
+  importance: t.Optional(t.String()),
+  gap: t.Optional(t.String())
+})
 
-    if (!url || !textContent) {
-      res.status(400).json({ error: 'Missing required fields: url, textContent' });
-      return;
-    }
+const AddAnalysisRequest = t.Object({
+  modelVersion: t.Optional(t.String()),
+  rawResponse: t.Any(),
+  severity: t.Optional(t.String()),
+  highlights: t.Optional(t.Array(HighlightInput)),
+  promptUsed: t.Optional(t.String()),
+  isCustomPrompt: t.Optional(t.Boolean())
+})
 
-    const textHash = hashText(textContent);
-    const ip = getClientIp(req);
-    const userAgent = req.headers['user-agent'] || null;
+const AddAnalysisResponse = t.Object({
+  analysisId: t.String(),
+  highlightCount: t.Number()
+})
+
+export const articlesRoutes = new Elysia({ prefix: '/articles' })
+  // Create article
+  .post('/', async ({ body, request }) => {
+    const { url, title, textContent } = body
+
+    const textHash = hashText(textContent)
+    const ip = getClientIp(request.headers)
+    const userAgent = request.headers.get('user-agent')
 
     let article = await prisma.article.findUnique({
       where: { url_textHash: { url, textHash } }
-    });
+    })
+
+    const isNew = !article
 
     if (!article) {
       article = await prisma.article.create({
-        data: { url, title, textContent, textHash, ip, userAgent }
-      });
+        data: { url, title: title ?? null, textContent, textHash, ip, userAgent }
+      })
     }
 
-    res.status(201).json({ articleId: article.id, isNew: !article });
-  } catch (error) {
-    next(error);
-  }
-});
+    return { articleId: article.id, isNew }
+  }, {
+    body: CreateArticleRequest,
+    response: CreateArticleResponse
+  })
 
-// Add analysis results to article
-router.post('/:articleId/analysis', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const articleId = req.params['articleId'];
-    if (!articleId) {
-      res.status(400).json({ error: 'Missing articleId parameter' });
-      return;
-    }
-
-    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = req.body as {
-      modelVersion?: string;
-      rawResponse: unknown;
-      severity?: string;
-      highlights?: HighlightInput[];
-      promptUsed?: string;
-      isCustomPrompt?: boolean;
-    };
+  // Add analysis results to article
+  .post('/:articleId/analysis', async ({ params, body }) => {
+    const { articleId } = params
+    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = body
 
     if (!rawResponse) {
-      res.status(400).json({ error: 'Missing required field: rawResponse' });
-      return;
+      throw new Error('Missing required field: rawResponse')
     }
 
-    const article = await prisma.article.findUnique({ where: { id: articleId } });
+    const article = await prisma.article.findUnique({ where: { id: articleId } })
     if (!article) {
-      res.status(404).json({ error: 'Article not found' });
-      return;
+      throw new Error('Article not found')
     }
 
     const analysis = await prisma.analysis.create({
@@ -88,15 +93,13 @@ router.post('/:articleId/analysis', async (req: Request, res: Response, next: Ne
         } : undefined
       },
       include: { highlights: true }
-    });
+    })
 
-    res.status(201).json({
+    return {
       analysisId: analysis.id,
       highlightCount: analysis.highlights.length
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
+    }
+  }, {
+    body: AddAnalysisRequest,
+    response: AddAnalysisResponse
+  })

@@ -1,24 +1,52 @@
 // ABOUTME: Legacy annotation routes for public API.
 // ABOUTME: Handles CRUD operations on user annotations.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma } from '../shared';
+import { Elysia, t } from 'elysia'
+import { prisma } from '../shared'
 
-const router = Router();
+const CreateAnnotationRequest = t.Object({
+  url: t.String(),
+  title: t.Optional(t.String()),
+  quote: t.String(),
+  annotation: t.String(),
+  fallacyType: t.Optional(t.String()),
+  userId: t.Optional(t.String())
+})
 
-// Submit an annotation
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { url, title, quote, annotation, fallacyType, userId } = req.body;
+const CreateAnnotationResponse = t.Object({
+  success: t.Literal(true),
+  id: t.String(),
+  createdAt: t.Date()
+})
 
-    if (!url || !quote || !annotation) {
-      res.status(400).json({
-        error: 'Missing required fields: url, quote, annotation'
-      });
-      return;
-    }
+const AnnotationItem = t.Object({
+  id: t.String(),
+  url: t.String(),
+  title: t.Nullable(t.String()),
+  quote: t.String(),
+  annotation: t.String(),
+  fallacyType: t.Nullable(t.String()),
+  userId: t.Nullable(t.String()),
+  userAgent: t.Nullable(t.String()),
+  createdAt: t.Date()
+})
 
-    const userAgent = req.headers['user-agent'] || null;
+const ListAnnotationsResponse = t.Object({
+  annotations: t.Array(AnnotationItem),
+  total: t.Number(),
+  limit: t.Number(),
+  offset: t.Number()
+})
+
+const ByUrlResponse = t.Object({
+  annotations: t.Array(AnnotationItem)
+})
+
+export const annotationsRoutes = new Elysia({ prefix: '/annotations' })
+  // Submit an annotation
+  .post('/', async ({ body, request }) => {
+    const { url, title, quote, annotation, fallacyType, userId } = body
+    const userAgent = request.headers.get('user-agent')
 
     const created = await prisma.annotation.create({
       data: {
@@ -30,28 +58,27 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         userId: userId || null,
         userAgent,
       }
-    });
+    })
 
-    console.log(`New annotation: ${created.id} for ${url}`);
+    console.log(`New annotation: ${created.id} for ${url}`)
 
-    res.status(201).json({
-      success: true,
+    return {
+      success: true as const,
       id: created.id,
       createdAt: created.createdAt
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+    }
+  }, {
+    body: CreateAnnotationRequest,
+    response: CreateAnnotationResponse
+  })
 
-// Get all annotations
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 100, 1000);
-    const offset = parseInt(req.query.offset as string) || 0;
-    const fallacyType = req.query.fallacyType as string | undefined;
+  // Get all annotations
+  .get('/', async ({ query }) => {
+    const limit = Math.min(parseInt(query.limit || '100'), 1000)
+    const offset = parseInt(query.offset || '0')
+    const fallacyType = query.fallacyType
 
-    const where = fallacyType ? { fallacyType } : {};
+    const where = fallacyType ? { fallacyType } : {}
 
     const [annotations, total] = await Promise.all([
       prisma.annotation.findMany({
@@ -61,33 +88,35 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         skip: offset,
       }),
       prisma.annotation.count({ where })
-    ]);
+    ])
 
-    res.json({ annotations, total, limit, offset });
-  } catch (error) {
-    next(error);
-  }
-});
+    return { annotations, total, limit, offset }
+  }, {
+    query: t.Object({
+      limit: t.Optional(t.String()),
+      offset: t.Optional(t.String()),
+      fallacyType: t.Optional(t.String())
+    }),
+    response: ListAnnotationsResponse
+  })
 
-// Get annotations for a specific URL
-router.get('/by-url', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const url = req.query.url as string;
+  // Get annotations for a specific URL
+  .get('/by-url', async ({ query }) => {
+    const url = query.url
 
     if (!url) {
-      res.status(400).json({ error: 'Missing url parameter' });
-      return;
+      throw new Error('Missing url parameter')
     }
 
     const annotations = await prisma.annotation.findMany({
       where: { url },
       orderBy: { createdAt: 'desc' }
-    });
+    })
 
-    res.json({ annotations });
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
+    return { annotations }
+  }, {
+    query: t.Object({
+      url: t.Optional(t.String())
+    }),
+    response: ByUrlResponse
+  })

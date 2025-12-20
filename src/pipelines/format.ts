@@ -2,20 +2,15 @@
 // ABOUTME: Uses Haiku with structured output (tool use) to convert analysis text to the expected schema.
 
 import Anthropic from '@anthropic-ai/sdk';
+import type { AnalysisIssue, CentralArgumentAnalysis, Severity } from '../backend/routes/analyze'
 
-export interface AnalysisIssue {
-  importance: 'critical' | 'significant' | 'minor';
-  quote: string;
-  gap: string;
-}
+// Re-export for convenience
+export type { AnalysisIssue }
 
 export interface StructuredAnalysis {
-  central_argument_analysis: {
-    main_conclusion: string;
-    central_logical_gap: string | null;
-  };
+  central_argument_analysis: CentralArgumentAnalysis;
   issues: AnalysisIssue[];
-  severity: 'none' | 'minor' | 'moderate' | 'significant';
+  severity: Severity;
 }
 
 const FORMAT_TOOL: Anthropic.Tool = {
@@ -85,16 +80,6 @@ Analysis to format:
  * Uses Claude Haiku with tool use for guaranteed schema compliance.
  */
 export async function formatForExtension(analysisText: string, originalText: string): Promise<StructuredAnalysis> {
-  // If the analysis is already JSON, try to parse it directly
-  try {
-    const parsed = JSON.parse(analysisText);
-    if (parsed.issues && parsed.severity) {
-      return parsed as StructuredAnalysis;
-    }
-  } catch {
-    // Not JSON, need to format it
-  }
-
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is required');

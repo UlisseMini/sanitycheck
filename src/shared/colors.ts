@@ -1,13 +1,11 @@
 /**
  * Shared color palette and CSS variables
  * Used by both extension and backend
- * 
+ *
  * Two themes:
  * - SanityCheck (default): Professional blue accent
  * - Miss Information: Playful purple/anime aesthetic
  */
-
-export type ThemeName = 'sanitycheck' | 'miss';
 
 // Base colors shared across themes
 const baseColors = {
@@ -65,78 +63,31 @@ export const colors = {
 } as const;
 
 /**
- * Miss Information Theme - Playful purple/anime aesthetic
- */
-export const missColors = {
-  ...baseColors,
-  
-  // Backgrounds (purple-tinted dark)
-  bgPrimary: '#1a1520',
-  bgSecondary: '#231d2b',
-  bgTertiary: '#2d2638',
-  bgHover: '#3a3245',
-  
-  // Text (lavender-tinted)
-  textPrimary: '#f5f0fa',
-  textSecondary: '#c4b8d4',
-  textMuted: '#8b7fa3',
-  
-  // Accent (purple)
-  accent: '#c084fc',
-  accentHover: '#d8b4fe',
-  accentSubtle: 'rgba(192, 132, 252, 0.12)',
-  
-  // Borders (purple-tinted)
-  border: 'rgba(192, 132, 252, 0.15)',
-  borderStrong: 'rgba(192, 132, 252, 0.25)',
-  
-  // Highlight colors (purple-shifted for theme consistency)
-  highlightCritical: 'rgba(239, 68, 68, 0.25)',
-  highlightCriticalHover: 'rgba(239, 68, 68, 0.4)',
-  highlightSignificant: 'rgba(234, 179, 8, 0.25)',
-  highlightSignificantHover: 'rgba(234, 179, 8, 0.4)',
-  highlightMinor: 'rgba(139, 127, 163, 0.25)',
-  highlightMinorHover: 'rgba(139, 127, 163, 0.4)',
-  highlightDefault: 'rgba(192, 132, 252, 0.25)',
-  highlightDefaultHover: 'rgba(192, 132, 252, 0.4)',
-  
-  severityDefault: '#c084fc',
-} as const;
-
-/**
- * Generate CSS variables for a theme
- */
-function generateCssVariables(theme: typeof colors | typeof missColors): string {
-  return `
-  --bg-primary: ${theme.bgPrimary};
-  --bg-secondary: ${theme.bgSecondary};
-  --bg-tertiary: ${theme.bgTertiary};
-  --bg-hover: ${theme.bgHover};
-  --text-primary: ${theme.textPrimary};
-  --text-secondary: ${theme.textSecondary};
-  --text-muted: ${theme.textMuted};
-  --accent: ${theme.accent};
-  --accent-hover: ${theme.accentHover};
-  --accent-subtle: ${theme.accentSubtle};
-  --error: ${theme.error};
-  --error-subtle: ${theme.errorSubtle};
-  --success: ${theme.success};
-  --success-subtle: ${theme.successSubtle};
-  --warning: ${theme.warning};
-  --warning-subtle: ${theme.warningSubtle};
-  --border: ${theme.border};
-  --border-strong: ${theme.borderStrong};
-  --severity-critical: ${theme.severityCritical};
-  --severity-significant: ${theme.severitySignificant};
-  --severity-minor: ${theme.severityMinor};`;
-}
-
-/**
  * CSS for the default SanityCheck theme
  */
 export const cssVariables = `
 :root {
-${generateCssVariables(colors)}
+  --bg-primary: ${colors.bgPrimary};
+  --bg-secondary: ${colors.bgSecondary};
+  --bg-tertiary: ${colors.bgTertiary};
+  --bg-hover: ${colors.bgHover};
+  --text-primary: ${colors.textPrimary};
+  --text-secondary: ${colors.textSecondary};
+  --text-muted: ${colors.textMuted};
+  --accent: ${colors.accent};
+  --accent-hover: ${colors.accentHover};
+  --accent-subtle: ${colors.accentSubtle};
+  --error: ${colors.error};
+  --error-subtle: ${colors.errorSubtle};
+  --success: ${colors.success};
+  --success-subtle: ${colors.successSubtle};
+  --warning: ${colors.warning};
+  --warning-subtle: ${colors.warningSubtle};
+  --border: ${colors.border};
+  --border-strong: ${colors.borderStrong};
+  --severity-critical: ${colors.severityCritical};
+  --severity-significant: ${colors.severitySignificant};
+  --severity-minor: ${colors.severityMinor};
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   --radius-sm: 6px;
   --radius: 10px;
@@ -150,7 +101,27 @@ ${generateCssVariables(colors)}
  */
 export const missCssVariables = `
 body.theme-miss {
-${generateCssVariables(missColors)}
+  --bg-primary: #1a1520;
+  --bg-secondary: #231d2b;
+  --bg-tertiary: #2d2638;
+  --bg-hover: #3a3245;
+  --text-primary: #f5f0fa;
+  --text-secondary: #c4b8d4;
+  --text-muted: #8b7fa3;
+  --accent: #c084fc;
+  --accent-hover: #d8b4fe;
+  --accent-subtle: rgba(192, 132, 252, 0.12);
+  --error: #ef4444;
+  --error-subtle: rgba(239, 68, 68, 0.12);
+  --success: #10b981;
+  --success-subtle: rgba(16, 185, 129, 0.12);
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.12);
+  --border: rgba(192, 132, 252, 0.15);
+  --border-strong: rgba(192, 132, 252, 0.25);
+  --severity-critical: #ef4444;
+  --severity-significant: #eab308;
+  --severity-minor: #737373;
 }
 `;
 
@@ -185,8 +156,3 @@ body.theme-miss {
  * For homepage (backend), includes background image
  */
 export const themeCssVariables = cssVariables + missCssVariables + missBackgroundCss('/static/missinfo_bg.jpg');
-
-/**
- * Combined CSS for extension welcome page (different image path)
- */
-export const themeCssVariablesExtension = cssVariables + missCssVariables + missBackgroundCss('icons/missinfo_bg.jpg');

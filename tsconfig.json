@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
-    "outDir": "./build/backend",
-    "rootDir": "./src",
-    
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "bundler",
+
     // Strict type checking
     "strict": true,
     "noImplicitAny": true,
@@ -16,7 +15,7 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
     "alwaysStrict": true,
-    
+
     // Additional checks
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -24,23 +23,19 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    // Note: exactOptionalPropertyTypes and noPropertyAccessFromIndexSignature
-    // are intentionally disabled as they're overly strict for this codebase
-    
+
     // Module resolution
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    
-    // Output
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "types": ["node"]
+
+    // Output - noEmit since we use bun/esbuild for actual builds
+    "noEmit": true,
+
+    // Include Bun and Chrome types
+    "types": ["bun-types", "chrome"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/extension/**/*"]
+  "exclude": ["node_modules", "build", "dist"]
 }
-

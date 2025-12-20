@@ -5,15 +5,36 @@
 const { spawn, execSync } = require('child_process');
 const chokidar = require('chokidar');
 const path = require('path');
+const { WebSocketServer } = require('ws');
 
 const rootDir = path.dirname(__dirname);
 let serverProcess = null;
 let buildTimeout = null;
 
+// Websocket server for extension auto-reload
+const RELOAD_PORT = 8890;
+const wss = new WebSocketServer({ port: RELOAD_PORT });
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+  clients.add(ws);
+  console.log('🔌 Extension connected for auto-reload');
+  ws.on('close', () => clients.delete(ws));
+});
+
+function notifyExtensionReload() {
+  for (const client of clients) {
+    client.send('reload');
+  }
+  if (clients.size > 0) {
+    console.log('🔄 Notified extension to reload');
+  }
+}
+
 function build() {
   console.log('\n🔨 Building...');
   try {
-    execSync('node scripts/build.js --dev', { cwd: rootDir, stdio: 'inherit' });
+    execSync('node scripts/build.cjs --dev', { cwd: rootDir, stdio: 'inherit' });
     console.log('✅ Build complete\n');
     return true;
   } catch (error) {
@@ -28,7 +49,7 @@ function startServer() {
   }
 
   console.log('🚀 Starting server...\n');
-  serverProcess = spawn('node', ['build/backend/index.js'], {
+  serverProcess = spawn('bun', ['run', 'src/backend/app.ts'], {
     cwd: rootDir,
     stdio: 'inherit',
   });
@@ -47,6 +68,7 @@ function rebuild() {
   buildTimeout = setTimeout(() => {
     if (build()) {
       startServer();
+      notifyExtensionReload();
     }
   }, 100);
 }
@@ -68,7 +90,8 @@ watcher.on('all', (event, filePath) => {
   rebuild();
 });
 
-console.log('👀 Watching src/ for changes...\n');
+console.log('👀 Watching src/ for changes...');
+console.log(`🔌 Extension reload server on ws://localhost:${RELOAD_PORT}\n`);
 
 // Cleanup on exit
 process.on('SIGINT', () => {

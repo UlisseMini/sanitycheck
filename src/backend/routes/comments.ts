@@ -1,36 +1,41 @@
 // ABOUTME: User comment/feedback routes.
 // ABOUTME: Handles creating comments linked to articles.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma, hashText, getClientIp } from '../shared';
+import { Elysia, t } from 'elysia'
+import { prisma, hashText, getClientIp } from '../shared'
 
-const router = Router();
+const CommentRequest = t.Object({
+  url: t.String(),
+  title: t.Optional(t.String()),
+  textContent: t.String(),
+  selectedText: t.String(),
+  commentText: t.String()
+})
 
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { url, title, textContent, selectedText, commentText } = req.body;
+const CommentResponse = t.Object({
+  commentId: t.String(),
+  articleId: t.String(),
+  isNewArticle: t.Boolean()
+})
 
-    if (!url || !textContent || !selectedText || !commentText) {
-      res.status(400).json({
-        error: 'Missing required fields: url, textContent, selectedText, commentText'
-      });
-      return;
-    }
+export const commentsRoutes = new Elysia({ prefix: '/comments' })
+  .post('/', async ({ body, request }) => {
+    const { url, title, textContent, selectedText, commentText } = body
 
-    const textHash = hashText(textContent);
-    const ip = getClientIp(req);
-    const userAgent = req.headers['user-agent'] || null;
+    const textHash = hashText(textContent)
+    const ip = getClientIp(request.headers)
+    const userAgent = request.headers.get('user-agent')
 
     let article = await prisma.article.findUnique({
       where: { url_textHash: { url, textHash } }
-    });
+    })
 
-    const isNewArticle = !article;
+    const isNewArticle = !article
 
     if (!article) {
       article = await prisma.article.create({
-        data: { url, title, textContent, textHash, ip, userAgent }
-      });
+        data: { url, title: title ?? null, textContent, textHash, ip, userAgent }
+      })
     }
 
     const comment = await prisma.comment.create({
@@ -41,16 +46,14 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         ip,
         userAgent
       }
-    });
+    })
 
-    res.status(201).json({
+    return {
       commentId: comment.id,
       articleId: article.id,
       isNewArticle
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
+    }
+  }, {
+    body: CommentRequest,
+    response: CommentResponse
+  })

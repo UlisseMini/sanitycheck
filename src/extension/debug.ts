@@ -2,9 +2,7 @@
  * Debug logging utility for SanityCheck extension
  */
 
-import { BACKEND_URL } from './config';
-
-const DEBUG_ENABLED = true;
+import { BACKEND_URL, DEBUG_MODE } from './config';
 const EXTENSION_VERSION = '1.2.0';
 const DEBUG_SERVER_URL = `${BACKEND_URL}/debug/log`;
 
@@ -63,7 +61,7 @@ function sanitizeData(data: unknown): LogData | null {
 }
 
 async function sendLog(level: string, message: string, data: LogData = {}, source = 'unknown'): Promise<void> {
-  if (!DEBUG_ENABLED) return;
+  if (!DEBUG_MODE) return;
 
   const logData: LogEntry = {
     level,
@@ -144,13 +142,30 @@ function logError(message: string, error: unknown, source = 'unknown', additiona
 }
 
 export const debug = {
-  ENABLED: DEBUG_ENABLED,
+  ENABLED: DEBUG_MODE,
   log: (message: string, data: LogData = {}, source = 'popup'): void => { void sendLog('info', message, data, source); },
   warn: (message: string, data: LogData = {}, source = 'popup'): void => { void sendLog('warn', message, data, source); },
   error: (message: string, error: unknown, source = 'popup', additionalData: LogData = {}): void => { logError(message, error, source, additionalData); },
   debug: (message: string, data: LogData = {}, source = 'popup'): void => { void sendLog('debug', message, data, source); },
   flush: (): Promise<void> => flushLogQueue()
 };
+
+export function createContentDebugger() {
+  return {
+    log: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('log', message, { ...data, url: window.location.href }, source);
+    },
+    warn: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('warn', message, { ...data, url: window.location.href }, source);
+    },
+    error: (message: string, error: unknown, source = 'content', additionalData: LogData = {}): void => {
+      logError(message, error, source, { ...additionalData, url: window.location.href });
+    },
+    debug: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('debug', message, { ...data, url: window.location.href }, source);
+    }
+  };
+}
 
 // Set up global error handlers in browser context
 if (typeof window !== 'undefined') {

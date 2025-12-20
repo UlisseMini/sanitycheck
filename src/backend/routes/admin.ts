@@ -1,40 +1,37 @@
 // ABOUTME: Admin dashboard routes for content management.
 // ABOUTME: Provides article, comment, and stats management endpoints.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma, requireAdmin } from '../shared';
-import { generateAdminPage } from '../pages/admin';
+import { Elysia, t } from 'elysia'
+import { prisma, requireAdmin } from '../shared'
 
-const router = Router();
+export const adminRoutes = new Elysia({ prefix: '/admin' })
+  .use(requireAdmin)
 
-// Serve admin page (no auth - page handles its own login)
-router.get('/', (_req: Request, res: Response) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.send(generateAdminPage());
-});
+  // Verify admin key
+  .get('/verify', () => {
+    return { success: true }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Verify admin key
-router.get('/verify', requireAdmin, (_req: Request, res: Response) => {
-  res.json({ success: true });
-});
-
-// Delete annotation (admin only)
-router.delete('/annotations/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  // Delete annotation (admin only)
+  .delete('/annotations/:id', async ({ params }) => {
     await prisma.annotation.delete({
-      where: { id: req.params.id }
-    });
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-});
+      where: { id: params.id }
+    })
+    return { success: true }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Get all articles (admin)
-router.get('/articles', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+  // Get all articles (admin)
+  .get('/articles', async ({ query }) => {
+    const limit = Math.min(parseInt(query.limit || '50'), 200)
+    const offset = parseInt(query.offset || '0')
 
     const [articles, total] = await Promise.all([
       prisma.article.findMany({
@@ -51,12 +48,11 @@ router.get('/articles', requireAdmin, async (req: Request, res: Response, next: 
         }
       }),
       prisma.article.count()
-    ]);
+    ])
 
-    res.json({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      articles: articles.map((a: any) => {
-        const latestAnalysis = a.analyses[0];
+    return {
+      articles: articles.map((a) => {
+        const latestAnalysis = a.analyses[0]
         return {
           id: a.id,
           createdAt: a.createdAt,
@@ -70,22 +66,24 @@ router.get('/articles', requireAdmin, async (req: Request, res: Response, next: 
             highlightCount: latestAnalysis.highlights.length
           } : null,
           ip: a.ip
-        };
+        }
       }),
       total,
       limit,
       offset
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+    }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String()),
+      limit: t.Optional(t.String()),
+      offset: t.Optional(t.String())
+    })
+  })
 
-// Get single article with all data (admin)
-router.get('/articles/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  // Get single article with all data (admin)
+  .get('/articles/:id', async ({ params, set }) => {
     const article = await prisma.article.findUnique({
-      where: { id: req.params.id },
+      where: { id: params.id },
       include: {
         analyses: {
           orderBy: { createdAt: 'desc' },
@@ -95,34 +93,34 @@ router.get('/articles/:id', requireAdmin, async (req: Request, res: Response, ne
           orderBy: { createdAt: 'desc' }
         }
       }
-    });
+    })
 
     if (!article) {
-      res.status(404).json({ error: 'Article not found' });
-      return;
+      set.status = 404
+      return { error: 'Article not found' }
     }
 
-    res.json({ article });
-  } catch (error) {
-    next(error);
-  }
-});
+    return { article }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Delete article (admin)
-router.delete('/articles/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await prisma.article.delete({ where: { id: req.params.id } });
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-});
+  // Delete article (admin)
+  .delete('/articles/:id', async ({ params }) => {
+    await prisma.article.delete({ where: { id: params.id } })
+    return { success: true }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Get all comments (admin)
-router.get('/comments', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+  // Get all comments (admin)
+  .get('/comments', async ({ query }) => {
+    const limit = Math.min(parseInt(query.limit || '50'), 200)
+    const offset = parseInt(query.offset || '0')
 
     const [comments, total] = await Promise.all([
       prisma.comment.findMany({
@@ -134,29 +132,31 @@ router.get('/comments', requireAdmin, async (req: Request, res: Response, next: 
         }
       }),
       prisma.comment.count()
-    ]);
+    ])
 
-    res.json({ comments, total, limit, offset });
-  } catch (error) {
-    next(error);
-  }
-});
+    return { comments, total, limit, offset }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String()),
+      limit: t.Optional(t.String()),
+      offset: t.Optional(t.String())
+    })
+  })
 
-// Delete comment (admin)
-router.delete('/comments/:id', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await prisma.comment.delete({ where: { id: req.params.id } });
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-});
+  // Delete comment (admin)
+  .delete('/comments/:id', async ({ params }) => {
+    await prisma.comment.delete({ where: { id: params.id } })
+    return { success: true }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Get all early access signups (admin)
-router.get('/early-access', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+  // Get all early access signups (admin)
+  .get('/early-access', async ({ query }) => {
+    const limit = Math.min(parseInt(query.limit || '50'), 200)
+    const offset = parseInt(query.offset || '0')
 
     const [signups, total] = await Promise.all([
       prisma.earlyAccessSignup.findMany({
@@ -165,40 +165,42 @@ router.get('/early-access', requireAdmin, async (req: Request, res: Response, ne
         skip: offset,
       }),
       prisma.earlyAccessSignup.count()
-    ]);
+    ])
 
-    res.json({ signups, total, limit, offset });
-  } catch (error) {
-    next(error);
-  }
-});
+    return { signups, total, limit, offset }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String()),
+      limit: t.Optional(t.String()),
+      offset: t.Optional(t.String())
+    })
+  })
 
-// Get early access stats (admin)
-router.get('/early-access-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
+  // Get early access stats (admin)
+  .get('/early-access-stats', async () => {
     const [total, recentCount] = await Promise.all([
       prisma.earlyAccessSignup.count(),
       prisma.earlyAccessSignup.count({
         where: {
           createdAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // last 24h
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
           }
         }
       })
-    ]);
+    ])
 
-    res.json({
+    return {
       total,
       last24h: recentCount
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+    }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
 
-// Get feedback stats
-router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
+  // Get feedback stats
+  .get('/feedback-stats', async () => {
     const [articleCount, analysisCount, commentCount, highlightCount, recentArticles] = await Promise.all([
       prisma.article.count(),
       prisma.analysis.count(),
@@ -207,14 +209,14 @@ router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response,
       prisma.article.count({
         where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
       })
-    ]);
+    ])
 
     const highlightsByImportance = await prisma.highlight.groupBy({
       by: ['importance'],
       _count: true
-    });
+    })
 
-    res.json({
+    return {
       articles: articleCount,
       analyses: analysisCount,
       comments: commentCount,
@@ -224,10 +226,9 @@ router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response,
         importance: h.importance,
         count: h._count
       }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
+    }
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })
