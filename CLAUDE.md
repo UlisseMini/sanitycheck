@@ -29,6 +29,7 @@ npm run build        # Full build (backend + extension + zip)
 npm run typecheck    # TypeScript type checking
 npm test             # Run tests (vitest)
 npm run lint         # ESLint
+npm run pipeline     # Test analysis pipeline. Use when user asks: npm run pipeline <name> <articles-dir>
 ```
 
 ## First-time Setup
