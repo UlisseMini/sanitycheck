@@ -137,6 +137,17 @@ async function buildExtension({ isDev = false } = {}) {
     }
 
     console.log('  ✓ Static files copied');
+
+    // Strip dev-only permissions for prod builds
+    if (!isDev) {
+      const manifestPath = path.join(extensionOutDir, 'manifest.json');
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      manifest.host_permissions = manifest.host_permissions.filter(
+        p => !p.includes('localhost')
+      );
+      fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+      console.log('  ✓ Dev permissions stripped from manifest');
+    }
   }
 
   console.log('  ✓ Extension built to build/extension/');
