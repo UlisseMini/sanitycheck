@@ -115,11 +115,13 @@ const app = new Elysia()
   .use(earlyAccessRoutes)
 
   // Error handler
-  .onError(({ error, code }) => {
-    console.error('Error:', error)
+  .onError(({ error, code, request }) => {
     if (code === 'NOT_FOUND') {
+      const url = new URL(request.url)
+      console.log(`404 ${url.pathname}`)
       return { error: 'Not found' }
     }
+    console.error('Error:', error)
     return { error: 'Internal server error' }
   })
 

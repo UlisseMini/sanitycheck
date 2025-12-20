@@ -4,7 +4,7 @@
   "description": "AI-powered browser extension that spots logical gaps in articles",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch src/backend/app.ts",
+    "dev": "node scripts/dev.cjs",
     "dev:db": "docker-compose up",
     "dev:db:stop": "docker-compose down",
     "build": "node scripts/build.cjs",

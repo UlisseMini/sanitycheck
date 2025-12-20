@@ -13,7 +13,7 @@ let buildTimeout = null;
 function build() {
   console.log('\n🔨 Building...');
   try {
-    execSync('node scripts/build.js --dev', { cwd: rootDir, stdio: 'inherit' });
+    execSync('node scripts/build.cjs --dev', { cwd: rootDir, stdio: 'inherit' });
     console.log('✅ Build complete\n');
     return true;
   } catch (error) {
@@ -28,7 +28,7 @@ function startServer() {
   }
 
   console.log('🚀 Starting server...\n');
-  serverProcess = spawn('node', ['build/backend/index.js'], {
+  serverProcess = spawn('bun', ['run', 'src/backend/app.ts'], {
     cwd: rootDir,
     stdio: 'inherit',
   });
