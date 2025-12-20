@@ -384,9 +384,10 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 
 // ===== How It Works Rotating Border =====
 (function() {
-  const container = document.getElementById('how-rotating-container');
-  if (!container) return;
-  
+  const containerEl = document.getElementById('how-rotating-container');
+  if (!containerEl) return;
+  const container = containerEl; // Re-assign for type narrowing in closures
+
   const steps = document.querySelectorAll('.how-step[data-step]');
   const dots = document.querySelectorAll('.how-nav-dot[data-step]');
   let currentStep = 0;

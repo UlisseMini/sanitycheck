@@ -15,21 +15,25 @@ Some users use SanityCheck on things they're writing, e.g. by running the extens
 ## Architecture
 
 ```
-Extension (browser)  →  Backend API (Express)  →  Claude API (Anthropic)
-                              ↓
-                         PostgreSQL
+Extension (browser)  →  Backend API (Elysia/Bun)  →  Claude API (Anthropic)
+       ↑                        ↓
+  Eden client              PostgreSQL
+  (type-safe)
 ```
+
+**End-to-end type safety**: The extension imports `type App` from the backend, and uses Eden to make type-safe API calls. TypeScript verifies that extension API calls match backend route definitions at compile time.
 
 ## Commands
 
 ```bash
-npm run dev          # Build + start server + watch for changes
+npm run dev          # Start Elysia server with hot reload (Bun)
 npm run dev:db       # Start local Postgres via Docker
-npm run build        # Full build (backend + extension + zip)
-npm run typecheck    # TypeScript type checking
+npm run build        # Build extension + shared assets
+npm run start        # Start production server
+npm run typecheck    # TypeScript type checking (verifies backend/extension types match)
 npm test             # Run tests (vitest)
 npm run lint         # ESLint
-npm run pipeline     # Test analysis pipeline. Use when user asks: npm run pipeline <name> <articles-dir>
+npm run pipeline     # Test analysis pipeline: npm run pipeline <name> <articles-dir>
 ```
 
 ## First-time Setup
@@ -41,6 +45,12 @@ npm run dev:db          # Start Postgres
 npx prisma migrate deploy
 npm run dev
 ```
+
+## Key Files
+
+- `src/backend/app.ts` - Elysia app, exports `type App` for Eden
+- `src/extension/api.ts` - Eden client, imports `type App` from backend
+- `src/extension/background.ts` - Uses typed API calls
 
 ## Persistence
 

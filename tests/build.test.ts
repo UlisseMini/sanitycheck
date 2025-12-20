@@ -9,7 +9,6 @@ import * as path from 'path';
 const rootDir = path.join(__dirname, '..');
 const buildDir = path.join(rootDir, 'build');
 const publicDir = path.join(buildDir, 'public');
-const backendDir = path.join(buildDir, 'backend');
 const extensionDir = path.join(buildDir, 'extension');
 
 describe('Build Process', () => {
@@ -25,10 +24,6 @@ describe('Build Process', () => {
 
     it('creates build/public directory', () => {
       expect(fs.existsSync(publicDir)).toBe(true);
-    });
-
-    it('creates build/backend directory', () => {
-      expect(fs.existsSync(backendDir)).toBe(true);
     });
 
     it('creates build/extension directory', () => {
@@ -68,24 +63,16 @@ describe('Build Process', () => {
     });
   });
 
-  describe('Backend Build', () => {
-    it('compiles index.js', () => {
-      expect(fs.existsSync(path.join(backendDir, 'index.js'))).toBe(true);
+  describe('Backend (Bun)', () => {
+    // Backend is no longer compiled - Bun runs TypeScript directly
+    it('app.ts exists in source', () => {
+      expect(fs.existsSync(path.join(rootDir, 'src', 'backend', 'app.ts'))).toBe(true);
     });
 
-    it('compiles shared modules', () => {
-      const sharedDir = path.join(backendDir, 'shared');
-      expect(fs.existsSync(sharedDir)).toBe(true);
-      expect(fs.existsSync(path.join(sharedDir, 'kawaii.js'))).toBe(true);
-      expect(fs.existsSync(path.join(sharedDir, 'colors.js'))).toBe(true);
-      expect(fs.existsSync(path.join(sharedDir, 'constants.js'))).toBe(true);
-    });
-
-    it('compiles backend pages', () => {
-      const pagesDir = path.join(backendDir, 'backend', 'pages');
-      expect(fs.existsSync(pagesDir)).toBe(true);
-      expect(fs.existsSync(path.join(pagesDir, 'homepage.js'))).toBe(true);
-      expect(fs.existsSync(path.join(pagesDir, 'faq.js'))).toBe(true);
+    it('exports App type for Eden client', () => {
+      const appPath = path.join(rootDir, 'src', 'backend', 'app.ts');
+      const content = fs.readFileSync(appPath, 'utf-8');
+      expect(content).toContain('export type App = typeof app');
     });
   });
 
@@ -130,9 +117,9 @@ describe('Build Process', () => {
 });
 
 describe('Dev vs Production Path Resolution', () => {
-  it('index.ts handles dev mode path correctly', () => {
-    const indexPath = path.join(rootDir, 'src', 'index.ts');
-    const content = fs.readFileSync(indexPath, 'utf-8');
+  it('app.ts handles dev mode path correctly', () => {
+    const appPath = path.join(rootDir, 'src', 'backend', 'app.ts');
+    const content = fs.readFileSync(appPath, 'utf-8');
 
     // Should detect dev mode and use build/public
     expect(content).toContain('isDevMode');

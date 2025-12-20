@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
  * Unified build script for SanityCheck
- * 
+ *
  * Builds:
- * - Backend: TypeScript to build/backend/
  * - Extension: TypeScript to build/extension/ (bundled with esbuild)
  * - Extension zip: build/extension.zip
+ * - Shared assets: kawaii.js for backend pages
+ *
+ * Note: Backend runs directly with Bun (no build step needed)
  */
 
 const esbuild = require('esbuild');
-const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -18,28 +19,10 @@ const srcDir = path.join(rootDir, 'src');
 const extensionSrcDir = path.join(srcDir, 'extension');
 const staticDir = path.join(extensionSrcDir, 'static');
 const buildDir = path.join(rootDir, 'build');
-const backendOutDir = path.join(buildDir, 'backend');
 const extensionOutDir = path.join(buildDir, 'extension');
 
 const PROD_BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
 const DEV_BACKEND_URL = 'http://localhost:3000';
-
-async function buildBackend() {
-  console.log('📦 Building backend...');
-
-  // Ensure output directory exists
-  if (!fs.existsSync(backendOutDir)) {
-    fs.mkdirSync(backendOutDir, { recursive: true });
-  }
-
-  try {
-    execSync('npx tsc', { cwd: rootDir, stdio: 'inherit' });
-    console.log('  ✓ Backend built to build/backend/');
-  } catch (error) {
-    console.error('  ✗ Backend build failed');
-    throw error;
-  }
-}
 
 async function buildSharedAssets() {
   console.log('📦 Building shared assets...');
@@ -116,11 +99,11 @@ async function buildExtension({ isDev = false } = {}) {
 
     console.log('  ✓ Extension TypeScript built');
   }
-  
+
   // Copy static files
   if (fs.existsSync(staticDir)) {
     console.log('  Copying static files...');
-    
+
     const copyRecursive = (src, dest) => {
       if (fs.statSync(src).isDirectory()) {
         if (!fs.existsSync(dest)) {
@@ -133,14 +116,14 @@ async function buildExtension({ isDev = false } = {}) {
         fs.copyFileSync(src, dest);
       }
     };
-    
+
     // Copy all static files
     for (const file of fs.readdirSync(staticDir)) {
       const src = path.join(staticDir, file);
       const dest = path.join(extensionOutDir, file);
       copyRecursive(src, dest);
     }
-    
+
     // Flatten icons directory
     const iconsDir = path.join(extensionOutDir, 'icons');
     if (fs.existsSync(iconsDir)) {
@@ -152,22 +135,22 @@ async function buildExtension({ isDev = false } = {}) {
       }
       fs.rmSync(iconsDir, { recursive: true });
     }
-    
+
     console.log('  ✓ Static files copied');
   }
-  
+
   console.log('  ✓ Extension built to build/extension/');
 }
 
 async function bundleExtensionZip() {
   console.log('📦 Bundling extension zip...');
-  
+
   // Create public directory for static files served by backend
   const publicDir = path.join(buildDir, 'public');
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
   }
-  
+
   // Copy icon/image files to public directory for favicon and backgrounds
   const iconsDir = path.join(staticDir, 'icons');
   if (fs.existsSync(iconsDir)) {
@@ -181,12 +164,12 @@ async function bundleExtensionZip() {
     }
     console.log('  ✓ Icons and images copied to public/');
   }
-  
+
   const outputZip = path.join(publicDir, 'sanitycheck-extension.zip');
-  
+
   // Create temp directory for production build
   const tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'extension-'));
-  
+
   try {
     // Copy all extension files
     const copyRecursive = (src, dest) => {
@@ -202,9 +185,9 @@ async function bundleExtensionZip() {
         fs.copyFileSync(src, dest);
       }
     };
-    
+
     copyRecursive(extensionOutDir, tempDir);
-    
+
     // Disable debug mode in production builds
     const filesToPatch = ['debug.js', 'content.js', 'background.js'];
     for (const file of filesToPatch) {
@@ -215,28 +198,28 @@ async function bundleExtensionZip() {
         fs.writeFileSync(filePath, content);
       }
     }
-    
+
     // Create zip using Node.js (cross-platform)
     const archiver = require('archiver');
     const output = fs.createWriteStream(outputZip);
     const archive = archiver('zip', { zlib: { level: 9 } });
-    
+
     await new Promise((resolve, reject) => {
       output.on('close', resolve);
       archive.on('error', reject);
-      
+
       archive.pipe(output);
       archive.directory(tempDir, false);
       archive.finalize();
     });
-    
+
     if (fs.existsSync(outputZip)) {
       const stats = fs.statSync(outputZip);
       console.log(`  ✓ Extension bundled: ${(stats.size / 1024).toFixed(1)} KB`);
     } else {
       throw new Error('Failed to create extension zip');
     }
-    
+
   } finally {
     // Cleanup
     fs.rmSync(tempDir, { recursive: true, force: true });
@@ -246,37 +229,31 @@ async function bundleExtensionZip() {
 async function main() {
   const startTime = Date.now();
   console.log('🔨 SanityCheck Build\n');
-  
+
   try {
     // Parse arguments
     const args = process.argv.slice(2);
-    const skipBackend = args.includes('--extension-only');
-    const skipExtension = args.includes('--backend-only');
     const isDev = args.includes('--dev');
-    
+
     // Clean build directory
     if (fs.existsSync(buildDir)) {
       fs.rmSync(buildDir, { recursive: true });
     }
     fs.mkdirSync(buildDir, { recursive: true });
-    
-    // Always build shared assets (needed by both backend and extension)
+
+    // Build shared assets (needed by backend HTML pages)
     await buildSharedAssets();
 
-    if (!skipBackend) {
-      await buildBackend();
+    // Build extension
+    await buildExtension({ isDev });
+    if (!isDev) {
+      await bundleExtensionZip();
     }
 
-    if (!skipExtension) {
-      await buildExtension({ isDev });
-      if (!isDev) {
-        await bundleExtensionZip();
-      }
-    }
-    
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`\n✅ Build complete in ${duration}s`);
-    
+    console.log('\nTo start the server: bun run start');
+
   } catch (error) {
     console.error('\n❌ Build failed:', error.message);
     process.exit(1);

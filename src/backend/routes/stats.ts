@@ -1,13 +1,20 @@
 // ABOUTME: Public stats and export routes.
 // ABOUTME: Provides annotation statistics and data export.
 
-import { Router, Request, Response, NextFunction } from 'express';
-import { prisma, requireAdmin } from '../shared';
+import { Elysia, t } from 'elysia'
+import { prisma, ADMIN_KEY } from '../shared'
 
-const router = Router();
+const StatsResponse = t.Object({
+  total: t.Number(),
+  last24h: t.Number(),
+  byFallacyType: t.Array(t.Object({
+    type: t.String(),
+    count: t.Number()
+  }))
+})
 
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
+export const statsRoutes = new Elysia({ prefix: '/stats' })
+  .get('/', async () => {
     const [total, byType, recentCount] = await Promise.all([
       prisma.annotation.count(),
       prisma.annotation.groupBy({
@@ -22,24 +29,29 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
           }
         }
       })
-    ]);
+    ])
 
-    res.json({
+    return {
       total,
       last24h: recentCount,
       byFallacyType: byType.map((b: { fallacyType: string | null; _count: number }) => ({
         type: b.fallacyType || 'unspecified',
         count: b._count
       }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+    }
+  }, {
+    response: StatsResponse
+  })
 
-// Export annotations as JSONL (requires admin)
-router.get('/export', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
+  // Export annotations as JSONL (requires admin)
+  .get('/export', async ({ query, set }) => {
+    const key = query.key
+
+    if (key !== ADMIN_KEY) {
+      set.status = 401
+      return { error: 'Unauthorized' }
+    }
+
     const annotations = await prisma.annotation.findMany({
       orderBy: { createdAt: 'asc' },
       select: {
@@ -49,18 +61,18 @@ router.get('/export', requireAdmin, async (_req: Request, res: Response, next: N
         fallacyType: true,
         createdAt: true
       }
-    });
+    })
 
-    res.setHeader('Content-Type', 'application/jsonl');
-    res.setHeader('Content-Disposition', 'attachment; filename=annotations.jsonl');
+    const jsonl = annotations.map(ann => JSON.stringify(ann)).join('\n')
 
-    for (const ann of annotations) {
-      res.write(JSON.stringify(ann) + '\n');
-    }
-    res.end();
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
+    return new Response(jsonl, {
+      headers: {
+        'Content-Type': 'application/jsonl',
+        'Content-Disposition': 'attachment; filename=annotations.jsonl'
+      }
+    })
+  }, {
+    query: t.Object({
+      key: t.Optional(t.String())
+    })
+  })

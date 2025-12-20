@@ -611,13 +611,17 @@ interface HighlightData {
   
   function getHighlightAtPoint(x: number, y: number): HighlightData | null {
     let caretPos: { offsetNode: Node; offset: number } | null = null;
-    
+
+    // Type assertions needed due to non-standard APIs
+    type DocWithCaretPosition = Document & { caretPositionFromPoint(x: number, y: number): { offsetNode: Node; offset: number } | null }
+    type DocWithCaretRange = Document & { caretRangeFromPoint(x: number, y: number): Range | null }
+
     if ('caretPositionFromPoint' in document) {
-      const pos = (document as Document & { caretPositionFromPoint(x: number, y: number): { offsetNode: Node; offset: number } | null }).caretPositionFromPoint(x, y);
+      const pos = (document as DocWithCaretPosition).caretPositionFromPoint(x, y);
       if (!pos) return null;
       caretPos = pos;
-    } else if (document.caretRangeFromPoint) {
-      const range = document.caretRangeFromPoint(x, y);
+    } else if ('caretRangeFromPoint' in document) {
+      const range = (document as DocWithCaretRange).caretRangeFromPoint(x, y);
       if (!range) return null;
       caretPos = { offsetNode: range.startContainer, offset: range.startOffset };
     } else {
