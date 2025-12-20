@@ -44,7 +44,3 @@ npm run dev
 ## Persistence
 
 When something changes about the project, remember to make a minimal update to `CLAUDE.md`.
-
-When asked to remember something, write a design doc, plan, or save context: Write it to `.claude/plans/<plan>.md` or `.claude/docs/<doc>.md`.
-
-These persist across sessions. Check `.claude/` when starting work and, if there's context that's directly relevant to the task at hand, read it in.
