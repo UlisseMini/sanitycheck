@@ -2,6 +2,7 @@
 // ABOUTME: CLI runner for testing analysis pipelines on article directories.
 // ABOUTME: Usage: npm run pipeline <name> <articles-dir> [--output-dir=<path>] [--parallel=<N>]
 
+import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadPipeline, listPipelines } from '../src/pipelines/index';
