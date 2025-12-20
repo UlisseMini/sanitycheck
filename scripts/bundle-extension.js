@@ -57,12 +57,6 @@ try {
         stdio: 'pipe'
       });
       console.log('  ✓ content.js bundled with Readability');
-      
-      // Disable debug mode in bundled content.js
-      let content = fs.readFileSync(contentOutPath, 'utf8');
-      content = content.replace(/DEBUG_ENABLED\s*=\s*true/g, 'DEBUG_ENABLED=false');
-      fs.writeFileSync(contentOutPath, content);
-      console.log('  ✓ Disabled debug mode in content.js');
     } catch (e) {
       console.error('  ERROR bundling content.js:', e.message);
       // Fallback: try copying content.js if it exists
@@ -96,16 +90,7 @@ try {
     }
   }
 
-  // Step 3: Disable debug mode in debug.js
-  const debugJsPath = path.join(tempDir, 'debug.js');
-  if (fs.existsSync(debugJsPath)) {
-    let content = fs.readFileSync(debugJsPath, 'utf8');
-    content = content.replace('DEBUG_ENABLED = true', 'DEBUG_ENABLED = false');
-    fs.writeFileSync(debugJsPath, content);
-    console.log('  ✓ Disabled debug mode in debug.js');
-  }
-
-  // Step 4: Create zip
+  // Step 3: Create zip
   try {
     execSync(`cd "${tempDir}" && zip -r "${outputZip}" . -x "*.DS_Store"`, { 
       stdio: 'inherit',

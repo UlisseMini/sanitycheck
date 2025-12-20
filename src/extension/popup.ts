@@ -11,6 +11,7 @@ import {
   sendToContent,
 } from './messaging';
 import { debug } from './debug';
+import { DEBUG_MODE, BACKEND_URL } from './config';
 
 // Extended article type for popup (includes wordCount from extraction)
 type Article = ExtractedArticle;
@@ -62,10 +63,13 @@ async function init(): Promise<void> {
       }
     });
     
-    const DEBUG_ENABLED = typeof (window as unknown as { debug?: { ENABLED?: boolean } }).debug !== 'undefined';
     const debugIndicator = document.getElementById('debug-indicator');
-    if (DEBUG_ENABLED && debugIndicator) {
+    if (DEBUG_MODE && debugIndicator) {
       debugIndicator.classList.remove('hidden');
+      const backendUrlElement = document.getElementById('backend-url');
+      if (backendUrlElement) {
+        backendUrlElement.textContent = BACKEND_URL;
+      }
     } else if (debugIndicator) {
       debugIndicator.classList.add('hidden');
     }

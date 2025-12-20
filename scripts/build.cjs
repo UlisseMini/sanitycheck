@@ -188,17 +188,6 @@ async function bundleExtensionZip() {
 
     copyRecursive(extensionOutDir, tempDir);
 
-    // Disable debug mode in production builds
-    const filesToPatch = ['debug.js', 'content.js', 'background.js'];
-    for (const file of filesToPatch) {
-      const filePath = path.join(tempDir, file);
-      if (fs.existsSync(filePath)) {
-        let content = fs.readFileSync(filePath, 'utf8');
-        content = content.replace(/DEBUG_ENABLED\s*=\s*true/g, 'DEBUG_ENABLED = false');
-        fs.writeFileSync(filePath, content);
-      }
-    }
-
     // Create zip using Node.js (cross-platform)
     const archiver = require('archiver');
     const output = fs.createWriteStream(outputZip);

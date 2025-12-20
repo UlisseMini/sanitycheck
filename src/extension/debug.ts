@@ -2,9 +2,7 @@
  * Debug logging utility for SanityCheck extension
  */
 
-import { BACKEND_URL } from './config';
-
-const DEBUG_ENABLED = true;
+import { BACKEND_URL, DEBUG_MODE } from './config';
 const EXTENSION_VERSION = '1.2.0';
 const DEBUG_SERVER_URL = `${BACKEND_URL}/debug/log`;
 
@@ -63,7 +61,7 @@ function sanitizeData(data: unknown): LogData | null {
 }
 
 async function sendLog(level: string, message: string, data: LogData = {}, source = 'unknown'): Promise<void> {
-  if (!DEBUG_ENABLED) return;
+  if (!DEBUG_MODE) return;
 
   const logData: LogEntry = {
     level,
@@ -144,7 +142,7 @@ function logError(message: string, error: unknown, source = 'unknown', additiona
 }
 
 export const debug = {
-  ENABLED: DEBUG_ENABLED,
+  ENABLED: DEBUG_MODE,
   log: (message: string, data: LogData = {}, source = 'popup'): void => { void sendLog('info', message, data, source); },
   warn: (message: string, data: LogData = {}, source = 'popup'): void => { void sendLog('warn', message, data, source); },
   error: (message: string, error: unknown, source = 'popup', additionalData: LogData = {}): void => { logError(message, error, source, additionalData); },
