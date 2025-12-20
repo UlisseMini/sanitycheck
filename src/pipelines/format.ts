@@ -85,16 +85,6 @@ Analysis to format:
  * Uses Claude Haiku with tool use for guaranteed schema compliance.
  */
 export async function formatForExtension(analysisText: string, originalText: string): Promise<StructuredAnalysis> {
-  // If the analysis is already JSON, try to parse it directly
-  try {
-    const parsed = JSON.parse(analysisText);
-    if (parsed.issues && parsed.severity) {
-      return parsed as StructuredAnalysis;
-    }
-  } catch {
-    // Not JSON, need to format it
-  }
-
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is required');
