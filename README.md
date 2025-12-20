@@ -42,8 +42,11 @@ npm run dev:db       # Start local Postgres (Docker)
 npm run dev:db:stop  # Stop local Postgres
 npm run build        # Full production build
 npm run typecheck    # TypeScript type checking
-npm test             # Run tests (use these!)
+npm test             # Run tests (unit tests with mocks)
 npm run lint         # ESLint
+
+# Integration testing (requires ANTHROPIC_API_KEY in .env)
+VITEST_INTEGRATION=true npm test  # Run tests against real API
 ```
 
 ## Deployment

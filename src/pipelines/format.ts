@@ -84,7 +84,7 @@ Analysis to format:
  * Format free-form analysis text into structured JSON.
  * Uses Claude Haiku with tool use for guaranteed schema compliance.
  */
-export async function formatForExtension(analysisText: string): Promise<StructuredAnalysis> {
+export async function formatForExtension(analysisText: string, originalText: string): Promise<StructuredAnalysis> {
   // If the analysis is already JSON, try to parse it directly
   try {
     const parsed = JSON.parse(analysisText);
@@ -108,7 +108,7 @@ export async function formatForExtension(analysisText: string): Promise<Structur
     tools: [FORMAT_TOOL],
     tool_choice: { type: 'tool', name: 'format_analysis' },
     messages: [
-      { role: 'user', content: FORMAT_PROMPT + analysisText }
+      { role: 'user', content: FORMAT_PROMPT + analysisText + '\n\nORIGINAL ARTICLE:\n' + originalText }
     ]
   });
 

@@ -24,7 +24,7 @@ router.post('/', async (req: Request, res: Response) => {
     const analysisText = await pipeline.analyze(text);
 
     // Format for extension
-    const structured = await formatForExtension(analysisText);
+    const structured = await formatForExtension(analysisText, text);
 
     const duration = Date.now() - startTime;
     console.log(`[analyze] Complete in ${duration}ms`);
