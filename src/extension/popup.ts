@@ -17,7 +17,6 @@ import { DEBUG_MODE, BACKEND_URL } from './config';
 type Article = ExtractedArticle;
 
 // DOM Elements
-const settingsBtn = document.getElementById('settings-btn')!;
 const pageStatus = document.getElementById('page-status')!;
 const actionSection = document.getElementById('action-section')!;
 const analyzeBtn = document.getElementById('analyze-btn')!;
@@ -78,7 +77,6 @@ async function init(): Promise<void> {
     
     await checkCurrentPage();
     
-    settingsBtn.addEventListener('click', openSettings);
     analyzeBtn.addEventListener('click', () => { void analyzeArticle(); });
     pageStatus.addEventListener('click', toggleArticleText);
     closeArticleTextBtn.addEventListener('click', hideArticleText);
@@ -94,10 +92,6 @@ window.addEventListener('unload', () => {
     clearInterval(statusPollInterval);
   }
 });
-
-function openSettings(): void {
-  void chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
-}
 
 async function checkCurrentPage(): Promise<void> {
   try {

@@ -321,18 +321,6 @@ browserContent.addEventListener('mouseleave', () => {
 prevBtn.addEventListener('click', prevArticle);
 nextBtn.addEventListener('click', nextArticle);
 
-const settingsLink = document.getElementById('settings-link');
-if (settingsLink) {
-  settingsLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (typeof chrome !== 'undefined' && chrome.tabs) {
-      chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
-    } else {
-      window.location.href = 'settings.html';
-    }
-  });
-}
-
 // Initialize
 initPageIndicators();
 loadArticle(0);
