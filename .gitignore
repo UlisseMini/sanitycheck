@@ -6,16 +6,10 @@ node_modules/
 
 # Logs
 *.log
-*.log.old
-
-# Ignored data and scratch files
-ignore/
 
 # Build artifacts
 build/
-dist/
 *.zip
-public/
 
 # OS files
 .DS_Store
@@ -26,8 +20,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-test-anthropic-api.js
-test-debug-logging.js
 
 # Trash
 .trash/
