@@ -12,6 +12,7 @@
     "build:extension": "node scripts/build.js --extension-only",
     "start": "node build/backend/index.js",
     "preview": "node scripts/preview-extension.js",
+    "pipeline": "npx tsx scripts/run-pipeline.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
