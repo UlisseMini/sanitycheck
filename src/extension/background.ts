@@ -3,7 +3,7 @@
  * Built from TypeScript with shared imports
  */
 
-import { BACKEND_URL, DEFAULT_ANALYSIS_PROMPT } from '../shared';
+import { BACKEND_URL } from './config';
 import {
   Article,
   AnalysisStatus,
@@ -111,18 +111,12 @@ async function startAnalysis(tabId: number, article: Article) {
   ongoingAnalyses.set(url, { status: 'analyzing' });
   
   try {
-    // Get custom prompt if set
-    const stored = await chrome.storage.local.get(['customPrompt']);
-    const currentPrompt = stored.customPrompt || DEFAULT_ANALYSIS_PROMPT;
-    
     // Call backend
     const response = await fetch(`${BACKEND_URL}/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: currentPrompt + article.text,
-        maxTokens: 8192,
-        temperature: 0.3
+        text: article.text
       })
     });
     
@@ -131,22 +125,8 @@ async function startAnalysis(tabId: number, article: Article) {
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
-    const data = await response.json();
-    
-    // Parse the response
-    let result;
-    try {
-      // Extract JSON from response (might be wrapped in markdown code blocks)
-      let jsonText = data.text;
-      const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        jsonText = jsonMatch[1];
-      }
-      result = JSON.parse(jsonText);
-    } catch (_e) {
-      throw new Error('Failed to parse API response as JSON');
-    }
-    
+    const result = await response.json();
+
     // Store result (as 'parsed' to match what popup.ts expects)
     const issues: AnalysisIssue[] = result.issues || [];
     ongoingAnalyses.set(url, { status: 'complete', parsed: result });

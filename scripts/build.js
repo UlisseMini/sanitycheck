@@ -21,6 +21,9 @@ const buildDir = path.join(rootDir, 'build');
 const backendOutDir = path.join(buildDir, 'backend');
 const extensionOutDir = path.join(buildDir, 'extension');
 
+const PROD_BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
+const DEV_BACKEND_URL = 'http://localhost:3000';
+
 async function buildBackend() {
   console.log('📦 Building backend...');
 
@@ -66,14 +69,15 @@ async function buildSharedAssets() {
   }
 }
 
-async function buildExtension() {
-  console.log('📦 Building extension...');
-  
+async function buildExtension({ isDev = false } = {}) {
+  const backendUrl = isDev ? DEV_BACKEND_URL : PROD_BACKEND_URL;
+  console.log(`📦 Building extension (${isDev ? 'dev' : 'prod'}: ${backendUrl})...`);
+
   // Ensure output directory exists
   if (!fs.existsSync(extensionOutDir)) {
     fs.mkdirSync(extensionOutDir, { recursive: true });
   }
-  
+
   // Extension entry points
   const entryPoints = {
     background: path.join(extensionSrcDir, 'background.ts'),
@@ -83,7 +87,7 @@ async function buildExtension() {
     debug: path.join(extensionSrcDir, 'debug.ts'),
     welcome: path.join(extensionSrcDir, 'welcome.ts'),
   };
-  
+
   // Filter to only existing files
   const existingEntryPoints = {};
   for (const [name, filePath] of Object.entries(entryPoints)) {
@@ -93,10 +97,10 @@ async function buildExtension() {
       console.log(`  Skipping ${name}.ts (not found)`);
     }
   }
-  
+
   if (Object.keys(existingEntryPoints).length > 0) {
     console.log(`  Building ${Object.keys(existingEntryPoints).length} TypeScript entry points...`);
-    
+
     await esbuild.build({
       entryPoints: existingEntryPoints,
       outdir: extensionOutDir,
@@ -105,8 +109,11 @@ async function buildExtension() {
       target: 'chrome100',
       minify: false, // Keep readable for debugging
       sourcemap: false,
+      define: {
+        '__BACKEND_URL__': JSON.stringify(backendUrl),
+      },
     });
-    
+
     console.log('  ✓ Extension TypeScript built');
   }
   
@@ -245,6 +252,7 @@ async function main() {
     const args = process.argv.slice(2);
     const skipBackend = args.includes('--extension-only');
     const skipExtension = args.includes('--backend-only');
+    const isDev = args.includes('--dev');
     
     // Clean build directory
     if (fs.existsSync(buildDir)) {
@@ -260,8 +268,10 @@ async function main() {
     }
 
     if (!skipExtension) {
-      await buildExtension();
-      await bundleExtensionZip();
+      await buildExtension({ isDev });
+      if (!isDev) {
+        await bundleExtensionZip();
+      }
     }
     
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);

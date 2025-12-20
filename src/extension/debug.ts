@@ -2,7 +2,7 @@
  * Debug logging utility for SanityCheck extension
  */
 
-import { BACKEND_URL } from '../shared';
+import { BACKEND_URL } from './config';
 
 const DEBUG_ENABLED = true;
 const EXTENSION_VERSION = '1.2.0';

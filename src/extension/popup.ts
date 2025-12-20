@@ -2,7 +2,7 @@
  * SanityCheck - Popup Script
  */
 
-import { BACKEND_URL, makeKawaii } from '../shared';
+import { makeKawaii } from '../shared';
 import {
   AnalysisIssue,
   ParsedAnalysis,
@@ -516,5 +516,3 @@ function hideArticleText(): void {
   articleTextSection.classList.add('hidden');
 }
 
-// Export for potential use
-export { BACKEND_URL };

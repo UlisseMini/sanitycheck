@@ -13,7 +13,7 @@ let buildTimeout = null;
 function build() {
   console.log('\n🔨 Building...');
   try {
-    execSync('node scripts/build.js', { cwd: rootDir, stdio: 'inherit' });
+    execSync('node scripts/build.js --dev', { cwd: rootDir, stdio: 'inherit' });
     console.log('✅ Build complete\n');
     return true;
   } catch (error) {

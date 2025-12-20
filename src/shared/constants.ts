@@ -2,8 +2,6 @@
  * Shared constants
  */
 
-export const BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
-
 export const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 
 export const DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.

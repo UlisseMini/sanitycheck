@@ -4,7 +4,8 @@
  */
 
 import { Readability, isProbablyReaderable } from '@mozilla/readability';
-import { BACKEND_URL, makeKawaii } from '../shared';
+import { makeKawaii } from '../shared';
+import { BACKEND_URL } from './config';
 import {
   AnalysisIssue,
   ContentMessage,
