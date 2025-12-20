@@ -9,6 +9,7 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
+      "Bash(mkdir:*)",
       "Bash(cat:*)",
       "Bash(wc:*)",
       "Bash(npm run build)",
