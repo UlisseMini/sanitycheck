@@ -67,9 +67,14 @@ const app = new Elysia()
   // Request logging
   .onBeforeHandle(({ request, body }) => {
     const url = new URL(request.url)
-    const bodyStr = body && typeof body === 'object'
-      ? JSON.stringify(body).slice(0, 500)
-      : ''
+    let bodyStr = ''
+    if (body && typeof body === 'object') {
+      const bodyWithoutUserAgent = { ...body as Record<string, unknown> }
+      delete bodyWithoutUserAgent.userAgent
+      if (Object.keys(bodyWithoutUserAgent).length > 0) {
+        bodyStr = JSON.stringify(bodyWithoutUserAgent).slice(0, 500)
+      }
+    }
     console.log(`${request.method} ${url.pathname}${bodyStr ? ' ' + bodyStr : ''}`)
   })
 
