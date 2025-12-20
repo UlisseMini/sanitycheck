@@ -152,6 +152,23 @@ export const debug = {
   flush: (): Promise<void> => flushLogQueue()
 };
 
+export function createContentDebugger() {
+  return {
+    log: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('log', message, { ...data, url: window.location.href }, source);
+    },
+    warn: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('warn', message, { ...data, url: window.location.href }, source);
+    },
+    error: (message: string, error: unknown, source = 'content', additionalData: LogData = {}): void => {
+      logError(message, error, source, { ...additionalData, url: window.location.href });
+    },
+    debug: (message: string, data: LogData = {}, source = 'content'): void => {
+      void sendLog('debug', message, { ...data, url: window.location.href }, source);
+    }
+  };
+}
+
 // Set up global error handlers in browser context
 if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {

@@ -5,7 +5,6 @@
 
 import { Readability, isProbablyReaderable } from '@mozilla/readability';
 import { makeKawaii } from '../shared';
-import { BACKEND_URL } from './config';
 import {
   AnalysisIssue,
   ContentMessage,
@@ -13,6 +12,7 @@ import {
   sendToBackground,
 } from './messaging';
 import { contentStyles } from '../shared/highlight-styles';
+import { createContentDebugger } from './debug';
 
 declare global {
   interface Window {
@@ -20,32 +20,22 @@ declare global {
   }
 }
 
-interface HighlightData {
-  issue: AnalysisIssue;
-  index: number;
-  importance: string;
-  explanation: string;
-}
-
 (function() {
   // Avoid re-injecting
   if (window.__logicCheckerInjected) return;
   window.__logicCheckerInjected = true;
 
-  // Simple inline debug logger for content script
-  const DEBUG_ENABLED = true;
-  const EXTENSION_VERSION = '1.2.0';
-  const DEBUG_SERVER_URL = `${BACKEND_URL}/debug/log`;
-  
+  const debug = createContentDebugger();
+
   // Theme preference cache (checked on load)
   let isMissInfoMode = false;
-  
+
   // Check theme preference from chrome.storage
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.local.get(['theme'], (result) => {
       isMissInfoMode = result.theme === 'miss';
     });
-    
+
     // Listen for theme changes
     chrome.storage.onChanged.addListener((changes, areaName) => {
       if (areaName === 'local' && changes.theme) {
@@ -53,78 +43,6 @@ interface HighlightData {
       }
     });
   }
-
-  const debug = {
-    log: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
-      if (!DEBUG_ENABLED) return;
-      void fetch(DEBUG_SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          level: 'log',
-          message,
-          data: { ...data, url: window.location.href },
-          source,
-          version: EXTENSION_VERSION,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(() => {});
-    },
-    warn: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
-      if (!DEBUG_ENABLED) return;
-      void fetch(DEBUG_SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          level: 'warn',
-          message,
-          data: { ...data, url: window.location.href },
-          source,
-          version: EXTENSION_VERSION,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(() => {});
-    },
-    error: (message: string, error: unknown, source = 'content', additionalData: Record<string, unknown> = {}): void => {
-      if (!DEBUG_ENABLED) return;
-      const err = error as Error | undefined;
-      void fetch(DEBUG_SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          level: 'error',
-          message,
-          data: {
-            ...additionalData,
-            url: window.location.href,
-            error: err ? {
-              name: err.name,
-              message: err.message,
-              stack: err.stack
-            } : undefined
-          },
-          source,
-          version: EXTENSION_VERSION,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(() => {});
-    },
-    debug: (message: string, data: Record<string, unknown> = {}, source = 'content'): void => {
-      if (!DEBUG_ENABLED) return;
-      void fetch(DEBUG_SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          level: 'debug',
-          message,
-          data: { ...data, url: window.location.href },
-          source,
-          version: EXTENSION_VERSION,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(() => {});
-    }
-  };
 
   // Set up error handlers
   window.addEventListener('error', (event) => {
@@ -140,20 +58,11 @@ interface HighlightData {
     debug.error('Unhandled promise rejection in content script', event.reason, 'content-promise-rejection');
   });
 
-  // Feature detection for CSS Custom Highlight API
-  const USE_CSS_HIGHLIGHT_API = typeof CSS !== 'undefined' && 
-                                 'highlights' in CSS && 
-                                 typeof Highlight !== 'undefined';
-  
   debug.log('Content script initialized', {
     url: window.location.href,
     title: document.title,
-    useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API,
     hasReadability: typeof Readability !== 'undefined'
   }, 'content-init');
-
-  // Store highlight metadata for tooltip display
-  const highlightRanges = new Map<Range, HighlightData>();
 
   // Inject styles for highlighting
   const styleId = 'logic-checker-styles';
@@ -162,7 +71,7 @@ interface HighlightData {
     style.id = styleId;
     style.textContent = contentStyles;
     document.head.appendChild(style);
-    debug.log('Styles injected', { useCSSHighlightAPI: USE_CSS_HIGHLIGHT_API }, 'content-init');
+    debug.log('Styles injected', {}, 'content-init');
   }
 
   // Get or create tooltip element
@@ -567,135 +476,7 @@ interface HighlightData {
   }
 
   // =====================================================
-  // CSS Custom Highlight API
-  // =====================================================
-  
-  function highlightWithCSSAPI(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
-    try {
-      const range = document.createRange();
-      range.setStart(matchInfo.startNode, matchInfo.startOffset);
-      range.setEnd(matchInfo.endNode, matchInfo.endOffset);
-      
-      const importance = issue.importance ?? 'default';
-      const highlightName = `logic-checker-${importance}`;
-      
-      highlightRanges.set(range, {
-        issue,
-        index,
-        importance,
-        explanation: issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? ''
-      });
-      
-      let highlight = CSS.highlights.get(highlightName);
-      if (!highlight) {
-        highlight = new Highlight();
-        CSS.highlights.set(highlightName, highlight);
-      }
-      
-      highlight.add(range);
-      return true;
-    } catch (_e) {
-      return false;
-    }
-  }
-  
-  function clearCSSHighlights(): void {
-    const names = ['logic-checker-critical', 'logic-checker-significant', 'logic-checker-minor', 'logic-checker-default'];
-    names.forEach(name => {
-      if (CSS.highlights.has(name)) {
-        CSS.highlights.delete(name);
-      }
-    });
-    highlightRanges.clear();
-  }
-  
-  function getHighlightAtPoint(x: number, y: number): HighlightData | null {
-    let caretPos: { offsetNode: Node; offset: number } | null = null;
-
-    // Type assertions needed due to non-standard APIs
-    type DocWithCaretPosition = Document & { caretPositionFromPoint(x: number, y: number): { offsetNode: Node; offset: number } | null }
-    type DocWithCaretRange = Document & { caretRangeFromPoint(x: number, y: number): Range | null }
-
-    if ('caretPositionFromPoint' in document) {
-      const pos = (document as DocWithCaretPosition).caretPositionFromPoint(x, y);
-      if (!pos) return null;
-      caretPos = pos;
-    } else if ('caretRangeFromPoint' in document) {
-      const range = (document as DocWithCaretRange).caretRangeFromPoint(x, y);
-      if (!range) return null;
-      caretPos = { offsetNode: range.startContainer, offset: range.startOffset };
-    } else {
-      return null;
-    }
-    
-    const node = caretPos.offsetNode;
-    const offset = caretPos.offset;
-    
-    for (const [range, data] of highlightRanges) {
-      try {
-        if (range.isPointInRange(node, offset)) {
-          return data;
-        }
-      } catch (_e) {
-        continue;
-      }
-    }
-    
-    return null;
-  }
-  
-  let lastHighlightData: HighlightData | null = null;
-  
-  function handleMouseMoveForHighlight(e: MouseEvent): void {
-    if (!USE_CSS_HIGHLIGHT_API) return;
-    
-    const data = getHighlightAtPoint(e.clientX, e.clientY);
-    
-    if (data) {
-      if (data !== lastHighlightData) {
-        showTooltipForData(e, data);
-        lastHighlightData = data;
-      } else {
-        const tooltipEl = ensureTooltip();
-        positionTooltip(e, tooltipEl);
-      }
-    } else {
-      if (lastHighlightData) {
-        hideTooltip();
-        lastHighlightData = null;
-      }
-    }
-  }
-  
-  function showTooltipForData(e: MouseEvent, data: HighlightData): void {
-    const tooltipEl = ensureTooltip();
-    const importance = data.importance ?? 'minor';
-    
-    tooltipEl.className = `logic-checker-tooltip ${importance}`;
-    
-    const emoji = importance === 'critical' ? '🔴' : 
-                  importance === 'significant' ? '🟠' : '🟡';
-
-    const typeLabel = data.issue.type ?? data.issue.importance ?? 'Issue';
-    tooltipEl.innerHTML = `
-      <div class="logic-checker-tooltip-badge">Logic Issue</div>
-      <div class="logic-checker-tooltip-header">
-        <span class="logic-checker-tooltip-icon">${emoji}</span>
-        <span class="logic-checker-tooltip-type">${escapeHtml(typeLabel)}</span>
-      </div>
-      <div class="logic-checker-tooltip-explanation">${escapeHtml(data.explanation || 'No explanation available')}</div>
-    `;
-
-    positionTooltip(e, tooltipEl);
-    tooltipEl.classList.add('visible');
-  }
-  
-  if (USE_CSS_HIGHLIGHT_API) {
-    document.addEventListener('mousemove', handleMouseMoveForHighlight, { passive: true });
-  }
-
-  // =====================================================
-  // Span-based Highlighting (Fallback)
+  // Span-based Highlighting
   // =====================================================
   
   function highlightRangeWithSpan(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
@@ -770,11 +551,7 @@ interface HighlightData {
   }
   
   function highlightRange(matchInfo: MatchInfo, issue: AnalysisIssue, index: number): boolean {
-    if (USE_CSS_HIGHLIGHT_API) {
-      return highlightWithCSSAPI(matchInfo, issue, index);
-    } else {
-      return highlightRangeWithSpan(matchInfo, issue, index);
-    }
+    return highlightRangeWithSpan(matchInfo, issue, index);
   }
 
   // Tooltip functions
@@ -848,10 +625,6 @@ interface HighlightData {
   }
 
   function clearHighlights(): void {
-    if (USE_CSS_HIGHLIGHT_API) {
-      clearCSSHighlights();
-    }
-    
     const highlights = document.querySelectorAll('.logic-checker-highlight');
     highlights.forEach(el => {
       const parent = el.parentNode;
@@ -864,9 +637,9 @@ interface HighlightData {
   }
 
   function highlightIssues(issues: AnalysisIssue[]): void {
-    debug.log('Starting highlight process', { 
+    debug.log('Starting highlight process', {
       issueCount: issues.length,
-      method: USE_CSS_HIGHLIGHT_API ? 'CSS Highlight API' : 'Span wrapping'
+      method: 'Span wrapping'
     }, 'content-highlight');
     
     ensureTooltip();
