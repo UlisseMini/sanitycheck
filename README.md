@@ -2,22 +2,6 @@
 
 An AI-powered browser extension that spots logical gaps and reasoning issues in articles.
 
-## Project Structure
-
-```
-sanitycheck/
-├── src/
-│   ├── backend/         # Express route modules and pages
-│   ├── extension/       # Chrome extension source (TypeScript)
-│   ├── shared/          # Code shared between backend and extension
-│   └── index.ts         # Server entry point
-├── extension/           # Static extension files (HTML, manifest)
-├── prisma/              # Database schema and migrations
-├── scripts/             # Build and dev scripts
-├── build/               # Compiled output (gitignored)
-└── docker-compose.yml   # Local Postgres for development
-```
-
 ## Quick Start
 
 ### Backend (Local Development)
@@ -79,3 +63,4 @@ The backend is designed for Railway deployment:
    - Start the server
 
 **Note**: Ensure "Root Directory" is blank (deploys from repo root).
+
