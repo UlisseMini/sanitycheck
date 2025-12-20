@@ -10,6 +10,4 @@ export const api = treaty<App>(BACKEND_URL)
 
 // Re-export useful types derived from the API
 // These can be used throughout the extension for type-safe data handling
-export type AnalyzeResponse = Awaited<ReturnType<typeof api.analyze.post>>
-export type AnalyzeData = NonNullable<AnalyzeResponse['data']>
-export type AnalysisIssue = AnalyzeData['issues'][number]
+export type AnalyzeData = NonNullable<Awaited<ReturnType<typeof api.analyze.post>>['data']>

@@ -2,8 +2,6 @@
  * Shared constants
  */
 
-export const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
-
 export const DEFAULT_ANALYSIS_PROMPT = `You help readers notice genuine reasoning problems in articles—things they'd agree are valid weaknesses, even if they agree with the conclusions.
 
 ## Your Goal
@@ -33,30 +31,3 @@ For each issue you find, quote the relevant passage (20-60 words) and briefly ex
 
 ARTICLE:
 `;
-
-export const DEMO_EXAMPLES = [
-  {
-    quote: 'Remote workers report higher satisfaction and productivity in surveys.',
-    highlightedPart: 'Companies resisting remote work are simply prioritizing control over results.',
-    gap: 'Assumes no other reasons (collaboration, training juniors, culture) could matter.',
-    importance: 'significant' as const,
-  },
-  {
-    quote: 'The brain uses 20% of our calories despite being only 2% of body weight.',
-    highlightedPart: 'This explains why thinking hard leaves us mentally exhausted.',
-    gap: "High baseline energy use doesn't mean thinking harder uses significantly more.",
-    importance: 'significant' as const,
-  },
-  {
-    quote: "Critics of the proposal haven't offered any realistic alternatives.",
-    highlightedPart: 'Until they do, we should move forward with this plan.',
-    gap: "Lack of a better idea doesn't make this one good.",
-    importance: 'significant' as const,
-  },
-  {
-    quote: 'The top-performing schools in the district all use this curriculum.',
-    highlightedPart: 'Adopting it would help struggling schools catch up.',
-    gap: 'Top schools may succeed for other reasons (funding, demographics, teachers).',
-    importance: 'significant' as const,
-  },
-];
