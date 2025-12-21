@@ -46,11 +46,18 @@ npx prisma migrate deploy
 npm run dev
 ```
 
-## Key Files
+## Railway CLI
 
-- `src/backend/app.ts` - Elysia app, exports `type App` for Eden
-- `src/extension/api.ts` - Eden client, imports `type App` from backend
-- `src/extension/background.ts` - Uses typed API calls
+We deploy to railway. Some useful commands:
+
+```bash
+railway status                     # Current project/environment/service
+railway deployment list            # List recent deployments with status
+railway logs -b --lines 100        # Build logs (last 100 lines)
+railway logs -d --lines 100        # Deploy logs (last 100 lines)
+railway logs -d <deployment-id>    # Logs for specific deployment
+railway logs                       # Stream live logs
+```
 
 ## Persistence
 
