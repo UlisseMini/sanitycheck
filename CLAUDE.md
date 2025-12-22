@@ -53,9 +53,9 @@ We deploy to railway. Some useful commands:
 ```bash
 railway status                     # Current project/environment/service
 railway deployment list            # List recent deployments with status
-railway logs -b --lines 100        # Build logs (last 100 lines)
-railway logs -d --lines 100        # Deploy logs (last 100 lines)
-railway logs -d <deployment-id>    # Logs for specific deployment
+railway logs -b --lines 100        # Build logs from last successful build
+railway logs -d --lines 100        # Deploy logs from last successful deploy
+railway logs -d <deployment-id>    # Logs for specific deployment (e.g. a failed one)
 railway logs                       # Stream live logs
 ```
 
