@@ -20,13 +20,9 @@
     "test:watch": "vitest",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:push": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio",
-    "postinstall": "prisma generate",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -43,11 +39,9 @@
     "@elysiajs/eden": "^1.4.5",
     "@elysiajs/static": "^1.4.7",
     "@paralleldrive/cuid2": "^3.0.4",
-    "@prisma/client": "^6.2.1",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.19",
-    "postgres": "^3.4.7",
-    "prisma": "^6.2.1"
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

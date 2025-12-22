@@ -42,7 +42,7 @@ npm run pipeline     # Test analysis pipeline: npm run pipeline <name> <articles
 npm install
 cp .env.example .env    # Defaults work for local dev
 npm run dev:db          # Start Postgres
-npx prisma migrate deploy
+npm run drizzle:push    # Apply database schema
 npm run dev
 ```
 

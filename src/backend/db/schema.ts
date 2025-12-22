@@ -1,5 +1,5 @@
 // ABOUTME: Drizzle schema defining all database tables
-// ABOUTME: Mirrors the Prisma schema with PostgreSQL-native types
+// ABOUTME: Uses PostgreSQL-native types with Drizzle ORM
 
 import { pgTable, text, timestamp, boolean, jsonb, index, unique } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
