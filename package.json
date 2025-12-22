@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "AI-powered browser extension that spots logical gaps in articles",
   "type": "module",
+  "engines": {
+    "node": "24"
+  },
   "scripts": {
     "dev": "node scripts/dev.cjs",
     "dev:db": "docker-compose up",
