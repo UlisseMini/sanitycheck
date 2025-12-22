@@ -2,7 +2,9 @@
 // ABOUTME: Handles creating comments linked to articles.
 
 import { Elysia, t } from 'elysia'
-import { prisma, hashText, getClientIp } from '../shared'
+import { hashText, getClientIp } from '../shared'
+import { db, articles, comments } from '../db'
+import { eq, and } from 'drizzle-orm'
 
 const CommentRequest = t.Object({
   url: t.String(),
@@ -26,30 +28,37 @@ export const commentsRoutes = new Elysia({ prefix: '/comments' })
     const ip = getClientIp(request.headers)
     const userAgent = request.headers.get('user-agent')
 
-    let article = await prisma.article.findUnique({
-      where: { url_textHash: { url, textHash } }
+    // Find existing article
+    let article = await db.query.articles.findFirst({
+      where: and(eq(articles.url, url), eq(articles.textHash, textHash)),
     })
 
     const isNewArticle = !article
 
+    // Create if not exists
     if (!article) {
-      article = await prisma.article.create({
-        data: { url, title: title ?? null, textContent, textHash, ip, userAgent }
-      })
+      const [newArticle] = await db.insert(articles).values({
+        url,
+        title: title ?? null,
+        textContent,
+        textHash,
+        ip,
+        userAgent,
+      }).returning()
+      article = newArticle!
     }
 
-    const comment = await prisma.comment.create({
-      data: {
-        articleId: article.id,
-        selectedText,
-        commentText,
-        ip,
-        userAgent
-      }
-    })
+    // Create comment
+    const [comment] = await db.insert(comments).values({
+      articleId: article.id,
+      selectedText,
+      commentText,
+      ip,
+      userAgent,
+    }).returning()
 
     return {
-      commentId: comment.id,
+      commentId: comment!.id,
       articleId: article.id,
       isNewArticle
     }
