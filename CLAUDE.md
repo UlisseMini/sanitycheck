@@ -26,14 +26,17 @@ Extension (browser)  →  Backend API (Elysia/Bun)  →  Claude API (Anthropic)
 ## Commands
 
 ```bash
-npm run dev          # Start Elysia server with hot reload (Bun)
-npm run dev:db       # Start local Postgres via Docker
-npm run build        # Build extension + shared assets
-npm run start        # Start production server
-npm run typecheck    # TypeScript type checking (verifies backend/extension types match)
-npm test             # Run tests (vitest)
-npm run lint         # ESLint
-npm run pipeline     # Test analysis pipeline: npm run pipeline <name> <articles-dir>
+npm run dev              # Start Elysia server with hot reload (Bun)
+npm run dev:db           # Start local Postgres via Docker
+npm run build            # Build extension + shared assets
+npm run start            # Start production server
+npm run typecheck        # TypeScript type checking (verifies backend/extension types match)
+npm test                 # Run tests (vitest)
+npm run lint             # ESLint
+npm run pipeline         # Test analysis pipeline: npm run pipeline <name> <articles-dir>
+npm run drizzle:generate # Generate migrations from schema changes
+npm run drizzle:push     # Push schema directly (prototyping)
+npm run drizzle:studio   # Open Drizzle Studio
 ```
 
 ## First-time Setup
