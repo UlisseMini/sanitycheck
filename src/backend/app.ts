@@ -13,7 +13,8 @@ import { generatePrivacyPage } from './pages/privacy'
 import { generateTechnicalFaqPage } from './pages/technical-faq'
 import { generateEarlyAccessPage } from './pages/early-access'
 import { generateAdminPage } from './pages/admin'
-import { prisma, ADMIN_KEY } from './shared'
+import { ADMIN_KEY } from './shared'
+import { closeDb } from './db/client'
 
 import { analyzeRoutes } from './routes/analyze'
 import { articlesRoutes } from './routes/articles'
@@ -134,7 +135,7 @@ console.log(`Admin panel: http://localhost:${PORT}/admin`)
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down...')
-  await prisma.$disconnect()
+  await closeDb()
   process.exit(0)
 })
 

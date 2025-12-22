@@ -1,11 +1,8 @@
 // ABOUTME: Shared utilities and constants for backend routes.
-// ABOUTME: Exports prisma client and helper functions.
+// ABOUTME: Exports helper functions for hashing, auth, and IP extraction.
 
 import crypto from 'crypto'
-import { PrismaClient } from '@prisma/client'
 import { Elysia } from 'elysia'
-
-export const prisma = new PrismaClient()
 
 export function hashText(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex').substring(0, 16)
