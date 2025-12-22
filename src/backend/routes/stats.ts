@@ -2,7 +2,9 @@
 // ABOUTME: Provides annotation statistics and data export.
 
 import { Elysia, t } from 'elysia'
-import { prisma, requireAdmin } from '../shared'
+import { db, annotations } from '../db'
+import { sql, desc, gte } from 'drizzle-orm'
+import { requireAdmin } from '../shared'
 
 const StatsResponse = t.Object({
   total: t.Number(),
@@ -15,28 +17,28 @@ const StatsResponse = t.Object({
 
 export const statsRoutes = new Elysia({ prefix: '/stats' })
   .get('/', async () => {
-    const [total, byType, recentCount] = await Promise.all([
-      prisma.annotation.count(),
-      prisma.annotation.groupBy({
-        by: ['fallacyType'],
-        _count: true,
-        orderBy: { _count: { fallacyType: 'desc' } }
-      }),
-      prisma.annotation.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
-          }
-        }
+    const [totalResult, byType, recentResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(annotations),
+      db.select({
+        fallacyType: annotations.fallacyType,
+        count: sql<number>`count(*)`,
       })
+        .from(annotations)
+        .groupBy(annotations.fallacyType),
+      db.select({ count: sql<number>`count(*)` })
+        .from(annotations)
+        .where(gte(annotations.createdAt, new Date(Date.now() - 24 * 60 * 60 * 1000)))
     ])
+
+    const total = totalResult[0]?.count ?? 0
+    const recentCount = recentResult[0]?.count ?? 0
 
     return {
       total,
       last24h: recentCount,
-      byFallacyType: byType.map((b: { fallacyType: string | null; _count: number }) => ({
+      byFallacyType: byType.map((b: { fallacyType: string | null; count: number }) => ({
         type: b.fallacyType || 'unspecified',
-        count: b._count
+        count: b.count
       }))
     }
   }, {
@@ -46,18 +48,17 @@ export const statsRoutes = new Elysia({ prefix: '/stats' })
   // Export annotations as JSONL (requires admin)
   .use(requireAdmin)
   .get('/export', async () => {
-    const annotations = await prisma.annotation.findMany({
-      orderBy: { createdAt: 'asc' },
-      select: {
-        url: true,
-        quote: true,
-        annotation: true,
-        fallacyType: true,
-        createdAt: true
-      }
+    const all = await db.select({
+      url: annotations.url,
+      quote: annotations.quote,
+      annotation: annotations.annotation,
+      fallacyType: annotations.fallacyType,
+      createdAt: annotations.createdAt
     })
+      .from(annotations)
+      .orderBy(desc(annotations.createdAt))
 
-    const jsonl = annotations.map(ann => JSON.stringify(ann)).join('\n')
+    const jsonl = all.map(ann => JSON.stringify(ann)).join('\n')
 
     return new Response(jsonl, {
       headers: {
