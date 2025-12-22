@@ -2,7 +2,9 @@
 // ABOUTME: Handles article creation and storing analysis results.
 
 import { Elysia, t } from 'elysia'
-import { prisma, hashText, getClientIp } from '../shared'
+import { hashText, getClientIp } from '../shared'
+import { db, articles, analyses, highlights } from '../db'
+import { eq, and } from 'drizzle-orm'
 
 const CreateArticleRequest = t.Object({
   url: t.String(),
@@ -44,16 +46,22 @@ export const articlesRoutes = new Elysia({ prefix: '/articles' })
     const ip = getClientIp(request.headers)
     const userAgent = request.headers.get('user-agent')
 
-    let article = await prisma.article.findUnique({
-      where: { url_textHash: { url, textHash } }
+    let article = await db.query.articles.findFirst({
+      where: and(eq(articles.url, url), eq(articles.textHash, textHash)),
     })
 
     const isNew = !article
 
     if (!article) {
-      article = await prisma.article.create({
-        data: { url, title: title ?? null, textContent, textHash, ip, userAgent }
-      })
+      const [newArticle] = await db.insert(articles).values({
+        url,
+        title: title ?? null,
+        textContent,
+        textHash,
+        ip,
+        userAgent,
+      }).returning()
+      article = newArticle!
     }
 
     return { articleId: article.id, isNew }
@@ -65,39 +73,46 @@ export const articlesRoutes = new Elysia({ prefix: '/articles' })
   // Add analysis results to article
   .post('/:articleId/analysis', async ({ params, body }) => {
     const { articleId } = params
-    const { modelVersion, rawResponse, severity, highlights, promptUsed, isCustomPrompt } = body
+    const { modelVersion, rawResponse, severity, highlights: highlightData, promptUsed, isCustomPrompt } = body
 
     if (!rawResponse) {
       throw new Error('Missing required field: rawResponse')
     }
 
-    const article = await prisma.article.findUnique({ where: { id: articleId } })
+    const article = await db.query.articles.findFirst({
+      where: eq(articles.id, articleId),
+    })
     if (!article) {
       throw new Error('Article not found')
     }
 
-    const analysis = await prisma.analysis.create({
-      data: {
-        articleId,
-        modelVersion: modelVersion ?? null,
-        rawResponse,
-        severity: severity ?? null,
-        promptUsed: promptUsed ?? null,
-        isCustomPrompt: isCustomPrompt ?? false,
-        highlights: highlights ? {
-          create: highlights.map((h) => ({
-            quote: h.quote,
-            importance: h.importance ?? 'minor',
-            gap: h.gap ?? ''
-          }))
-        } : undefined
-      },
-      include: { highlights: true }
-    })
+    // Insert analysis
+    const [analysis] = await db.insert(analyses).values({
+      articleId,
+      modelVersion: modelVersion ?? null,
+      rawResponse,
+      severity: severity ?? null,
+      promptUsed: promptUsed ?? null,
+      isCustomPrompt: isCustomPrompt ?? false,
+    }).returning()
+
+    // Insert highlights if any
+    let highlightCount = 0
+    if (highlightData && highlightData.length > 0) {
+      const insertedHighlights = await db.insert(highlights).values(
+        highlightData.map((h) => ({
+          analysisId: analysis!.id,
+          quote: h.quote,
+          importance: h.importance ?? 'minor',
+          gap: h.gap ?? '',
+        }))
+      ).returning()
+      highlightCount = insertedHighlights.length
+    }
 
     return {
-      analysisId: analysis.id,
-      highlightCount: analysis.highlights.length
+      analysisId: analysis!.id,
+      highlightCount,
     }
   }, {
     body: AddAnalysisRequest,

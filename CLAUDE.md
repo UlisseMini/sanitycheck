@@ -26,14 +26,17 @@ Extension (browser)  →  Backend API (Elysia/Bun)  →  Claude API (Anthropic)
 ## Commands
 
 ```bash
-npm run dev          # Start Elysia server with hot reload (Bun)
-npm run dev:db       # Start local Postgres via Docker
-npm run build        # Build extension + shared assets
-npm run start        # Start production server
-npm run typecheck    # TypeScript type checking (verifies backend/extension types match)
-npm test             # Run tests (vitest)
-npm run lint         # ESLint
-npm run pipeline     # Test analysis pipeline: npm run pipeline <name> <articles-dir>
+npm run dev              # Start Elysia server with hot reload (Bun)
+npm run dev:db           # Start local Postgres via Docker
+npm run build            # Build extension + shared assets
+npm run start            # Start production server
+npm run typecheck        # TypeScript type checking (verifies backend/extension types match)
+npm test                 # Run tests (vitest)
+npm run lint             # ESLint
+npm run pipeline         # Test analysis pipeline: npm run pipeline <name> <articles-dir>
+npm run drizzle:generate # Generate migrations from schema changes
+npm run drizzle:push     # Push schema directly (prototyping)
+npm run drizzle:studio   # Open Drizzle Studio
 ```
 
 ## First-time Setup
@@ -42,7 +45,7 @@ npm run pipeline     # Test analysis pipeline: npm run pipeline <name> <articles
 npm install
 cp .env.example .env    # Defaults work for local dev
 npm run dev:db          # Start Postgres
-npx prisma migrate deploy
+npm run drizzle:push    # Apply database schema
 npm run dev
 ```
 
@@ -53,9 +56,9 @@ We deploy to railway. Some useful commands:
 ```bash
 railway status                     # Current project/environment/service
 railway deployment list            # List recent deployments with status
-railway logs -b --lines 100        # Build logs (last 100 lines)
-railway logs -d --lines 100        # Deploy logs (last 100 lines)
-railway logs -d <deployment-id>    # Logs for specific deployment
+railway logs -b --lines 100        # Build logs from last successful build
+railway logs -d --lines 100        # Deploy logs from last successful deploy
+railway logs -d <deployment-id>    # Logs for specific deployment (e.g. a failed one)
 railway logs                       # Stream live logs
 ```
 

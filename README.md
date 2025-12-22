@@ -17,8 +17,8 @@ cp .env.example .env
 # Start local Postgres
 npm run dev:db
 
-# Run migrations
-npx prisma migrate deploy
+# Push database schema
+npm run drizzle:push
 
 # Start development server (watches for changes)
 npm run dev

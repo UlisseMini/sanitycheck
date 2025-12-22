@@ -2,7 +2,9 @@
 // ABOUTME: Receives and queries extension debug logs.
 
 import { Elysia, t } from 'elysia'
-import { prisma, requireAdmin, getClientIp } from '../shared'
+import { requireAdmin, getClientIp } from '../shared'
+import { db, debugLogs } from '../db'
+import { eq, gte, desc, sql, and, lt } from 'drizzle-orm'
 
 const DebugLogRequest = t.Object({
   level: t.Optional(t.String()),
@@ -21,16 +23,14 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
       const ip = getClientIp(request.headers) || 'unknown'
       const userAgent = request.headers.get('user-agent')
 
-      await prisma.debugLog.create({
-        data: {
-          level: level || 'log',
-          message,
-          data: data || null,
-          source: source || null,
-          ip,
-          version: version || null,
-          userAgent,
-        }
+      await db.insert(debugLogs).values({
+        level: level || 'log',
+        message,
+        data: data || null,
+        source: source || null,
+        ip,
+        version: version || null,
+        userAgent,
       })
 
       return { success: true }
@@ -51,14 +51,10 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
     const level = query.level
     const since = query.since
 
-    const where: {
-      ip?: string
-      level?: string
-      createdAt?: { gte: Date }
-    } = {}
-
-    if (ip) where.ip = ip
-    if (level) where.level = level
+    // Build where conditions dynamically
+    const conditions = []
+    if (ip) conditions.push(eq(debugLogs.ip, ip))
+    if (level) conditions.push(eq(debugLogs.level, level))
 
     if (since) {
       let sinceDate: Date
@@ -75,33 +71,41 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
       }
 
       if (!isNaN(sinceDate.getTime())) {
-        where.createdAt = { gte: sinceDate }
+        conditions.push(gte(debugLogs.createdAt, sinceDate))
       }
     }
 
-    const [logs, total] = await Promise.all([
-      prisma.debugLog.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.debugLog.count({ where })
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+    const [logs, countResult] = await Promise.all([
+      db.select()
+        .from(debugLogs)
+        .where(whereClause)
+        .orderBy(desc(debugLogs.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ count: sql<number>`count(*)` })
+        .from(debugLogs)
+        .where(whereClause)
     ])
 
-    const uniqueIps = await prisma.debugLog.groupBy({
-      by: ['ip'],
-      _count: true,
-      orderBy: { _count: { ip: 'desc' } },
-      take: 50
+    const total = countResult[0]?.count ?? 0
+
+    const uniqueIps = await db.select({
+      ip: debugLogs.ip,
+      count: sql<number>`count(*)`,
     })
+      .from(debugLogs)
+      .groupBy(debugLogs.ip)
+      .orderBy(desc(sql`count(*)`))
+      .limit(50)
 
     return {
       logs,
       total,
       limit,
       offset,
-      availableIps: uniqueIps.map((i: { ip: string | null; _count: number }) => ({ ip: i.ip, count: i._count }))
+      availableIps: uniqueIps.map((i: { ip: string | null; count: number }) => ({ ip: i.ip, count: i.count }))
     }
   }, {
     query: t.Object({
@@ -132,11 +136,16 @@ export const debugRoutes = new Elysia({ prefix: '/debug' })
 
     const cutoffDate = new Date(Date.now() - ms)
 
-    const result = await prisma.debugLog.deleteMany({
-      where: { createdAt: { lt: cutoffDate } }
-    })
+    const countResult = await db.select({ count: sql<number>`count(*)` })
+      .from(debugLogs)
+      .where(lt(debugLogs.createdAt, cutoffDate))
 
-    return { success: true, deleted: result.count }
+    const deleted = countResult[0]?.count ?? 0
+
+    await db.delete(debugLogs)
+      .where(lt(debugLogs.createdAt, cutoffDate))
+
+    return { success: true, deleted }
   }, {
     query: t.Object({
       key: t.Optional(t.String()),

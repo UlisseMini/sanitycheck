@@ -2,7 +2,8 @@
 // ABOUTME: Handles CRUD operations on user annotations.
 
 import { Elysia, t } from 'elysia'
-import { prisma } from '../shared'
+import { db, annotations } from '../db'
+import { desc, eq, sql } from 'drizzle-orm'
 
 const CreateAnnotationRequest = t.Object({
   url: t.String(),
@@ -48,17 +49,19 @@ export const annotationsRoutes = new Elysia({ prefix: '/annotations' })
     const { url, title, quote, annotation, fallacyType, userId } = body
     const userAgent = request.headers.get('user-agent')
 
-    const created = await prisma.annotation.create({
-      data: {
-        url,
-        title: title || null,
-        quote,
-        annotation,
-        fallacyType: fallacyType || null,
-        userId: userId || null,
-        userAgent,
-      }
-    })
+    const [created] = await db.insert(annotations).values({
+      url,
+      title: title || null,
+      quote,
+      annotation,
+      fallacyType: fallacyType || null,
+      userId: userId || null,
+      userAgent,
+    }).returning()
+
+    if (!created) {
+      throw new Error('Failed to create annotation')
+    }
 
     console.log(`New annotation: ${created.id} for ${url}`)
 
@@ -78,19 +81,23 @@ export const annotationsRoutes = new Elysia({ prefix: '/annotations' })
     const offset = parseInt(query.offset || '0')
     const fallacyType = query.fallacyType
 
-    const where = fallacyType ? { fallacyType } : {}
+    const whereCondition = fallacyType ? eq(annotations.fallacyType, fallacyType) : undefined
 
-    const [annotations, total] = await Promise.all([
-      prisma.annotation.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.annotation.count({ where })
+    const [results, countResult] = await Promise.all([
+      db.select()
+        .from(annotations)
+        .where(whereCondition)
+        .orderBy(desc(annotations.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ count: sql<number>`count(*)` })
+        .from(annotations)
+        .where(whereCondition)
     ])
 
-    return { annotations, total, limit, offset }
+    const total = countResult[0]?.count ?? 0
+
+    return { annotations: results, total, limit, offset }
   }, {
     query: t.Object({
       limit: t.Optional(t.String()),
@@ -108,12 +115,12 @@ export const annotationsRoutes = new Elysia({ prefix: '/annotations' })
       throw new Error('Missing url parameter')
     }
 
-    const annotations = await prisma.annotation.findMany({
-      where: { url },
-      orderBy: { createdAt: 'desc' }
-    })
+    const results = await db.select()
+      .from(annotations)
+      .where(eq(annotations.url, url))
+      .orderBy(desc(annotations.createdAt))
 
-    return { annotations }
+    return { annotations: results }
   }, {
     query: t.Object({
       url: t.Optional(t.String())

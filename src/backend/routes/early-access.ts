@@ -2,7 +2,8 @@
 // ABOUTME: Handles public signup endpoint for early access registration.
 
 import { Elysia, t } from 'elysia'
-import { prisma, getClientIp } from '../shared'
+import { getClientIp } from '../shared'
+import { db, earlyAccessSignups } from '../db'
 
 const EarlyAccessRequest = t.Object({
   firstName: t.String(),
@@ -26,32 +27,25 @@ export const earlyAccessRoutes = new Elysia({ prefix: '/api' })
     const ip = getClientIp(request.headers)
     const userAgent = request.headers.get('user-agent')
 
-    try {
-      const signup = await prisma.earlyAccessSignup.create({
-        data: {
-          firstName,
-          email,
-          discord: discord || null,
-          reason: reason || null,
-          ip,
-          userAgent
-        }
-      })
+    const [signup] = await db.insert(earlyAccessSignups).values({
+      firstName,
+      email,
+      discord: discord || null,
+      reason: reason || null,
+      ip,
+      userAgent
+    }).returning()
 
-      console.log(`New early access signup: ${signup.id} - ${email}`)
+    if (!signup) {
+      throw new Error('Failed to create early access signup')
+    }
 
-      return {
-        success: true as const,
-        id: signup.id,
-        createdAt: signup.createdAt
-      }
-    } catch (error) {
-      // Check for duplicate email
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-        set.status = 409
-        return { error: 'This email is already registered' }
-      }
-      throw error
+    console.log(`New early access signup: ${signup.id} - ${email}`)
+
+    return {
+      success: true as const,
+      id: signup.id,
+      createdAt: signup.createdAt
     }
   }, {
     body: EarlyAccessRequest
