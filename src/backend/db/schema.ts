@@ -2,6 +2,7 @@
 // ABOUTME: Mirrors the Prisma schema with PostgreSQL-native types
 
 import { pgTable, text, timestamp, boolean, jsonb, index, unique } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 // =====================================================
@@ -112,3 +113,34 @@ export const earlyAccessSignups = pgTable('EarlyAccessSignup', {
   index('EarlyAccessSignup_email_idx').on(table.email),
   index('EarlyAccessSignup_createdAt_idx').on(table.createdAt),
 ])
+
+// =====================================================
+// Relations
+// =====================================================
+
+export const articlesRelations = relations(articles, ({ many }) => ({
+  analyses: many(analyses),
+  comments: many(comments),
+}))
+
+export const analysesRelations = relations(analyses, ({ one, many }) => ({
+  article: one(articles, {
+    fields: [analyses.articleId],
+    references: [articles.id],
+  }),
+  highlights: many(highlights),
+}))
+
+export const highlightsRelations = relations(highlights, ({ one }) => ({
+  analysis: one(analyses, {
+    fields: [highlights.analysisId],
+    references: [analyses.id],
+  }),
+}))
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  article: one(articles, {
+    fields: [comments.articleId],
+    references: [articles.id],
+  }),
+}))
