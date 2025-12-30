@@ -69,9 +69,9 @@ async function buildSharedAssets() {
   }
 }
 
-async function buildExtension({ isDev = false } = {}) {
+async function buildExtension({ isDev = false, buildMode = 'production' } = {}) {
   const backendUrl = isDev ? DEV_BACKEND_URL : PROD_BACKEND_URL;
-  console.log(`📦 Building extension (${isDev ? 'dev' : 'prod'}: ${backendUrl})...`);
+  console.log(`📦 Building extension (${isDev ? 'dev' : 'prod'}: ${backendUrl}, mode: ${buildMode})...`);
 
   // Ensure output directory exists
   if (!fs.existsSync(extensionOutDir)) {
@@ -111,6 +111,7 @@ async function buildExtension({ isDev = false } = {}) {
       sourcemap: false,
       define: {
         '__BACKEND_URL__': JSON.stringify(backendUrl),
+        'process.env.BUILD_MODE': JSON.stringify(buildMode),
       },
     });
 
@@ -246,20 +247,34 @@ async function bundleExtensionZip() {
 async function main() {
   const startTime = Date.now();
   console.log('🔨 SanityCheck Build\n');
-  
+
   try {
     // Parse arguments
     const args = process.argv.slice(2);
     const skipBackend = args.includes('--extension-only');
     const skipExtension = args.includes('--backend-only');
     const isDev = args.includes('--dev');
-    
-    // Clean build directory
-    if (fs.existsSync(buildDir)) {
-      fs.rmSync(buildDir, { recursive: true });
+    const buildMode = process.env.BUILD_MODE || 'production';
+
+    // Clean build directory (or specific subdirectories)
+    if (skipBackend && !skipExtension) {
+      // Extension-only: clean only extension directory
+      if (fs.existsSync(extensionOutDir)) {
+        fs.rmSync(extensionOutDir, { recursive: true });
+      }
+    } else if (!skipBackend && skipExtension) {
+      // Backend-only: clean only backend directory
+      if (fs.existsSync(backendOutDir)) {
+        fs.rmSync(backendOutDir, { recursive: true });
+      }
+    } else {
+      // Full build: clean entire build directory
+      if (fs.existsSync(buildDir)) {
+        fs.rmSync(buildDir, { recursive: true });
+      }
     }
     fs.mkdirSync(buildDir, { recursive: true });
-    
+
     // Always build shared assets (needed by both backend and extension)
     await buildSharedAssets();
 
@@ -268,15 +283,15 @@ async function main() {
     }
 
     if (!skipExtension) {
-      await buildExtension({ isDev });
+      await buildExtension({ isDev, buildMode });
       if (!isDev) {
         await bundleExtensionZip();
       }
     }
-    
+
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`\n✅ Build complete in ${duration}s`);
-    
+
   } catch (error) {
     console.error('\n❌ Build failed:', error.message);
     process.exit(1);
