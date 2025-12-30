@@ -25,11 +25,12 @@ chrome.runtime.onInstalled.addListener((details) => {
     title: 'Leave feedback on this text',
     contexts: ['selection']
   });
-  
+
   console.log('SanityCheck: Context menu created');
-  
-  // Open welcome page on first install
-  if (details.reason === 'install') {
+
+  // Open welcome page on first install (disabled in test builds)
+  // @ts-expect-error - BUILD_MODE is injected at build time
+  if (details.reason === 'install' && process.env.BUILD_MODE !== 'test') {
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
   }
 });
@@ -79,10 +80,48 @@ chrome.runtime.onMessage.addListener((request: BackgroundMessage, _sender, sendR
       sendResponse({ success: true });
       return true;
 
+    // Test-only trigger (removed in production builds)
+    // @ts-expect-error - BUILD_MODE is injected at build time
+    case 'TEST_TRIGGER':
+      if (process.env.BUILD_MODE === 'test') {
+        handleTestTrigger(request.tabId)
+          .then(result => sendResponse({ success: true, result }))
+          .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+      }
+      return false;
+
     default:
       return false;
   }
 });
+
+async function handleTestTrigger(tabId: number) {
+  // Inject content script (same as popup does)
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ['content.js']
+  });
+
+  // Send extractArticle message (same as popup does)
+  const response = await chrome.tabs.sendMessage(tabId, {
+    action: 'extractArticle'
+  });
+
+  // Start analysis if we got an article
+  if (response && response.text) {
+    await startAnalysis(tabId, response);
+  }
+
+  return response;
+}
+
+// Expose test trigger function globally for test access
+// @ts-expect-error - BUILD_MODE is injected at build time
+declare const process: { env: { BUILD_MODE: string } };
+if (process.env.BUILD_MODE === 'test') {
+  (globalThis as unknown as { handleTestTrigger: typeof handleTestTrigger }).handleTestTrigger = handleTestTrigger;
+}
 
 async function submitFeedback(data: FeedbackPayload) {
   const response = await fetch(`${BACKEND_URL}/comments`, {

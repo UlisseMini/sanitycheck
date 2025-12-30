@@ -10,6 +10,7 @@
     "build": "node scripts/build.js",
     "build:backend": "node scripts/build.js --backend-only",
     "build:extension": "node scripts/build.js --extension-only",
+    "build:test": "BUILD_MODE=test node scripts/build.js --extension-only --dev",
     "start": "node build/backend/index.js",
     "preview": "node scripts/preview-extension.js",
     "pipeline": "npx tsx scripts/run-pipeline.ts",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@mozilla/readability": "^0.6.0",
+    "@playwright/test": "^1.57.0",
     "@types/chrome": "^0.1.32",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -58,6 +60,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.0.1",
     "lint-staged": "^16.2.7",
+    "playwright": "^1.57.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.49.0",
     "vitest": "^3.2.4"

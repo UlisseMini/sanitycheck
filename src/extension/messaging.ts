@@ -61,7 +61,8 @@ export type BackgroundMessage =
   | { action: 'startAnalysis'; tabId: number; article: Article }
   | { action: 'getAnalysisStatus'; url: string }
   | { action: 'clearAnalysis'; url: string }
-  | { action: 'getBackendUrl' };
+  | { action: 'getBackendUrl' }
+  | { action: 'TEST_TRIGGER'; tabId: number };
 
 export interface FeedbackPayload {
   url: string;
