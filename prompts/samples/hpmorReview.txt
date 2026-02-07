@@ -1,0 +1,154 @@
+Harry Potter And The Methods Of Rationality Is A Disney Movie About A Serial Killer
+Contra Alexander Wales about Harry Potter and the Methods of Rationality.
+
+WSCFRIEDMAN
+DEC 17, 2025
+
+
+
+
+(Warning: This has extreme, severe spoilers for Harry Potter and the Methods of Rationality, which you should probably read if you haven’t. This essay is a detailed analysis of a very twist-heavy work, written for an audience that knows it reasonably well.)
+Alexander Wales is usually pretty good at literary criticism.1 He’s intelligent, insightful and a perfectly competent author. But his essay discussing Harry Potter and the Methods of Rationality2 completely misses the mark, and so I need to explain why.
+I’m not saying you can’t criticize HPMoR. There’s a lot to criticize about it. The protagonist is kind of a dick, and Eliezer does a poor job of clarifying that this is the protagonist, not the narrative.3 In several cases the foreshadowing fails.4 But when Alexander Wales says:
+The undeniable climax of Methods happens when Quirrell has been unmasked as Voldemort and gives Harry sixty seconds to surrender information prior to his death. Harry then kills the arrayed Death Eaters and incapacitates Voldemort, and everything after that is wrapping up loose threads. The climax of the work is then in chapters one hundred and thirteen and one hundred and fourteen.
+Yet the plot of Methods is not about Quirrell as Voldemort fighting with Harry. Prior to chapter eighty-eight, Voldemort has no intentions of killing Harry. Voldemort’s plan, as laid out in a language that doesn’t allow lies, is to make Harry into the ruler of magical Britain. Harry’s plan is to figure out how science works and revolutionize magical Britain. Dumbledore has two primary plans. The first is to trap Voldemort beyond time, which Dumbledore is unsuccessful at; this happens almost entirely off-screen. The second is to thread the needle of prophecy, which Dumbledore presumably has succeeded at when the novel ends; this also happens almost entirely off-screen, and the parts of it that we do see are incomprehensible.
+Do you see the problem here? Prior to chapter eighty-eight, the plot hasn’t actually begun.
+When Alexander Wales says that last sentence, Alexander Wales is straightforwardly wrong. Harry Potter and the Methods of Rationality has a single, clear main plot, which is foreshadowed in the very first chapter, established in Chapter 6, properly begins in Chapter 165 and is decisively resolved in Chapter 114. It also has a number of character arcs, mysteries, sidequests and other subplots, some of which begin before Chapter 16 and some of which end after Chapter 114, but those are subplots. The main plot is perfectly clear from the start.
+I can offer four lenses on this single, simple main plot: Disney movie, didactic narrative, horror thriller and social combat. All of them are partial but accurate descriptions of what’s going on, blind-man-and-the-elephant style. The plot is one thing, not broken into four parts.6 These are all descriptions of the same thing, just from different angles.
+1. Be Careful What You Wish For
+“In any story worth tellin’, that knows about the way of the world, the third wish is the one that undoes the harm the first two wishes caused.”
+- Granny Weatherwax, A Hat Full of Sky.
+There’s this archetypical plot out there I associate with Disney.7 It goes like this: A young man8 has a problem. Because of this, he really, really wants something, so he makes a wish for it. Suddenly the wish is granted, but what he wanted wasn’t what he needed, so the actual consequences of this are horrible. The protagonist briefly enjoys his wish being granted before realizing the dark price, and spends the rest of the story trying to get out of the consequences of the wish. As he does he grows from a rash child into a mature adult who wouldn’t make the same mistake again and learns to recognize that what he needed was already there.
+
+￼
+
+￼
+They're the same picture! The same picture!
+This is the plot of Harry Potter and the Methods of Rationality. It’s first foreshadowed in Chapter One, which lightly touches on it before moving on:
+Harry closed his eyes briefly. Hopeless. Both of his parents were just hopeless.
+He gets to explain the thing he’s missing in life in Chapter 6:
+“I know it doesn’t sound like much,” Harry defended. “But it was just one of those critical life moments, you see? I mean, I knew that not thinking about something doesn’t stop it from happening, I knew that, but I could see that Mum really thought that way.” Harry stopped, struggling with the anger that was starting to rise up again when he thought about it. “She wouldn’t listen. I tried to tell her, I begged her not to send me out, and she laughed it off. Everything I said, she treated like some sort of big joke...” Harry forced the black rage back down again. “That’s when I realised that everyone who was supposed to protect me was actually crazy, and that they wouldn’t listen to me no matter how much I begged them, and that I couldn’t ever rely on them to get anything right.” Sometimes good intentions weren’t enough, sometimes you had to be sane...
+And later in the same chapter:
+I’ve been isolated my whole life. Maybe that has some of the same effects as being locked in a cellar. And I’m too intelligent to look up to my parents the way that children are designed to do. My parents love me, but they don’t feel obliged to respond to reason, and sometimes I feel like they’re the children - children who won’t listen and have absolute authority over my whole existence.
+What he wants is to have someone he can look up to, the way a child “is designed to” look up to his parents. This is his wish.
+And, because this is the kind of story this is, the wish is granted by the devil. Chapter 16:
+Professor Quirrell looked amused. “You’re thinking that I’ve come up with a wrong answer, aren’t you, Mr. Potter? You will learn to expect better of me.” Professor Quirrell straightened from where he had leaned on the desk. “Mr. Potter, all things have their accustomed uses. Give me ten unaccustomed uses of objects in this room for combat!”
+For a moment Harry was rendered speechless by the sheer, raw shock of having been understood.
+His wish is granted. He has a mentor, someone he can look up to. Since this is a “beware what you wish for” story, the mentor is the main villain, trying to seduce him into evil. The thing he wants is to have someone he can just trust to be right, but since this is a story about rationalism that’s a bad thing to want.9 The thing he should have wanted, says the story, was friends and allies who he can work with side-by-side.
+From Chapter 6:
+As his hand touched the back door’s handle, he heard a last whisper from behind him.
+“Hermione Granger.”
+“What?” Harry said, his hand still on the door. “Look for a first-year girl named Hermione Granger on the train to Hogwarts.”
+Having his wish granted in Chapter 16, he is then briefly overcome with giddiness at having the thing he most valued. The rest of the first act of the story10 then follows him being overjoyed as the devil (in the form of Quirrel) gets ahold of him. In Chapter 63, in the aftermath of assisting with one of Quirrel’s evil schemes he realizes that, no, he can’t trust Quirrel:
+That was how Harry had lost Professor Quirrell, not the person, but the... connection...
+Why did that hurt so much?
+Why did it feel so lonely, now?
+Surely there were other people, maybe better people, to trust and befriend? Professor McGonagall, Professor Flitwick, Hermione, Draco, not to mention Mum and Dad, it wasn’t like Harry was alone...
+Only...
+A choking sensation grew in Harry’s throat as he understood.
+Only Professor McGonagall, Professor Flitwick, Hermione, Draco, they all of them sometimes knew things that Harry didn’t, but...
+They did not excel above Harry within his own sphere of power; such genius as they possessed was not like his genius, and his genius was not like theirs; he might look upon them as peers, but not look up to them as his superiors.
+None of them had been, none of them could ever be...
+Harry’s mentor...
+That was who Professor Quirrell had been.
+That was who Harry had lost.
+The thing he got came with too high a price tag. He got what he wanted, and now he’s stuck with it. The remaining two-thirds of the story is then about him growing beyond the initial weaknesses that made him want to make the wrong wish, realizing his errors and becoming the person who wouldn’t make that decision in the first place. At the end he must bring down the monster he unleashed11 and so symbolically undo the consequences of his evil actions. Finally he triumphs over the monster he unleashed, saves the day and, in appropriate Hero’s Journey fashion, is now prepared to share the boons that he has gained through his adventures with his people. His next quest will be far harder, but (having grown past his childish weaknesses) he is now qualified for it.
+2. The Moral Of The Story Is...?
+If you have a message, call Western Union.
+- Moss Hart
+The problem with didactic fiction - well, a problem with didactic fiction - is that the fiction isn’t showing you why the problem exists, where it comes from and how to deal with it, it’s telling you. Instead of teaching you why (say) pollution is bad, it says “oh no! pollution! How bad!”
+Eliezer is smart. Therefore, when he wanted to write a story to convince people that instead of trusting authorities they should use reason and logic to work out how the world works and use these skills to solve their problems, he did not write a story where an authority tells you to do this. No, not even the authority of the author. That would just have been silly. He solved it by writing a story about a protagonist who has the fatal flaw of being tempted to trust the wrong authorities, and instead must overcome this and solve his problems through reason and logic.
+Therefore, the most important character in the story is the protagonist, and the second most important character is a mentor who genuinely does have useful things to teach the protagonist, but who the protagonist shouldn’t trust.12
+The most explicit statement of the chapter’s theme comes in Chapter 75:
+“And maybe I’m wrong,” Harry said as they walked. “Maybe I’ve just read too many stories where the heroes never do the sensible thing and follow the rules and tell their Professor McGonagalls, so my brain doesn’t think you’re a proper storybook hero. Maybe it’s you who’s the sane one, Hermione, and me who’s just being silly. But every time you talk about following rules or relying on teachers, I get that same feeling, like it’s bound up with this one last thing that’s stopping you, one last thing that puts your PC self to sleep and turns you into an NPC again...” Harry let out a sigh. “Maybe that’s why Dumbledore said I should have wicked stepparents.”
+“He said what? “
+Harry nodded. “I still don’t know whether the Headmaster was joking or... the thing is, he was right in a way. I had loving parents, but I never felt like I could trust their decisions, they weren’t sane enough. I always knew that if I didn’t think things through myself, I might get hurt. Professor McGonagall will do whatever it takes to get the job done if I’m there to nag her about it, she doesn’t break rules on her own without heroic supervision. Professor Quirrell really is someone who gets things done no matter what, and he’s the only other person I know who notices stuff like the Snitch ruining Quidditch. But him I can’t trust to be good. Even if it’s sad, I think that’s part of the environment that creates what Dumbledore calls a hero - people who don’t have anyone else to shove final responsibility onto, and that’s why they form the mental habit of tracking everything themselves.”
+If you want to be a hero - if you want to do something hard and impressive, as the story implicitly thinks you should - you cannot follow anyone. You need to walk your own path. This doesn’t mean inventing everything yourself, that would be dumb. What it means is treating everyone else as an unreliable source of information instead of considering anyone to be Just Right. Everyone is flawed, nobody is perfect and you can always do better.
+In the next paragraph the moral of the story is stated as:
+No rescuer hath the rescuer, Godric Gryffindor had written. No Lord hath the champion, no mother and no father, only nothingness above.
+When Harry tries to count on a mentor, it goes wrong because the mentor is misleading him. Eventually he becomes convinced that he needs to work things out himself, does, and gets a happy ending.
+3. Hannibal, But With Kids!
+Imagine you’re reading a thriller pitch. It goes like this:
+A lonely and disturbed child prodigy meets the first teacher who understood him, a psychopathic serial killer trying to mold him in his image.
+Seems like a pretty good thriller! It’s got a nice exciting central conflict, with the hero’s natural vices on one side with the villain trying to erode every tie that holds him to humanity. It’s this one. Quirrel starts trying to charm Harry into being like him in chapter 1613, but Quirrel assumes that his goal is to befriend Harry and make him his ally, not to corrupt him, because of course Harry’s evil, isn’t he? Isn’t that just an inevitable consequence of being smarter than everyone else?
+Only in chapter 20 does Quirrel realize he has a problem.
+“Actually, I think I know what’s confusing you here,” Harry said. “That was what I wanted to talk to you about, in fact. Professor Quirrell, I think that what you’re seeing is my mysterious dark side.”
+There was a pause.
+“Your... dark side...”
+Harry sat up. Professor Quirrell was regarding him with one of the strangest expressions Harry had seen on anyone’s face, let alone anyone as dignified as Professor Quirrell.
+And he doesn’t understand the sheer scale of his problem until he makes an argument in favor of evil and Harry has a coherent counterargument.
+“No,” Professor Quirrell said. His fingers rubbed the bridge of his nose. “I don’t think that’s quite what I was trying to say. Mr. Potter, in the end people all do what they want to do. Sometimes people give names like ‘right’ to things they want to do, but how could we possibly act on anything but our own desires?”
+“Well, obviously,” Harry said. “I couldn’t act on moral considerations if they lacked the power to move me. But that doesn’t mean my wanting to hurt those Slytherins has the power to move me more than moral considerations!”
+Professor Quirrell blinked.
+“Not to mention,” Harry said, “being a Dark Lord would mean that a lot of innocent bystanders got hurt too!”
+“Why does that matter to you?” Professor Quirrell said. “What have they done for you?”
+Harry laughed. “Oh, now that was around as subtle as Atlas Shrugged.“
+“Pardon me?” Professor Quirrell said again.
+“It’s a book that my parents wouldn’t let me read because they thought it would corrupt me, so of course I read it anyway and I was offended they thought I would fall for any traps that obvious. Blah blah blah, appeal to my sense of superiority, other people are trying to keep me down, blah blah blah.”
+“So you’re saying I need to make my traps less obvious?” said Professor Quirrell. He tapped a finger on his cheek, looking thoughtful. “I can work on that.”
+The rest of the plot is Quirrel making his traps less obvious. He tries to lure Harry to evil by showing him that only through evil can he get what he wants: an end to the evils of the world. Only great tyrants can accomplish great deeds, he tells Harry14; all normal society is founded on an evil just as great as his. Ultimately, though, he succeeds in altering some of Harry’s factual beliefs but none of his ultimate goals. His attempt to make Harry evil fail whatever he tries.1516
+He only considers giving up on his attempts at corruption in Chapters 89 and 90, when he realizes that Harry is a threat to his own life:
+“I mean to bring Hermione back. Because there isn’t an afterlife, and I’m not about to just let her - just not be -”
+The boy pressed his hands over his face, and when he withdrew them, he once more seemed as dispassionate as the man standing in the corner.
+The Defense Professor’s eyes were abstract, and faintly puzzled.
+“How?” the man said finally.
+“However I have to.”
+There was another pause.
+“Regardless of the risks,” the man in the corner said. “Regardless of how dangerous the magic required to accomplish it.”
+“Yes.”
+...
+“I haven’t decided yet on an object-level angle of attack. If I have to brute-force the problem by acquiring enough power and knowledge to just make it happen, I will.”
+Another pause.
+“And to go about that,“ the man in the corner said, “you will use your favorite tool, science.”
+“Of course.”
+The Defense Professor exhaled, almost like a sigh. “I suppose that makes sense of it.”
+He makes one last attempt at persuasion in chapter 95, which Harry refutes:
+The Defense Professor’s voice rose in pitch. “If it were you who had been killed by that troll, it would not even occur to Hermione Granger to do as you are doing for her! It would not occur to Draco Malfoy, nor to Neville Longbottom, nor to McGonagall or any of your precious friends! There is not one person in this world who would return to you the care that you are showing her! So why? Why do it, Mr. Potter?” There was a strange, wild desperation in that voice. “Why be the only one in the world who goes to such lengths to keep up the pretense, when none of them will ever do the same for you?”
+“I believe you are factually mistaken, Professor,” Harry returned evenly. “About a number of things, in fact. At the very least, your model of my emotions is flawed. Because you don’t understand me the tiniest bit, if you think that it would stop me if everything you said was true. Everything in the world has to start somewhere, every event that happens has to happen for a first time. Life on Earth had to start with some little self-replicating molecule in a pool of mud. And if I were the first person in the world, no -”
+Harry’s hand swept out, to indicate the terribly distant points of light.
+“- if I were the first person in the universe who ever really cared about someone else, which I’m not by the way, then I’d be honored to be that person, and I’d try to do it justice.”
+That’s it. Quirrel cannot corrupt Harry, and so is just going to try to kill him. The conflict moves from the social sphere to violence, producing a climax in which Harry must reject his relationship with his mentor in order to defeat him. He does and, bar denouement, the story ends.
+4: The Siege of the Soul
+There are fight scenes where people fight each other with swords, and there are fight scenes where people fight each other with computer consoles or decks of cards, and then there are fight scenes that where people fight each other with words. In these social fight scenes the weapons are arguments and evidence and emotional appeals, rhetoric taking the place of violence.
+As a siege is to a battle, so Harry Potter and the Methods of Rationality is to a social fight scene. Quirrel wants Harry to be like him, and so lays siege to his soul in an attempt to convert Harry into a copy of himself. On the other side is Hermione, who serves as champion of those forces holding Harry to the cause of goodness - trust in reason and logic to solve the world’s problems, the morality of the modern world, and his ties to his friends and family. Harry himself is torn between the two of them, with parts of his own soul fighting on both sides. Everything in the story either pushes him towards Quirrel and all of his nice-sounding answers about how you can use evil to solve all the world’s problems, or away from Quirrel and towards Hermione and righteousness.
+The conflict is first set up when Harry and Hermione meet, in Chapter 8:
+Just as Hermione started to drink, [Harry] said, “I’d like you to help me take over the universe.”
+Hermione finished her drink and lowered the can. “No thank you, I’m not evil.”
+The boy looked at her in surprise, as though he’d been expecting some other answer.
+But it begins in full in chapter 16, which is Quirrel’s introduction. We’ve visited it before, but let’s take another look now:
+“Hermione Granger mastered a completely unfamiliar spell in two minutes, almost a full minute faster than the next runner-up.” Professor Quirrell turned slowly in place to look at all the students watching them. “Could Miss Granger’s intelligence make her the most dangerous student in the classroom? Well? What do you think?”
+No one seemed to be thinking anything at the moment. Even Harry wasn’t sure what to say.
+“Let’s find out, shall we?” said Professor Quirrell. He turned back to Hermione, and gestured toward the wider class. “Select any student you like and cast the Simple Strike Hex on them.”
+Hermione froze where she stood.
+“Come now,” Professor Quirrell said smoothly. “You have cast this spell perfectly over fifty times. It is not permanently harmful or even all that painful. It hurts as much as a hard punch and lasts only a few seconds.” Professor Quirrell’s voice grew harder. “This is a direct order from your professor, Miss Granger. Choose a target and fire a Simple Strike Hex.”
+Hermione’s face was screwed up in horror and her wand was trembling in her hand. Harry’s own fingers were clenching his own wand hard in sympathy. Even though he could see what Professor Quirrell was trying to do. Even though he could see the point Professor Quirrell was trying to make.
+“If you do not raise your wand and fire, Miss Granger, you will lose a Quirrell point.”
+Harry stared at Hermione, willing her to look in his direction. His right hand was softly tapping his own chest. Pick me, I’m not afraid...
+Hermione’s wand twitched in her hand; then her face relaxed, and she lowered her wand to her side.
+“No,” said Hermione Granger.
+Her voice was calm, and even though it wasn’t loud, everyone heard it in the silence.
+“Then I must deduct one point from you,” said Professor Quirrell. “This is a test, and you have failed it.”
+That reached her. Harry could see it. But she kept her shoulders straight.
+Professor Quirrell’s voice was sympathetic and seemed to fill the whole room. “Knowing things isn’t always enough, Miss Granger. If you cannot give and receive violence on the order of stubbing your toe, then you cannot defend yourself and you will not pass Defence. Please rejoin your classmates.”
+Hermione walked back towards the Ravenclaw cluster. Her face looked peaceful and Harry, for some odd reason, wanted to start clapping. Even though Professor Quirrell had been right.
+Quirrel preaches using violence to get what you want. Hermione preaches standing up for what’s right. Neither can persuade the other. They stand as two opposed, immovable poles which Harry is torn between.
+Quirrel gets the advantage over Hermione in their first confrontation - he’s not trying to corrupt her, just to get influence over Harry. He uses this influence to maneuver Harry into assisting with his plans in The Stanford Prison Experiment, chapters 51-63. While he achieves his tactical goals, though, his siege on Harry’s soul goes poorly. Instead of luring him to the side of the dark by showing him the corruption of society, he damages Harry’s trust in both righteousness and Quirrel.17 Harry is convinced by Azkaban that Something Has To Be Done, but he gives up trusting Quirrel.
+It’s in the resolution of this arc that the conflict between Quirrel and Hermione becomes increasingly overt. Chapter 60:
+“By the way,” said the boy. “Hermione Granger would never have built Azkaban, no matter who was going to be put in it. And she’d die before she hurt an innocent. Just mentioning that, since you said before that all wizards are like You-Know-Who inside, and that’s just false as a point of simple fact. Would’ve realized it earlier if I hadn’t been,” the boy gave a brief grim smile, “stressed out.”
+Chapter 63:
+Harry blinked, then; because his brain had just made the connection between Milgram’s experiment and what Hermione had done on her first day of Defense class, she’d refused to shoot a fellow student, even when Authority had told her that she must, she had trembled and been afraid but she had still refused. Harry had seen that happen right in front of his own eyes and he still hadn’t made the connection until now...
+Hermione has won the battle - but not the war. When Harry, incapable of lying, says:
+“Lessson I learned is not to try plotss that would make girl-child friend think I am evil or boy-child friend think I am sstupid.”
+Quirrel promptly starts plotting Hermione’s murder. When he and Harry had first argued about morality in chapter 20, Quirrel checked to see if he could turn Harry to evil just by murdering his family:
+“But to stay with the current question,” said Professor Quirrell, “what have all these other people done for you?”
+“Other people have done huge amounts for me!” Harry said. “My parents took me in when my parents died because they were good people, and to become a Dark Lord is to betray that!”
+Professor Quirrell was silent for a time.
+“I confess,” said Professor Quirrell quietly, “when I was your age, that thought could not ever have come to me.”
+“I’m sorry,” Harry said.
+“Don’t be,” said Professor Quirrell. “It was long ago, and I resolved my parental issues to my own satisfaction.18 So you are held back by the thought of your parents’ disapproval? Does that mean that if they died in an accident, there would be nothing left to stop you from -”
+“No,” Harry said. “Just no. It is their impulse to kindness which sheltered me. That impulse is not only in my parents. And that impulse is what would be betrayed.”
+In chapter 20, Quirrel decides not to resort to murder. But he doesn’t take the option off the table. When he realizes Hermione is the other side’s champion, he decides to get rid of her. The next arc after TSPE is a Hermione-focused sidequest, at the end of which we learn that Quirrel is trying to see if he can manipulate her into evil. He can’t, so the next arc is about him framing her for a crime in a manner which destroys Harry’s relationships with most of his other friends. When that fails he switches to a full-scale diplomatic assault on her. He tries to charm her, to persuade her, to threaten her. (Chapter 84; any quote would be the whole text of the scene.) None of these work in spite of her sleep deprivation and trauma, she triumphs and he is forced to resort to violence to get her off the board. This still fails to accomplish his goal of corrupting Harry. He tries again and again to escalate, moving to more and more violence, but these acts only weaken his position. In the end, his cause is genuinely lost. You can’t persuade people with bullets.
+The final confrontation between Quirrel and Harry - where they shift from social to physical combat, Harry aligned unambiguously with the Light - is almost an epilogue. It’s a denouement to the main conflict. The main conflict - between Hermione and Quirrel, over Harry - is settled when he can’t win the debate and so pulls out a gun. You can’t change people’s minds by shooting them. Light doesn’t need to defeat darkness in a fistfight to win the battle for hearts and minds. It just has to win them.
+So too, here, Hermione doesn’t even need to be alive to beat Quirrel.
+
+So, do you think you know what the elephant looks like? Any other good lenses I’ve missed?

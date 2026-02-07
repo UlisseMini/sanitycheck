@@ -1,7 +1,8 @@
 // ABOUTME: Utility functions for pipelines.
-// ABOUTME: Provides claude() helper for calling the Anthropic API.
+// ABOUTME: Provides claude() and openai() helpers for calling LLM APIs.
 
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 /**
  * Message format for Claude conversations.
@@ -85,4 +86,62 @@ export async function claude(
   }
 
   return textBlock.text;
+}
+
+/**
+ * Options for openai() calls.
+ */
+export interface OpenAIOptions {
+  /** System prompt */
+  system?: string;
+  /** Model to use (defaults to gpt-5.2-chat-latest) */
+  model?: string;
+  /** Max tokens (defaults to 8192) */
+  maxTokens?: number;
+}
+
+/**
+ * Call OpenAI with messages and options.
+ * Returns the text response.
+ */
+export async function openai(
+  messages: ClaudeMessage[],
+  options: OpenAIOptions = {}
+): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY environment variable is required');
+  }
+
+  const client = new OpenAI({ apiKey });
+
+  const {
+    system,
+    model = 'gpt-5.2-chat-latest',
+    maxTokens = 8192,
+  } = options;
+
+  // Build messages array
+  const openaiMessages: OpenAI.ChatCompletionMessageParam[] = [];
+
+  if (system) {
+    openaiMessages.push({ role: 'system', content: system });
+  }
+
+  for (const m of messages) {
+    openaiMessages.push({ role: m.role, content: m.content });
+  }
+
+  const response = await client.chat.completions.create({
+    model,
+    max_completion_tokens: maxTokens,
+    messages: openaiMessages,
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error('No text response from OpenAI');
+  }
+
+  return content;
 }
