@@ -669,7 +669,7 @@ interface HighlightData {
     
     tooltipEl.className = `logic-checker-tooltip ${importance}`;
     
-    const emoji = importance === 'critical' ? '🔴' : 
+    const _emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
     const typeLabel = data.issue.category ?? data.issue.type ?? 'Logic Issue';
@@ -789,7 +789,7 @@ interface HighlightData {
     
     tooltipEl.className = `logic-checker-tooltip ${importance}`;
     
-    const emoji = importance === 'critical' ? '🔴' : 
+    const _emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
     // Apply kawaii styling if in Miss Info mode

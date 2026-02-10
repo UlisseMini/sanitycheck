@@ -131,7 +131,7 @@ function renderHighlights(highlights: Highlight[]): void {
   highlights.forEach((highlight, index) => {
     const itemId = `quote-${index}`;
     const severity = highlight.severity || 'moderate';
-    const severityColor = {
+    const _severityColor = {
       critical: 'var(--error)',
       significant: 'var(--warning)',
       moderate: 'var(--accent)',
@@ -166,7 +166,7 @@ function hideAll(): void {
   errorSection.classList.add('hidden');
 }
 
-function formatCategory(category: string): string {
+function _formatCategory(category: string): string {
   return category
     .split(/[_-]/)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
