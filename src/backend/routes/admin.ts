@@ -199,15 +199,21 @@ router.get('/early-access-stats', requireAdmin, async (_req: Request, res: Respo
 // Get feedback stats
 router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const [articleCount, analysisCount, commentCount, highlightCount, recentArticles] = await Promise.all([
+    const [articleCount, analysisCount, commentCount, highlightCount, recentArticles, uniqueUsersResult] = await Promise.all([
       prisma.article.count(),
       prisma.analysis.count(),
       prisma.comment.count(),
       prisma.highlight.count(),
       prisma.article.count({
         where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+      }),
+      prisma.article.groupBy({
+        by: ['ip'],
+        where: { ip: { not: null } }
       })
     ]);
+    
+    const uniqueUsers = uniqueUsersResult.length;
 
     const highlightsByImportance = await prisma.highlight.groupBy({
       by: ['importance'],
@@ -220,6 +226,7 @@ router.get('/feedback-stats', requireAdmin, async (_req: Request, res: Response,
       comments: commentCount,
       highlights: highlightCount,
       articlesLast24h: recentArticles,
+      uniqueUsers: uniqueUsers,
       highlightsByImportance: highlightsByImportance.map((h: { importance: string; _count: number }) => ({
         importance: h.importance,
         count: h._count

@@ -756,6 +756,10 @@ export function generateAdminPage(): string {
             <div class="stat-value" id="highlightCount">-</div>
             <div class="stat-label">Highlights</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-value" id="userCount">-</div>
+            <div class="stat-label">Unique Users</div>
+          </div>
         </div>
 
         <div class="section-title">
@@ -955,6 +959,7 @@ export function generateAdminPage(): string {
         document.getElementById('analysisCount').textContent = data.analyses || 0;
         document.getElementById('commentCount').textContent = data.comments || 0;
         document.getElementById('highlightCount').textContent = data.highlights || 0;
+        document.getElementById('userCount').textContent = data.uniqueUsers || 0;
       } catch (err) {
         console.error('Failed to load stats:', err);
       }
