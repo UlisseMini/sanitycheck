@@ -7,6 +7,8 @@ export interface AnalysisIssue {
   importance: 'critical' | 'significant' | 'minor';
   quote: string;
   gap: string;
+  type?: string;
+  category?: string;
 }
 
 export interface StructuredAnalysis {
@@ -55,9 +57,13 @@ const FORMAT_TOOL: Anthropic.Tool = {
             gap: {
               type: 'string',
               description: 'Brief explanation of the logical gap (<15 words)'
+            },
+            category: {
+              type: 'string',
+              description: 'Type of logical issue (e.g., "Reasoning leap", "Evidence gap", "Questionable premise", "False dichotomy", "Circular reasoning")'
             }
           },
-          required: ['importance', 'quote', 'gap']
+          required: ['importance', 'quote', 'gap', 'category']
         }
       },
       severity: {
@@ -76,6 +82,7 @@ Important:
 - If the analysis found no issues, set central_logical_gap to null, issues to an empty array, and severity to "none"
 - Extract exact quotes from the original article text mentioned in the analysis
 - Keep gap explanations brief and punchy
+- For each issue, provide a category label (e.g., "Reasoning leap", "Evidence gap", "Questionable premise", "False dichotomy", "Circular reasoning", etc.)
 
 Analysis to format:
 `;

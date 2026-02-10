@@ -120,12 +120,12 @@ h1 {
   gap: 6px;
   margin-top: 10px;
   padding: 4px 10px;
-  background: var(--warning-subtle);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
   border-radius: 100px;
   font-size: 11px;
   font-weight: 500;
-  color: var(--warning);
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -140,6 +140,10 @@ h1 {
 }
 
 /* ===== Sections ===== */
+#status-section {
+  display: none;
+}
+
 .section {
   margin-bottom: 16px;
 }
@@ -155,7 +159,7 @@ h1 {
   gap: 12px;
   padding: 14px 16px;
   background: var(--bg-secondary);
-  border-radius: var(--radius);
+  border-radius: 0;
   border: 1px solid var(--border);
   transition: all 0.15s ease;
 }
@@ -270,6 +274,78 @@ h1 {
 .btn-close:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+/* ===== Article Actions (Compact) ===== */
+#article-actions-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.article-detected-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 0 0 auto;
+}
+
+.article-detected-icon:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-strong);
+}
+
+.article-detected-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--success);
+  flex-shrink: 0;
+}
+
+.article-wordcount {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.btn-sidepanel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-sidepanel:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-sidepanel svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-sidepanel span {
+  white-space: nowrap;
 }
 
 /* ===== Loading ===== */

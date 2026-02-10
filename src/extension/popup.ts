@@ -20,6 +20,10 @@ const settingsBtn = document.getElementById('settings-btn')!;
 const pageStatus = document.getElementById('page-status')!;
 const actionSection = document.getElementById('action-section')!;
 const analyzeBtn = document.getElementById('analyze-btn')!;
+const articleActionsSection = document.getElementById('article-actions-section')!;
+const articleDetectedIcon = document.getElementById('article-detected-icon')!;
+const articleWordcountDisplay = document.getElementById('article-wordcount-display')!;
+const openSidepanelBtn = document.getElementById('open-sidepanel-btn')!;
 const loadingSection = document.getElementById('loading-section')!;
 const resultsSection = document.getElementById('results-section')!;
 const resultsContent = document.getElementById('results-content')!;
@@ -76,6 +80,7 @@ async function init(): Promise<void> {
     
     settingsBtn.addEventListener('click', openSettings);
     analyzeBtn.addEventListener('click', () => { void analyzeArticle(); });
+    openSidepanelBtn.addEventListener('click', () => { void openSidePanel(); });
     pageStatus.addEventListener('click', toggleArticleText);
     closeArticleTextBtn.addEventListener('click', hideArticleText);
     
@@ -93,6 +98,26 @@ window.addEventListener('unload', () => {
 
 function openSettings(): void {
   void chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+}
+
+async function openSidePanel(): Promise<void> {
+  try {
+    if (chrome.sidePanel) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.windowId) {
+        await chrome.sidePanel.open({ windowId: tab.windowId });
+        debug.log('Side panel opened', { windowId: tab.windowId }, 'popup');
+      } else {
+        // Fallback: try with current window
+        await chrome.sidePanel.open({});
+        debug.log('Side panel opened (fallback)', {}, 'popup');
+      }
+    } else {
+      debug.warn('Side panel API not available', {}, 'popup');
+    }
+  } catch (error) {
+    debug.error('Failed to open side panel', error, 'popup');
+  }
 }
 
 async function checkCurrentPage(): Promise<void> {
@@ -239,31 +264,23 @@ function showLoading(): void {
   actionSection.classList.add('hidden');
   loadingSection.classList.remove('hidden');
   resultsSection.classList.add('hidden');
+  
+  // Notify side panel that analysis is loading
+  chrome.storage.local.set({ analysisLoading: true }).catch(() => {});
 }
 
 function showArticleDetected(article: Article): void {
-  const statusIcon = pageStatus.querySelector('.status-icon');
-  const statusText = pageStatus.querySelector('.status-text');
-  const viewHint = pageStatus.querySelector('.view-text-hint');
+  // Hide the status card
+  pageStatus.classList.add('hidden');
   
-  if (statusIcon) {
-    statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
-    statusIcon.classList.add('ready');
-  }
+  // Show compact article icon and side panel button
+  articleActionsSection.classList.remove('hidden');
+  articleWordcountDisplay.textContent = `${article.wordCount.toLocaleString()} words`;
   
-  if (statusText) {
-    statusText.innerHTML = `
-      <strong>Article detected</strong><br>
-      <span style="color: var(--text-muted); font-size: 12px;">${article.wordCount.toLocaleString()} words</span>
-    `;
-  }
+  // Make icon clickable to view text
+  articleDetectedIcon.onclick = () => { toggleArticleText(); };
   
-  if (viewHint) {
-    viewHint.classList.remove('hidden');
-  }
-  
-  pageStatus.classList.add('article');
-  pageStatus.classList.add('clickable');
+  // Show analyze button
   actionSection.classList.remove('hidden');
   
   debug.log('Article detected UI updated', {
@@ -383,6 +400,34 @@ async function sendHighlightsToPage(issues: AnalysisIssue[]): Promise<void> {
 }
 
 function displayResults(parsed: ParsedAnalysis): void {
+  // Store analysis for side panel
+  if (currentArticle) {
+    chrome.storage.local.set({
+      currentAnalysis: {
+        article: currentArticle,
+        result: {
+          highlights: parsed.issues?.map(issue => ({
+            quote: issue.quote,
+            explanation: issue.gap || issue.why_it_doesnt_follow || issue.explanation || '',
+            severity: issue.severity || issue.importance,
+            category: issue.category || issue.type
+          })) || [],
+          rawResponse: {
+            severity: parsed.severity
+          }
+        },
+        timestamp: Date.now()
+      }
+    }).catch((error) => {
+      debug.error('Failed to store analysis', error, 'popup');
+    });
+  }
+  
+  // Show side panel button in article actions section
+  if (articleActionsSection) {
+    articleActionsSection.classList.remove('hidden');
+  }
+  
   resultsSection.classList.remove('hidden');
   loadingSection.classList.add('hidden');
   actionSection.classList.add('hidden');

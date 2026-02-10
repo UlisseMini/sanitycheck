@@ -83,6 +83,7 @@ async function buildExtension({ isDev = false } = {}) {
     background: path.join(extensionSrcDir, 'background.ts'),
     content: path.join(extensionSrcDir, 'content.ts'),
     popup: path.join(extensionSrcDir, 'popup.ts'),
+    'side-panel': path.join(extensionSrcDir, 'side-panel.ts'),
     settings: path.join(extensionSrcDir, 'settings.ts'),
     debug: path.join(extensionSrcDir, 'debug.ts'),
     welcome: path.join(extensionSrcDir, 'welcome.ts'),

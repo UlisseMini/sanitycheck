@@ -672,13 +672,16 @@ interface HighlightData {
     const emoji = importance === 'critical' ? '🔴' : 
                   importance === 'significant' ? '🟠' : '🟡';
 
-    const typeLabel = data.issue.type ?? data.issue.importance ?? 'Issue';
+    const typeLabel = data.issue.category ?? data.issue.type ?? 'Logic Issue';
+    
+    // Format the type label nicely
+    const formattedType = typeLabel
+      .split(/[_-]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
     tooltipEl.innerHTML = `
-      <div class="logic-checker-tooltip-badge">Logic Issue</div>
-      <div class="logic-checker-tooltip-header">
-        <span class="logic-checker-tooltip-icon">${emoji}</span>
-        <span class="logic-checker-tooltip-type">${escapeHtml(typeLabel)}</span>
-      </div>
+      <div class="logic-checker-tooltip-badge">${escapeHtml(formattedType)}</div>
       <div class="logic-checker-tooltip-explanation">${escapeHtml(data.explanation || 'No explanation available')}</div>
     `;
 
@@ -704,7 +707,7 @@ interface HighlightData {
       const importance = issue.importance ?? 'minor';
       highlight.className = `logic-checker-highlight ${importance}`;
       highlight.dataset['issueIndex'] = String(index);
-      highlight.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      highlight.dataset['issueType'] = issue.category ?? issue.type ?? issue.importance ?? 'issue';
       highlight.dataset['importance'] = importance;
       highlight.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
 
@@ -741,7 +744,7 @@ interface HighlightData {
       const importance = issue.importance ?? 'minor';
       wrapper.className = `logic-checker-highlight ${importance}`;
       wrapper.dataset['issueIndex'] = String(index);
-      wrapper.dataset['issueType'] = issue.type ?? issue.importance ?? 'issue';
+      wrapper.dataset['issueType'] = issue.category ?? issue.type ?? issue.importance ?? 'issue';
       wrapper.dataset['importance'] = importance;
       wrapper.dataset['issueExplanation'] = issue.gap ?? issue.why_it_doesnt_follow ?? issue.explanation ?? '';
       wrapper.textContent = highlighted;
@@ -795,12 +798,14 @@ interface HighlightData {
       displayExplanation = makeKawaii(displayExplanation);
     }
     
+    // Format the type label nicely
+    const formattedType = type
+      .split(/[_-]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
     tooltipEl.innerHTML = `
-      <div class="logic-checker-tooltip-badge">Logic Issue</div>
-      <div class="logic-checker-tooltip-header">
-        <span class="logic-checker-tooltip-icon">${emoji}</span>
-        <span class="logic-checker-tooltip-type">${escapeHtml(type)}</span>
-      </div>
+      <div class="logic-checker-tooltip-badge">${escapeHtml(formattedType)}</div>
       <div class="logic-checker-tooltip-explanation">${escapeHtml(displayExplanation)}</div>
     `;
 

@@ -14,7 +14,9 @@ export type Importance = 'critical' | 'significant' | 'minor';
 export interface AnalysisIssue {
   quote?: string;
   importance?: string;
+  severity?: string;
   type?: string;
+  category?: string;
   gap?: string;
   why_it_doesnt_follow?: string;
   explanation?: string;
