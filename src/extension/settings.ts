@@ -11,11 +11,28 @@ const resetPromptBtn = document.getElementById('reset-prompt')!;
 const statusMessage = document.getElementById('status-message')!;
 const promptBadge = document.getElementById('prompt-badge')!;
 const backBtn = document.getElementById('back-btn')!;
+const themeSanityRadio = document.getElementById('theme-sanity') as HTMLInputElement;
+const themeMissRadio = document.getElementById('theme-miss') as HTMLInputElement;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => { void init(); });
 
 async function init(): Promise<void> {
+  // Initialize theme
+  const themeData = await chrome.storage.local.get(['theme']) as { theme?: string };
+  const currentTheme = themeData.theme || 'sanity';
+  
+  if (currentTheme === 'miss') {
+    document.body.classList.add('theme-miss');
+    document.title = 'Miss Information Settings';
+    themeMissRadio.checked = true;
+  } else {
+    document.body.classList.remove('theme-miss');
+    document.title = 'SanityCheck Settings';
+    themeSanityRadio.checked = true;
+  }
+  
+  // Initialize prompt
   const stored = await chrome.storage.local.get(['customPrompt']) as { customPrompt?: string };
   
   if (stored.customPrompt) {
@@ -26,8 +43,11 @@ async function init(): Promise<void> {
     updateBadge(false);
   }
   
+  // Event listeners
   savePromptBtn.addEventListener('click', () => { void savePrompt(); });
   resetPromptBtn.addEventListener('click', () => { void resetPrompt(); });
+  themeSanityRadio.addEventListener('change', () => { void setTheme('sanity'); });
+  themeMissRadio.addEventListener('change', () => { void setTheme('miss'); });
   
   backBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -84,4 +104,19 @@ function showStatus(message: string, type: 'success' | 'error'): void {
   setTimeout(() => {
     statusMessage.className = 'status-message';
   }, 3000);
+}
+
+async function setTheme(theme: 'sanity' | 'miss'): Promise<void> {
+  const body = document.body;
+  
+  if (theme === 'miss') {
+    body.classList.add('theme-miss');
+    document.title = 'Miss Information Settings';
+  } else {
+    body.classList.remove('theme-miss');
+    document.title = 'SanityCheck Settings';
+  }
+  
+  // Save to chrome storage
+  await chrome.storage.local.set({ theme });
 }

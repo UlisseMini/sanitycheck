@@ -6,6 +6,31 @@
   <title>SanityCheck Settings</title>
   <link rel="stylesheet" href="styles.css">
   <style>
+    /* Miss Information theme CSS variables */
+    body.theme-miss {
+      --bg-primary: #1a1520;
+      --bg-secondary: #231d2b;
+      --bg-tertiary: #2d2638;
+      --bg-hover: #3a3245;
+      --text-primary: #f5f0fa;
+      --text-secondary: #c4b8d4;
+      --text-muted: #8b7fa3;
+      --accent: #c084fc;
+      --accent-hover: #d8b4fe;
+      --accent-subtle: rgba(192, 132, 252, 0.12);
+      --border: rgba(192, 132, 252, 0.15);
+      --border-strong: rgba(192, 132, 252, 0.25);
+    }
+    
+    /* Miss Information theme fonts */
+    body.theme-miss {
+      font-family: 'Quicksand', 'Comfortaa', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    body.theme-miss h1 {
+      font-family: 'Comfortaa', 'Quicksand', cursive;
+    }
+    
     body {
       width: 100%;
       min-height: 100vh;
@@ -184,6 +209,79 @@
       background: var(--bg-tertiary);
       color: var(--text-muted);
     }
+    
+    /* Theme toggle styles */
+    .theme-toggle-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .theme-toggle-label {
+      cursor: pointer;
+      display: block;
+    }
+    
+    .theme-radio {
+      display: none;
+    }
+    
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+    
+    .theme-option:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+    
+    .theme-radio:checked + .theme-option {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+    }
+    
+    .theme-preview-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      transition: transform 0.2s ease;
+    }
+    
+    .theme-radio:checked + .theme-option .theme-preview-icon {
+      transform: scale(1.1);
+    }
+    
+    .theme-info {
+      flex: 1;
+    }
+    
+    .theme-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .theme-desc {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    /* Miss Information theme specific styling */
+    body.theme-miss #theme-miss + .theme-option .theme-name {
+      background: linear-gradient(135deg, #c084fc, #f472b6);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -205,6 +303,49 @@
       </div>
       <p class="tagline">Customize your analysis experience</p>
     </header>
+    
+    <div class="settings-section">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M16 8v5a3 3 0 0 0 6 0v-5a4 4 0 1 0-8 8"></path>
+          <line x1="2" y1="21" x2="6" y2="21"></line>
+          <line x1="6" y1="21" x2="6" y2="17"></line>
+          <line x1="10" y1="21" x2="14" y2="21"></line>
+          <line x1="12" y1="21" x2="12" y2="17"></line>
+          <line x1="18" y1="21" x2="22" y2="21"></line>
+          <line x1="20" y1="21" x2="20" y2="17"></line>
+        </svg>
+        Theme
+      </h3>
+      <p>
+        Choose your preferred theme: Classic SanityCheck or kawaii Miss Information mode.
+      </p>
+      
+      <div class="theme-toggle-container">
+        <label class="theme-toggle-label">
+          <input type="radio" name="theme" value="sanity" id="theme-sanity" class="theme-radio">
+          <div class="theme-option">
+            <img src="icon48.png" alt="SanityCheck" class="theme-preview-icon">
+            <div class="theme-info">
+              <div class="theme-name">SanityCheck</div>
+              <div class="theme-desc">Professional and focused analysis</div>
+            </div>
+          </div>
+        </label>
+        
+        <label class="theme-toggle-label">
+          <input type="radio" name="theme" value="miss" id="theme-miss" class="theme-radio">
+          <div class="theme-option">
+            <img src="icon48.png" alt="Miss Information" class="theme-preview-icon">
+            <div class="theme-info">
+              <div class="theme-name">Miss Information ♡</div>
+              <div class="theme-desc">Kawaii detective mode with playful analysis</div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
     
     <div class="settings-section">
       <h3>
