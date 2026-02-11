@@ -37,6 +37,37 @@
     .title-miss { display: none; }
     body.theme-miss .title-sanity { display: none; }
     body.theme-miss .title-miss { display: inline; }
+    
+    /* Clickable logo for theme toggle */
+    .logo-icon.theme-toggle {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+    
+    .logo-icon.theme-toggle:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .logo-icon.theme-toggle:active {
+      transform: scale(0.95);
+    }
+    
+    body.theme-miss .logo-icon.theme-toggle:hover {
+      transform: scale(1.1) rotate(-5deg);
+    }
+    
+    /* Pulse animation on theme change */
+    .logo-icon.pulse {
+      animation: pulse 0.4s ease;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -44,7 +75,7 @@
     <header>
       <div class="header-row">
         <div class="logo">
-          <img class="logo-icon" src="icon48.png" alt="SanityCheck logo">
+          <img class="logo-icon theme-toggle" id="logo-theme-toggle" src="icon48.png" alt="SanityCheck logo" title="Click to toggle theme: SanityCheck ↔ Miss Information">
           <h1>
             <span class="title-sanity">SanityCheck</span>
             <span class="title-miss">Miss Information</span>

@@ -22,7 +22,7 @@ const backendOutDir = path.join(buildDir, 'backend');
 const extensionOutDir = path.join(buildDir, 'extension');
 
 const PROD_BACKEND_URL = 'https://sanitycheck-production.up.railway.app';
-const DEV_BACKEND_URL = 'http://localhost:3000';
+const DEV_BACKEND_URL = 'http://localhost:4000';
 
 async function buildBackend() {
   console.log('📦 Building backend...');

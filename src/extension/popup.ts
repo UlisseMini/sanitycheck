@@ -17,6 +17,7 @@ type Article = ExtractedArticle;
 
 // DOM Elements
 const settingsBtn = document.getElementById('settings-btn')!;
+const logoThemeToggle = document.getElementById('logo-theme-toggle')!;
 const pageStatus = document.getElementById('page-status')!;
 const actionSection = document.getElementById('action-section')!;
 const analyzeBtn = document.getElementById('analyze-btn')!;
@@ -79,6 +80,7 @@ async function init(): Promise<void> {
     await checkCurrentPage();
     
     settingsBtn.addEventListener('click', openSettings);
+    logoThemeToggle.addEventListener('click', toggleTheme);
     analyzeBtn.addEventListener('click', () => { void analyzeArticle(); });
     openSidepanelBtn.addEventListener('click', () => { void openSidePanel(); });
     pageStatus.addEventListener('click', toggleArticleText);
@@ -98,6 +100,30 @@ window.addEventListener('unload', () => {
 
 function openSettings(): void {
   void chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+}
+
+function toggleTheme(): void {
+  const body = document.body;
+  const isCurrentlyMiss = body.classList.contains('theme-miss');
+  const newTheme = isCurrentlyMiss ? 'sanity' : 'miss';
+  
+  // Add pulse animation to logo
+  logoThemeToggle.classList.add('pulse');
+  setTimeout(() => logoThemeToggle.classList.remove('pulse'), 400);
+  
+  // Toggle theme
+  if (isCurrentlyMiss) {
+    body.classList.remove('theme-miss');
+    document.title = 'SanityCheck';
+  } else {
+    body.classList.add('theme-miss');
+    document.title = 'Miss Information';
+  }
+  
+  // Save to chrome storage
+  chrome.storage.local.set({ theme: newTheme }, () => {
+    debug.log('Theme toggled', { newTheme }, 'theme-toggle');
+  });
 }
 
 async function openSidePanel(): Promise<void> {

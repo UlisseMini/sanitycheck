@@ -862,6 +862,105 @@ export function generateHomepage(): string {
       }
     }
     
+    /* Features Section */
+    .features-section {
+      padding: 60px 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .features-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .features-section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 40px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-top: 40px;
+    }
+    
+    .feature-card {
+      padding: 32px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .feature-card:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.1);
+    }
+    
+    .magnifying-glass {
+      width: 32px;
+      height: 32px;
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
+    }
+    
+    .feature-card:hover .magnifying-glass {
+      color: white;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+    
+    @media (max-width: 768px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      
+      .feature-card {
+        padding: 24px 20px;
+      }
+    }
+    
     /* Install Section */
     .install-section {
       padding: 60px 24px;
@@ -1095,6 +1194,44 @@ export function generateHomepage(): string {
             <h3>Leave us feedback</h3>
             <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="features-section">
+    <div class="features-content">
+      <h2>Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </div>
+          <h3>Severity Levels</h3>
+          <p>Flags severity of the argument with different levels (critical, significant, low)</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </div>
+          <h3>Save Analyses</h3>
+          <p>Saves the analyses in a sidebar that you can click</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg class="magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </div>
+          <h3>Universal Analysis</h3>
+          <p>Helps you analyze your writing in Google Docs, news articles across the web, and even LLM output</p>
         </div>
       </div>
     </div>
