@@ -621,7 +621,7 @@ export function generateHomepage(): string {
       align-items: center;
       justify-content: center;
       gap: 20px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       padding: 40px 20px;
     }
     
@@ -634,6 +634,20 @@ export function generateHomepage(): string {
       min-width: 200px;
       max-width: 250px;
       position: relative;
+    }
+    
+    /* Horizontal layout - only when all 4 fit (wide screens > 1100px) */
+    @media (min-width: 1101px) {
+      .how-steps-flow {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+      
+      .how-step {
+        flex: 1;
+        min-width: 200px;
+        max-width: 250px;
+      }
     }
     
     .how-step-arrow {
@@ -671,6 +685,74 @@ export function generateHomepage(): string {
     .how-step-arrow:hover::after,
     .how-step:hover + .how-step-arrow::after {
       border-left-color: var(--accent-hover);
+    }
+    
+    /* 2x2 Grid Layout for intermediate screen sizes */
+    @media (min-width: 600px) and (max-width: 1100px) {
+      .how-steps-flow {
+        display: grid !important;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-rows: auto auto;
+        gap: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      
+      .how-step {
+        max-width: none;
+        min-width: auto;
+        flex: none;
+      }
+      
+      /* Row 1: Step 1, Arrow, Step 2 */
+      .how-step:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      
+      .how-step-arrow:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+        width: 40px;
+        height: 2px;
+        margin: 0;
+      }
+      
+      .how-step:nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+      }
+      
+      /* Row 2: Hide vertical arrow - no arrow between rows */
+      .how-step-arrow:nth-child(4) {
+        display: none;
+      }
+      
+      /* Row 3: Step 3, Arrow, Step 4 */
+      .how-step:nth-child(5) {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      
+      .how-step-arrow:nth-child(6) {
+        grid-column: 2;
+        grid-row: 2;
+        width: 40px;
+        height: 2px;
+        margin: 0;
+      }
+      
+      .how-step:nth-child(7) {
+        grid-column: 3;
+        grid-row: 2;
+      }
+      
+      /* Hide the arrow after step 4 in grid layout */
+      .how-step-arrow:nth-child(8) {
+        display: none;
+      }
+      
     }
     
     .how-step-num {
@@ -742,10 +824,16 @@ export function generateHomepage(): string {
       opacity: 1;
     }
     
-    @media (max-width: 900px) {
+    /* Vertical layout for narrow screens */
+    @media (max-width: 599px) {
       .how-steps-flow {
         flex-direction: column;
         gap: 30px;
+      }
+      
+      .how-step {
+        max-width: none;
+        min-width: auto;
       }
       
       .how-step-arrow {
@@ -758,7 +846,8 @@ export function generateHomepage(): string {
         right: 50%;
         bottom: -8px;
         top: auto;
-        transform: translateX(50%);
+        left: 50%;
+        transform: translateX(-50%);
         border-left: 4px solid transparent;
         border-right: 4px solid transparent;
         border-top: 8px solid var(--accent);
