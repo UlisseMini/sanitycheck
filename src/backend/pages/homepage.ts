@@ -243,6 +243,13 @@ export function generateHomepage(): string {
     .tagline {
       font-size: 1.25rem;
       color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    
+    .tagline-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
       margin-bottom: 28px;
       line-height: 1.5;
     }
@@ -587,12 +594,18 @@ export function generateHomepage(): string {
     /* How It Works */
     .how-section {
       padding: 60px 24px;
-      background: var(--bg-secondary);
+      background: rgba(26, 29, 39, 0.6);
+      backdrop-filter: blur(10px);
       border-top: 1px solid var(--border);
+      position: relative;
+    }
+    
+    body.theme-miss .how-section {
+      background: rgba(35, 29, 43, 0.6);
     }
     
     .how-content {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
       text-align: center;
     }
@@ -603,139 +616,69 @@ export function generateHomepage(): string {
       margin-bottom: 40px;
     }
     
-    /* Rotating border container */
-    .how-rotating-container {
-      position: relative;
-      width: 600px;
-      height: 200px;
-      margin: 30px auto;
-      border-radius: 12px;
-    }
-    
-    .how-rotating-border {
-      position: absolute;
-      top: -4px;
-      left: -4px;
-      right: -4px;
-      bottom: -4px;
-      border-radius: 16px;
-      background: var(--bg-tertiary);
-      z-index: 1;
-      overflow: hidden;
-    }
-    
-    /* Trailing border SVG - single rotating trail */
-    .how-rotating-border svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    
-    .how-rotating-border svg path {
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 4;
-      stroke-linecap: round;
-      stroke-dasharray: 100 1500;
-      stroke-dashoffset: 0;
-      animation: trailBorder 20s linear infinite;
-    }
-    
-    .how-rotating-container.paused .how-rotating-border svg path {
-      animation-play-state: paused;
-    }
-    
-    @keyframes trailBorder {
-      /* Top edge (600px - needs to move faster, 37.5% of path in 25% of time) */
-      0% { stroke-dashoffset: 0; }
-      25% { stroke-dashoffset: -600; }
-      /* Right edge (200px - moves slower, 12.5% of path in 25% of time) */
-      50% { stroke-dashoffset: -800; }
-      /* Bottom edge (600px - moves faster, 37.5% of path in 25% of time) */
-      75% { stroke-dashoffset: -1400; }
-      /* Left edge (200px - moves slower, 12.5% of path in 25% of time) */
-      100% { stroke-dashoffset: -1600; }
-    }
-    
-    .how-rotating-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      z-index: 2;
+    .how-steps-flow {
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    
-    .how-rotating-inner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--bg-tertiary);
-      opacity: 0.8;
-      border-radius: 12px;
-      z-index: -1;
-    }
-    
-    .how-steps-wrapper {
-      position: relative;
-      width: 100%;
-      height: 100%;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 40px 20px;
     }
     
     .how-step {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
-      gap: 24px;
-      padding: 30px 40px;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      pointer-events: none;
+      gap: 16px;
+      flex: 1;
+      min-width: 200px;
+      max-width: 250px;
+      position: relative;
     }
     
-    .how-step.active {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
+    .how-step-arrow {
+      flex-shrink: 0;
+      width: 40px;
+      height: 2px;
+      background: var(--accent);
+      position: relative;
+      margin: 0 10px;
     }
     
-    .how-step.prev {
-      transform: translateX(-100%);
+    .how-step-arrow::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid var(--accent);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
     }
     
     .how-step-num {
-      flex-shrink: 0;
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       background: var(--accent);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       color: white;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
     }
     
     .how-step-content {
-      flex: 1;
-      text-align: left;
+      text-align: center;
     }
     
     .how-step h3 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       margin-bottom: 8px;
       color: var(--text-primary);
@@ -743,40 +686,33 @@ export function generateHomepage(): string {
     
     .how-step p {
       color: var(--text-secondary);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       line-height: 1.5;
       margin: 0;
     }
     
-    .how-nav-dots {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 12px;
-      z-index: 10;
-    }
-    
-    .how-nav-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-    
-    .how-nav-dot.active {
-      background: var(--accent);
-      width: 32px;
-      border-radius: 5px;
-    }
-    
-    .how-nav-dot:hover:not(.active) {
-      background: var(--text-secondary);
-      transform: scale(1.2);
+    @media (max-width: 900px) {
+      .how-steps-flow {
+        flex-direction: column;
+        gap: 30px;
+      }
+      
+      .how-step-arrow {
+        width: 2px;
+        height: 40px;
+        margin: 0;
+      }
+      
+      .how-step-arrow::after {
+        right: 50%;
+        bottom: -8px;
+        top: auto;
+        transform: translateX(50%);
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 8px solid var(--accent);
+        border-bottom: none;
+      }
     }
     
     /* Install Section */
@@ -868,10 +804,11 @@ export function generateHomepage(): string {
     @media (max-width: 600px) {
       .hero { padding: 40px 20px 32px; }
       .demo-section, .how-section, .install-section { padding: 48px 20px; }
-      .how-rotating-container { width: 95%; max-width: 600px; height: auto; min-height: 180px; }
-      .how-step { padding: 20px 24px; flex-direction: column; gap: 16px; }
-      .how-step-content { text-align: center; }
-      .how-step-num { width: 50px; height: 50px; font-size: 1.25rem; }
+      .how-steps-flow { padding: 30px 10px; }
+      .how-step { min-width: 150px; }
+      .how-step-num { width: 45px; height: 45px; font-size: 1.1rem; }
+      .how-step h3 { font-size: 0.9rem; }
+      .how-step p { font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -895,6 +832,7 @@ export function generateHomepage(): string {
         <span class="logo-sanity">A browser extension that catches the reasoning gaps you'd normally miss.</span>
         <span class="logo-miss">Your kawaii detective for spotting sneaky logic~ ♪</span>
       </p>
+      <p class="tagline-subtitle">For readers and writers</p>
       
       <div class="cta-group">
         <a href="/static/sanitycheck-extension.zip" class="download-btn" download>
@@ -956,48 +894,36 @@ export function generateHomepage(): string {
   <section class="how-section">
     <div class="how-content">
       <h2>How It Works</h2>
-      <div class="how-rotating-container" id="how-rotating-container">
-        <div class="how-rotating-border">
-          <svg viewBox="0 0 608 208" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 16 4 L 592 4 A 12 12 0 0 1 604 16 L 604 192 A 12 12 0 0 1 592 204 L 16 204 A 12 12 0 0 1 4 192 L 4 16 A 12 12 0 0 1 16 4 Z" />
-          </svg>
-        </div>
-        <div class="how-rotating-inner">
-          <div class="how-steps-wrapper">
-            <div class="how-step active" data-step="0">
-              <div class="how-step-num">1</div>
-              <div class="how-step-content">
-                <h3>Click on any article</h3>
-                <p>Open the extension while reading any online article or blog post.</p>
-              </div>
-            </div>
-            <div class="how-step" data-step="1">
-              <div class="how-step-num">2</div>
-              <div class="how-step-content">
-                <h3>AI analyzes the logic</h3>
-                <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
-              </div>
-            </div>
-            <div class="how-step" data-step="2">
-              <div class="how-step-num">3</div>
-              <div class="how-step-content">
-                <h3>See issues inline</h3>
-                <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
-              </div>
-            </div>
-            <div class="how-step" data-step="3">
-              <div class="how-step-num">4</div>
-              <div class="how-step-content">
-                <h3>Leave us feedback</h3>
-                <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
-              </div>
-            </div>
+      <div class="how-steps-flow">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <div class="how-step-content">
+            <h3>Click on any article</h3>
+            <p>Open the extension while reading any online article or blog post.</p>
           </div>
-          <div class="how-nav-dots">
-            <div class="how-nav-dot active" data-step="0"></div>
-            <div class="how-nav-dot" data-step="1"></div>
-            <div class="how-nav-dot" data-step="2"></div>
-            <div class="how-nav-dot" data-step="3"></div>
+        </div>
+        <div class="how-step-arrow"></div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <div class="how-step-content">
+            <h3>AI analyzes the logic</h3>
+            <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
+          </div>
+        </div>
+        <div class="how-step-arrow"></div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <div class="how-step-content">
+            <h3>See issues inline</h3>
+            <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
+          </div>
+        </div>
+        <div class="how-step-arrow"></div>
+        <div class="how-step">
+          <div class="how-step-num">4</div>
+          <div class="how-step-content">
+            <h3>Leave us feedback</h3>
+            <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
           </div>
         </div>
       </div>
@@ -1399,111 +1325,6 @@ export function generateHomepage(): string {
       }
     })();
     
-    // ===== How It Works Rotating Border =====
-    (function() {
-      const container = document.getElementById('how-rotating-container');
-      const steps = document.querySelectorAll('.how-step[data-step]');
-      const dots = document.querySelectorAll('.how-nav-dot[data-step]');
-      const borderPath = container?.querySelector('.how-rotating-border svg path');
-      let currentStep = 0;
-      let stepInterval = null;
-      let isHovered = false;
-      const FULL_ROTATION_TIME = 20000; // 20 seconds for full rotation
-      const STEP_TIME = FULL_ROTATION_TIME / 4; // 5 seconds per step (each corner)
-      const HOVER_PADDING = 50; // pixels padding for hover detection
-      
-      function showStep(stepIndex) {
-        // Update steps
-        steps.forEach((step, index) => {
-          step.classList.remove('active', 'prev');
-          if (index === stepIndex) {
-            step.classList.add('active');
-          } else if (index < stepIndex) {
-            step.classList.add('prev');
-          }
-        });
-        
-        // Update dots
-        dots.forEach((dot, index) => {
-          dot.classList.toggle('active', index === stepIndex);
-        });
-        
-        currentStep = stepIndex;
-      }
-      
-      function nextStep() {
-        const next = (currentStep + 1) % steps.length;
-        showStep(next);
-      }
-      
-      function startStepRotation() {
-        if (stepInterval) clearInterval(stepInterval);
-        if (!isHovered) {
-          // Change step every time the trail completes one side (at each corner)
-          stepInterval = setInterval(nextStep, STEP_TIME);
-        }
-      }
-      
-      function stopStepRotation() {
-        if (stepInterval) {
-          clearInterval(stepInterval);
-          stepInterval = null;
-        }
-        if (container) {
-          container.classList.add('paused');
-        }
-      }
-      
-      // Check if mouse is near container
-      function checkMouseProximity(e) {
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        const padding = HOVER_PADDING;
-        
-        const x = e.clientX;
-        const y = e.clientY;
-        
-        const isNear = (
-          x >= rect.left - padding &&
-          x <= rect.right + padding &&
-          y >= rect.top - padding &&
-          y <= rect.bottom + padding
-        );
-        
-        if (isNear && !isHovered) {
-          isHovered = true;
-          stopStepRotation();
-        } else if (!isNear && isHovered) {
-          isHovered = false;
-          if (container) {
-            container.classList.remove('paused');
-          }
-          startStepRotation();
-        }
-      }
-      
-      // Click navigation on dots
-      dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-          stopStepRotation();
-          showStep(index);
-          // Resume after a delay if not hovered
-          setTimeout(() => {
-            if (!isHovered && container) {
-              container.classList.remove('paused');
-              startStepRotation();
-            }
-          }, 1000);
-        });
-      });
-      
-      // Mouse proximity detection
-      document.addEventListener('mousemove', checkMouseProximity);
-      
-      // Initialize - show first step and start the rotation
-      showStep(0);
-      startStepRotation();
-    })();
   </script>
 </body>
 </html>`;
