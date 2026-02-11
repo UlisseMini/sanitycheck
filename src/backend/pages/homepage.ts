@@ -643,6 +643,7 @@ export function generateHomepage(): string {
       background: var(--accent);
       position: relative;
       margin: 0 10px;
+      transition: opacity 0.3s ease, filter 0.3s ease, background 0.3s ease;
     }
     
     .how-step-arrow::after {
@@ -656,6 +657,20 @@ export function generateHomepage(): string {
       border-left: 8px solid var(--accent);
       border-top: 4px solid transparent;
       border-bottom: 4px solid transparent;
+      transition: border-left-color 0.3s ease;
+    }
+    
+    .how-step:hover ~ .how-step-arrow,
+    .how-step-arrow:hover,
+    .how-step:hover + .how-step-arrow {
+      filter: brightness(1.5);
+      background: var(--accent-hover);
+    }
+    
+    .how-step:hover ~ .how-step-arrow::after,
+    .how-step-arrow:hover::after,
+    .how-step:hover + .how-step-arrow::after {
+      border-left-color: var(--accent-hover);
     }
     
     .how-step-num {
@@ -671,7 +686,37 @@ export function generateHomepage(): string {
       color: white;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       flex-shrink: 0;
+      position: relative;
+      transition: transform 0.3s ease;
     }
+    
+    .how-step-num .step-icon {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .how-step-num .step-number {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .how-step:hover .how-step-num {
+      transform: scale(1.15);
+    }
+    
+    .how-step:hover .how-step-num .step-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .how-step:hover .how-step-num .step-number {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    
     
     .how-step-content {
       text-align: center;
@@ -689,6 +734,12 @@ export function generateHomepage(): string {
       font-size: 0.85rem;
       line-height: 1.5;
       margin: 0;
+      opacity: 0.95;
+      transition: opacity 0.3s ease;
+    }
+    
+    .how-step:hover p {
+      opacity: 1;
     }
     
     @media (max-width: 900px) {
@@ -712,6 +763,13 @@ export function generateHomepage(): string {
         border-right: 4px solid transparent;
         border-top: 8px solid var(--accent);
         border-bottom: none;
+        transition: border-top-color 0.3s ease;
+      }
+      
+      .how-step:hover ~ .how-step-arrow::after,
+      .how-step-arrow:hover::after,
+      .how-step:hover + .how-step-arrow::after {
+        border-top-color: var(--accent-hover);
       }
     }
     
@@ -896,7 +954,13 @@ export function generateHomepage(): string {
       <h2>How It Works</h2>
       <div class="how-steps-flow">
         <div class="how-step">
-          <div class="how-step-num">1</div>
+          <div class="how-step-num">
+            <span class="step-number">1</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </div>
           <div class="how-step-content">
             <h3>Click on any article</h3>
             <p>Open the extension while reading any online article or blog post.</p>
@@ -904,7 +968,13 @@ export function generateHomepage(): string {
         </div>
         <div class="how-step-arrow"></div>
         <div class="how-step">
-          <div class="how-step-num">2</div>
+          <div class="how-step-num">
+            <span class="step-number">2</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44L2.5 18.5a2.5 2.5 0 0 1 0-3l4.04-1.44A2.5 2.5 0 0 1 9.5 2z"></path>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44L21.5 18.5a2.5 2.5 0 0 0 0-3l-4.04-1.44A2.5 2.5 0 0 0 14.5 2z"></path>
+            </svg>
+          </div>
           <div class="how-step-content">
             <h3>AI analyzes the logic</h3>
             <p>The LLM Council reads the article and identifies where conclusions don't follow from premises.</p>
@@ -912,7 +982,13 @@ export function generateHomepage(): string {
         </div>
         <div class="how-step-arrow"></div>
         <div class="how-step">
-          <div class="how-step-num">3</div>
+          <div class="how-step-num">
+            <span class="step-number">3</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
           <div class="how-step-content">
             <h3>See issues inline</h3>
             <p>Problematic passages are highlighted. Hover to see what's wrong with the reasoning.</p>
@@ -920,7 +996,12 @@ export function generateHomepage(): string {
         </div>
         <div class="how-step-arrow"></div>
         <div class="how-step">
-          <div class="how-step-num">4</div>
+          <div class="how-step-num">
+            <span class="step-number">4</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M12 0L14.5 8.5L23 11L14.5 13.5L12 22L9.5 13.5L1 11L9.5 8.5L12 0Z"/>
+            </svg>
+          </div>
           <div class="how-step-content">
             <h3>Leave us feedback</h3>
             <p>We're in beta! Help improve the model by clicking "leave feedback on this text" on any highlight.</p>
