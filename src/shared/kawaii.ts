@@ -34,7 +34,7 @@ export function makeKawaii(text: string): string {
   if (result.length > 30) {
     // Split into sentences and add uwu/owo to some
     result = result.replace(/([.!?])(\s+)/g, (match, punct, space) => {
-      if (Math.random() < 0.25) {
+      if (Math.random() < 0.50) {
         const kawaiis = ['uwu', 'owo', '>w<', 'nya~'];
         const chosen = kawaiis[Math.floor(Math.random() * kawaiis.length)];
         return punct + ' ' + chosen + space;
@@ -78,10 +78,12 @@ export function makeKawaii(text: string): string {
     const chosen = kawaiiPhrases[Math.floor(Math.random() * kawaiiPhrases.length)];
     // Insert randomly in the middle
     const words = result.split(' ');
-    if (words.length > 3) {
+    if (words.length > 3 && chosen) {
       const insertAt = Math.floor(words.length / 2) + Math.floor(Math.random() * 3) - 1;
-      words[insertAt] += chosen;
-      result = words.join(' ');
+      if (words[insertAt]) {
+        words[insertAt] += chosen;
+        result = words.join(' ');
+      }
     }
   }
 
