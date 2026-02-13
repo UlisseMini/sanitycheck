@@ -20,15 +20,15 @@ Bad flags: factual disputes (you might be wrong), nitpicks on tangential points,
 
 ## Output Format
 
-Write your analysis in natural prose. Start with a one-sentence summary of the article's main conclusion. Then describe the central logical weakness (if any) in 1-2 sentences.
+Write your analysis in natural prose. Start with a one-sentence summary of the article's main conclusion. Then describe the central logical weakness (if any) in 3-4 sentences.
 
 For each issue you find, quote the relevant passage (20-60 words) and briefly explain the gap. Keep explanations punchy—the reader should immediately think "oh yeah, that's a leap."
 
 ## Rules
 
-- Keep gap explanations brief and immediately recognizable. E.g., "Constraints ≠ impossibility" or "One example doesn't prove a universal"
+- Keep gap explanations brief and immediately recognizable, but still understandable to a university-educated audience. E.g., "Constraints ≠ impossibility" or "One example doesn't prove a universal"
 - Quote exactly from the text
-- 1-4 issues typical. Zero is fine if nothing clears the bar.
+- 1-4 issues typical. Zero is fine if nothing clears the bar. Problematic articles can have up to 6-8.
 - Quality over quantity—only flag what you're confident about
 
 ARTICLE:
