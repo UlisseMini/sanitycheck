@@ -15,7 +15,7 @@ As you read, actively watch for these patterns. When you see one, ask: "Does thi
 
 Only flag reasoning errors in the context of what the piece is actually trying to do. An art critic saying "this painting evokes loneliness" isn't making an unsupported empirical claim—they're offering an interpretation.
 
-Most articles have no significant issues. Flag only what you're confident about.
+Many articles have no significant issues. Flag only what you're confident about. However, some other articles (written poorly) can have 8+ issues; use your own judgement.
 
 ---
 
@@ -142,6 +142,7 @@ Write your analysis as natural prose.
 **For each issue** you identify:
 - Quote the relevant passage (20-60 words, exact text)
 - State the gap in one punchy sentence that makes the reader immediately think "oh yeah, that's a leap"
+- also, explain why the gap is relevant.
 
 **Aim for** 1-4 issues. Zero is fine if nothing clears the bar.
 
