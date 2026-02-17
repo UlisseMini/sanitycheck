@@ -11,7 +11,8 @@ import { generateFaqPage } from './backend/pages/faq';
 import { generatePrivacyPage } from './backend/pages/privacy';
 import { generateTechnicalFaqPage } from './backend/pages/technical-faq';
 import { generateEarlyAccessPage } from './backend/pages/early-access';
-import { prisma, ADMIN_KEY } from './backend/shared';
+import rateLimit from 'express-rate-limit';
+import { prisma, ADMIN_KEY, getClientIp } from './backend/shared';
 import {
   analyzeRoutes,
   articlesRoutes,
@@ -114,8 +115,18 @@ app.get('/early-access', (_req: Request, res: Response) => {
   res.send(generateEarlyAccessPage());
 });
 
+// Rate limiter for /analyze: 1 request per second per IP
+const analyzeLimiter = rateLimit({
+  windowMs: 1000,
+  max: 1,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => getClientIp(req) || 'unknown',
+  message: { error: 'Too many requests. Please wait one more second before analyzing another article.' },
+});
+
 // API routes
-app.use('/analyze', analyzeRoutes);
+app.use('/analyze', analyzeLimiter, analyzeRoutes);
 app.use('/articles', articlesRoutes);
 app.use('/comments', commentsRoutes);
 app.use('/annotations', annotationsRoutes);
